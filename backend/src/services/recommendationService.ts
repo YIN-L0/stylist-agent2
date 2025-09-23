@@ -103,7 +103,7 @@ export class RecommendationService {
         'Weekend Brunch': 'weekend brunch的relaxed elegance'
       }
       
-      const occasionText = occasions.slice(0, 2).map(occ => occasionMap[occ] || occ).join('、')
+      const occasionText = occasions.slice(0, 2).map((occ: string) => occasionMap[occ] || occ).join('、')
       reasons.push(`专为${occasionText}而设计`)
     }
     
