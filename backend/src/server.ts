@@ -11,7 +11,12 @@ const PORT = process.env.PORT || 3001
 
 // 中间件
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000'
+  origin: [
+    process.env.CORS_ORIGIN || 'http://localhost:3000',
+    'https://stylist-agent2.vercel.app',
+    'https://stylist-agent2-git-main.vercel.app'
+  ],
+  credentials: true
 }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
