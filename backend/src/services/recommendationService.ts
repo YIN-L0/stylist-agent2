@@ -395,15 +395,58 @@ export class RecommendationService {
       // 2. 从数据库搜索匹配的服装
       console.log('🔍 Searching for matching outfits...')
       console.log('Analysis occasions:', analysis.occasions)
-      const outfits = await database.searchOutfits(
-        analysis.occasions,
+      // 将中文场合扩展为中英双语关键词，兼容旧数据
+      const occasionMap: Record<string, string[]> = {
+        '办公室': ['办公室', 'Office'],
+        '商务晚宴': ['商务晚宴', 'Business Dinner'],
+        '约会夜晚': ['约会夜晚', 'Date Night'],
+        '鸡尾酒活动': ['鸡尾酒活动', 'Cocktail'],
+        '派对活动': ['派对活动', 'Party'],
+        '庆祝活动': ['庆祝活动', 'Celebration'],
+        '日常休闲': ['日常休闲', 'Everyday Casual'],
+        '旅行': ['旅行', 'Travel'],
+        '周末早午餐': ['周末早午餐', 'Weekend Brunch'],
+        '节日活动': ['节日活动', 'Festival'],
+        '音乐会': ['音乐会', 'Concert'],
+        '面试': ['面试', 'Interview']
+      }
+      const expandOccasions = (occs: string[] | undefined): string[] => {
+        if (!occs || occs.length === 0) return []
+        const result: string[] = []
+        for (const occ of occs) {
+          const mapped = occasionMap[occ]
+          if (mapped) {
+            result.push(...mapped)
+          } else {
+            // 若本身是英文，尝试反向加入中文
+            const reverse = Object.entries(occasionMap).find(([, vals]) => vals.includes(occ))
+            if (reverse) {
+              result.push(...reverse[1])
+            } else {
+              result.push(occ)
+            }
+          }
+        }
+        // 去重
+        return Array.from(new Set(result))
+      }
+      const searchOccasions = expandOccasions(analysis.occasions)
+
+      let outfits = await database.searchOutfits(
+        searchOccasions,
         [], // 不再使用styles参数
         30 // 获取更多结果用于排序
       )
       console.log('Found outfits:', outfits.length)
 
       if (outfits.length === 0) {
-        throw new Error('No matching outfits found')
+        console.warn('No outfits found for occasions, trying relaxed fallback...')
+        const fallbackOccs = expandOccasions(['日常休闲', '周末早午餐'])
+        outfits = await database.searchOutfits(fallbackOccs, [], 30)
+        console.log('Fallback found outfits:', outfits.length)
+        if (outfits.length === 0) {
+          throw new Error('No matching outfits found')
+        }
       }
 
       // 3. 计算匹配分数并添加随机化因素
