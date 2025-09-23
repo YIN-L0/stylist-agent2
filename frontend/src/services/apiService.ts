@@ -3,6 +3,8 @@ import { RecommendationRequest, RecommendationResponse, ApiResponse, Outfit } fr
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
 
+console.log('API_BASE_URL:', API_BASE_URL) // 调试日志
+
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000, // 30秒超时
@@ -35,7 +37,12 @@ export const apiService = {
   // 获取服装推荐
   async getRecommendations(request: RecommendationRequest): Promise<RecommendationResponse> {
     try {
+      console.log('Making API request to:', API_BASE_URL + '/recommend')
+      console.log('Request data:', request)
+      
       const response = await apiClient.post<ApiResponse<RecommendationResponse>>('/recommend', request)
+      
+      console.log('API response:', response.data)
       
       if (!response.data.success) {
         throw new Error(response.data.error || '获取推荐失败')
@@ -43,6 +50,7 @@ export const apiService = {
       
       return response.data.data!
     } catch (error) {
+      console.error('API Error details:', error)
       throw error
     }
   },
