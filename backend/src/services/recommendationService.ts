@@ -1,6 +1,7 @@
 import { database } from '../database/database'
 import { openaiService, ScenarioAnalysis } from './openaiService'
-import { OutfitRecommendation, ProductItem } from '../types'
+import { OutfitRecommendation, ProductItem, VirtualTryOnResult } from '../types'
+import { virtualTryOnService } from './virtualTryOnService'
 
 export class RecommendationService {
   // 备用场景分析逻辑
@@ -246,6 +247,72 @@ export class RecommendationService {
     return matches / keywords.length
   }
 
+  // 生成虚拟试穿效果
+  private async generateVirtualTryOn(items: any): Promise<VirtualTryOnResult | undefined> {
+    try {
+      // 检查是否配置了FASHN API
+      if (!virtualTryOnService.isConfigured()) {
+        console.log('⚠️ Virtual try-on not configured, skipping...')
+        return undefined
+      }
+
+      console.log('🎭 Generating virtual try-on...')
+
+      // 情况1：有连衣裙
+      if (items.dress) {
+        console.log('👗 Trying on dress:', items.dress.imageUrl)
+        const tryOnUrl = await virtualTryOnService.generateTryOn(items.dress.imageUrl, 'one-pieces')
+        return {
+          imageUrl: tryOnUrl,
+          status: 'completed'
+        }
+      }
+
+      // 情况2：有上装和下装
+      if (items.upper && items.lower) {
+        console.log('👕👖 Trying on upper + lower:', items.upper.imageUrl, items.lower.imageUrl)
+        const tryOnUrl = await virtualTryOnService.generateUpperLowerTryOn(
+          items.upper.imageUrl,
+          items.lower.imageUrl
+        )
+        return {
+          imageUrl: tryOnUrl,
+          status: 'completed'
+        }
+      }
+
+      // 情况3：只有上装
+      if (items.upper) {
+        console.log('👕 Trying on upper only:', items.upper.imageUrl)
+        const tryOnUrl = await virtualTryOnService.generateTryOn(items.upper.imageUrl, 'tops')
+        return {
+          imageUrl: tryOnUrl,
+          status: 'completed'
+        }
+      }
+
+      // 情况4：只有下装
+      if (items.lower) {
+        console.log('👖 Trying on lower only:', items.lower.imageUrl)
+        const tryOnUrl = await virtualTryOnService.generateTryOn(items.lower.imageUrl, 'bottoms')
+        return {
+          imageUrl: tryOnUrl,
+          status: 'completed'
+        }
+      }
+
+      console.log('⚠️ No suitable items for virtual try-on')
+      return undefined
+    } catch (error) {
+      console.error('❌ Virtual try-on failed:', error)
+      return {
+        imageUrl: '',
+        status: 'failed',
+        error: error instanceof Error ? error.message : 'Virtual try-on failed'
+      }
+    }
+  }
+
   // 选择多样化的搭配，确保每次推荐都不同
   private selectDiverseOutfits(candidates: any[], count: number): any[] {
     if (candidates.length <= count) {
@@ -395,6 +462,10 @@ export class RecommendationService {
           console.log('Generated fallback reason:', reason)
         }
 
+        // 生成虚拟试穿效果
+        console.log('🎭 Generating virtual try-on for outfit:', outfit.id)
+        const virtualTryOn = await this.generateVirtualTryOn(items)
+
         recommendations.push({
           outfit: {
             id: outfit.id,
@@ -409,7 +480,8 @@ export class RecommendationService {
           },
           matchScore: Math.round(score * 100), // 转换为百分比
           reason,
-          items
+          items,
+          virtualTryOn
         })
       }
 

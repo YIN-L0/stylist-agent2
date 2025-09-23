@@ -2,6 +2,7 @@ import React from 'react'
 import { Heart, Share2, Star } from 'lucide-react'
 import { OutfitRecommendation } from '@shared/types'
 import ProductImage from './ProductImage'
+import VirtualTryOnImage from './VirtualTryOnImage'
 
 interface OutfitCardProps {
   recommendation: OutfitRecommendation
@@ -88,6 +89,12 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
           ))}
         </div>
       </div>
+
+      {/* 虚拟试穿效果 */}
+      <VirtualTryOnImage 
+        virtualTryOn={recommendation.virtualTryOn}
+        className="mt-6"
+      />
 
       {/* 底部操作按钮 */}
       <div className="mt-6 pt-4 border-t border-gray-200">

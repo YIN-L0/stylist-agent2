@@ -41,6 +41,7 @@ export interface OutfitRecommendation {
     dress?: ProductItem;
     shoes?: ProductItem;
   };
+  virtualTryOn?: VirtualTryOnResult;
 }
 
 // 产品详情接口
@@ -49,6 +50,13 @@ export interface ProductItem {
   type: string;
   imageUrl: string;
   productUrl: string;
+}
+
+// 虚拟试穿结果接口
+export interface VirtualTryOnResult {
+  imageUrl: string;
+  status: 'loading' | 'completed' | 'failed';
+  error?: string;
 }
 
 // API响应通用接口
