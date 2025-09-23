@@ -17,7 +17,10 @@ app.use(cors({
     process.env.CORS_ORIGIN || 'http://localhost:3000',
     'http://localhost:3002', // 添加3002端口支持
     'https://stylist-agent2.vercel.app',
-    'https://stylist-agent2-git-main.vercel.app'
+    'https://stylist-agent2-git-main.vercel.app',
+    'https://stylist-agent3-8jzozo3iw-bella-ts-projects.vercel.app',
+    'https://stylist-agent3.vercel.app',
+    'https://stylist-agent3-2z5wpocs2-bella-ts-projects.vercel.app'
   ],
   credentials: true
 }))
