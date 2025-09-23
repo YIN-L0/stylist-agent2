@@ -16,12 +16,9 @@ app.use(cors({
   origin: [
     process.env.CORS_ORIGIN || 'http://localhost:3000',
     'http://localhost:3002', // 添加3002端口支持
-    'https://stylist-agent2.vercel.app',
-    'https://stylist-agent2-git-main.vercel.app',
-    'https://stylist-agent3-8jzozo3iw-bella-ts-projects.vercel.app',
-    'https://stylist-agent3.vercel.app',
-    'https://stylist-agent3-2z5wpocs2-bella-ts-projects.vercel.app',
-    'https://stylist-agent3-5anx9ykv3-bella-ts-projects.vercel.app'
+    'https://stylist-agent3.vercel.app', // 主域名
+    /^https:\/\/stylist-agent3-.*\.vercel\.app$/, // 所有 stylist-agent3 预览域名
+    /^https:\/\/stylist-agent2-.*\.vercel\.app$/, // 兼容旧的 stylist-agent2 域名
   ],
   credentials: true
 }))
