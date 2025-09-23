@@ -1,9 +1,9 @@
 import axios from 'axios'
 import { RecommendationRequest, RecommendationResponse, ApiResponse, Outfit } from '@shared/types'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+const API_BASE_URL = 'https://stylist-agent2-production.up.railway.app/api'
 
-console.log('API_BASE_URL:', API_BASE_URL) // 调试日志
+console.log('Using hardcoded API_BASE_URL:', API_BASE_URL) // 调试日志
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
