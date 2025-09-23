@@ -4,6 +4,42 @@ import { OutfitRecommendation, ProductItem, VirtualTryOnResult } from '../types'
 import { virtualTryOnService } from './virtualTryOnService'
 
 export class RecommendationService {
+  private toChineseOccasions(occs: string[] | undefined): string[] {
+    if (!occs || occs.length === 0) return []
+    const map: Record<string, string> = {
+      'Office': '办公室',
+      'Business Dinner': '商务晚宴',
+      'Date Night': '约会夜晚',
+      'Cocktail': '鸡尾酒活动',
+      'Party': '派对活动',
+      'Celebration': '庆祝活动',
+      'Everyday Casual': '日常休闲',
+      'Travel': '旅行',
+      'Weekend Brunch': '周末早午餐',
+      'Festival': '节日活动',
+      'Concert': '音乐会',
+      'Interview': '面试'
+    }
+    return occs.map(o => map[o] || o)
+  }
+
+  private buildFabReason(
+    scenario: string,
+    analysisOccs: string[] | undefined,
+    items: any
+  ): string | null {
+    const fabParts: string[] = []
+    if (items?.dress?.fab) fabParts.push(items.dress.fab)
+    if (items?.upper?.fab) fabParts.push(items.upper.fab)
+    if (items?.lower?.fab) fabParts.push(items.lower.fab)
+
+    if (fabParts.length === 0) return null
+
+    const cnOccs = this.toChineseOccasions(analysisOccs)
+    const occText = cnOccs.length ? cnOccs.join('、') : '日常'
+    const merged = fabParts.join('；')
+    return `针对“${scenario}”，这套搭配在${occText}尤为合适。${merged}`
+  }
   // 备用场景分析逻辑
   private fallbackAnalysis(scenario: string): ScenarioAnalysis {
     const lowerScenario = scenario.toLowerCase()
@@ -498,19 +534,25 @@ export class RecommendationService {
           items.shoes = this.createProductItem(outfit.shoes_id, 'shoes')
         }
 
-        // 生成推荐理由（包含AI分析内容 + FAB 面料/工艺）
+        // 生成推荐理由（FAB 优先：若有 FAB，优先使用 FAB 内容作为主要描述）
         let reason: string
         try {
-          const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis)
-          const fabParts = [items.upper?.fab, items.lower?.fab, items.dress?.fab].filter(Boolean)
-          const fabText = fabParts.length ? `面料/工艺要点：${fabParts.join('；')}` : ''
-          reason = `这套搭配契合“${analysis.occasions?.join('、') || '场合'}”，在版型比例与正式度上拿捏到位。${aiReason}${fabText ? '\n\n' + fabText : ''}`
+          const fabReason = this.buildFabReason(scenario, analysis.occasions, items)
+          if (fabReason) {
+            reason = fabReason
+          } else {
+            const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis)
+            reason = `这套搭配契合“${this.toChineseOccasions(analysis.occasions).join('、') || '场合'}”，在版型比例与正式度上拿捏到位。${aiReason}`
+          }
         } catch (reasonError) {
           console.warn('AI reason generation failed, using fallback:', reasonError)
           const fallbackReason = this.fallbackReason(scenario, outfit, Math.round(score * 100))
-          const fabParts = [items.upper?.fab, items.lower?.fab, items.dress?.fab].filter(Boolean)
-          const fabText = fabParts.length ? `面料/工艺要点：${fabParts.join('；')}` : ''
-          reason = `这套搭配契合“${analysis.occasions?.join('、') || '场合'}”，在版型比例与正式度上拿捏到位。${fallbackReason}${fabText ? '\n\n' + fabText : ''}`
+          const fabReason = this.buildFabReason(scenario, analysis.occasions, items)
+          if (fabReason) {
+            reason = fabReason
+          } else {
+            reason = `这套搭配契合“${this.toChineseOccasions(analysis.occasions).join('、') || '场合'}”，在版型比例与正式度上拿捏到位。${fallbackReason}`
+          }
           console.log('Generated fallback reason:', reason)
         }
 
@@ -528,7 +570,7 @@ export class RecommendationService {
             dress: outfit.dress_id,
             shoes: outfit.shoes_id,
             style: outfit.style,
-            occasions: outfit.occasions ? outfit.occasions.split(',').map((o: string) => o.trim()) : []
+            occasions: outfit.occasions ? this.toChineseOccasions(outfit.occasions.split(',').map((o: string) => o.trim())) : []
           },
           matchScore: Math.round(score * 100), // 转换为百分比
           reason,
