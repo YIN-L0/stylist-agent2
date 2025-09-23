@@ -100,13 +100,13 @@ export class OpenAIService {
 推荐服装：风格=${outfit.style}，适用场合=${outfit.occasions}
 分析结果：场合=${analysis.occasions?.join(',') || '未指定'}，正式程度=${analysis.formality || 'Casual'}
 
-请用中文生成一个详细的推荐理由（80-120字），解释为什么这套服装适合这个场景。
+请用中文生成一个时尚杂志风格的推荐理由（50-70字），解释为什么这套服装适合这个场景。
 要求：
-1. 详细分析用户场景的特点和需求
-2. 解释为什么这套服装的occasion标签与用户需求匹配
-3. 说明服装风格如何适应场景的正式程度
-4. 强调这套搭配如何帮助用户在特定场合中展现最佳形象
-5. 语言要专业、友好、有说服力
+1. 使用时尚术语和英文词汇，如effortless chic、power dressing、casual elegance等
+2. 语言要简洁优雅，像时尚杂志的编辑推荐
+3. 突出搭配的时尚感和场合适配性
+4. 避免过于口语化的表达，保持专业时尚感
+5. 不要使用网络用语或过于夸张的形容词
 
 只返回推荐理由文字，不要其他内容。
       `.trim();
@@ -116,7 +116,7 @@ export class OpenAIService {
         messages: [
           {
             role: "system",
-            content: "你是一个专业的时尚顾问，需要为用户详细解释推荐理由。请用专业、友好、有说服力的语气，深入分析服装与场景的匹配度。"
+            content: "你是一个时尚杂志的资深编辑，需要为用户推荐服装搭配。请用专业、优雅、简洁的语言，使用时尚术语，像时尚杂志的编辑推荐一样，说明为什么这套搭配适合这个场合。"
           },
           {
             role: "user",
@@ -124,7 +124,7 @@ export class OpenAIService {
           }
         ],
         temperature: 0.7,
-        max_tokens: 150
+        max_tokens: 100
       });
 
       return completion.choices[0].message.content || '这套搭配经过精心挑选，非常适合您的场景需求';

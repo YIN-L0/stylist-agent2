@@ -21,6 +21,7 @@ export interface Outfit {
 // 推荐请求接口
 export interface RecommendationRequest {
   scenario: string;
+  skipVirtualTryOn?: boolean; // 可选：跳过虚拟试穿以加快响应
 }
 
 // 推荐响应接口

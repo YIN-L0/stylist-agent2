@@ -61,53 +61,57 @@ export class RecommendationService {
   private fallbackReason(scenario: string, outfit: any, score: number): string {
     const reasons = []
     
-    // 根据匹配分数确定推荐强度
-    if (score >= 90) {
-      reasons.push('这套搭配与您的需求完美契合')
-    } else if (score >= 75) {
-      reasons.push('这套搭配非常适合您的场合需求')
-    } else {
-      reasons.push('这套搭配符合您的基本要求')
-    }
-    
-    // 分析场景特点
+    // 分析场景特点，使用时尚术语
     const lowerScenario = scenario.toLowerCase()
     if (lowerScenario.includes('商务') || lowerScenario.includes('正式')) {
-      reasons.push('商务场合需要展现专业形象与权威感')
+      reasons.push('这套look完美诠释了现代职场女性的power dressing')
     } else if (lowerScenario.includes('约会') || lowerScenario.includes('浪漫')) {
-      reasons.push('约会场合需要展现优雅魅力与女性气质')
+      reasons.push('这个搭配展现了effortless chic的约会美学')
     } else if (lowerScenario.includes('休闲') || lowerScenario.includes('度假')) {
-      reasons.push('休闲场合需要舒适自在又不失品味的穿着')
+      reasons.push('轻松随性的casual elegance，舒适度满分')
     } else if (lowerScenario.includes('聚会') || lowerScenario.includes('派对')) {
-      reasons.push('社交场合需要时尚亮眼且富有魅力的造型')
+      reasons.push('party ready的造型，让你成为全场焦点')
+    } else {
+      reasons.push('这个搭配完美契合你的场合需求')
     }
     
-    // 分析服装风格
-    reasons.push(`采用${outfit.style}风格设计`)
+    // 分析服装风格，使用时尚术语
+    const styleMap: { [key: string]: string } = {
+      'Classic': '经典永不过时的timeless style',
+      'Chic': '法式chic的effortless elegance',
+      'Glam': 'glamorous的华丽感，气场全开',
+      'Smart Casual': 'smart casual的知性魅力',
+      'Casual': 'casual chic的轻松时尚',
+      'Elegant': 'elegant的优雅气质',
+      'Trendy': 'trendy的时尚前沿感',
+      'Minimalist': 'minimalist的极简美学'
+    }
     
-    // 分析场合匹配
+    const styleDescription = styleMap[outfit.style] || `${outfit.style}风格的独特魅力`
+    reasons.push(styleDescription)
+    
+    // 分析场合匹配，使用时尚术语
     const occasions = outfit.occasions ? outfit.occasions.split(',').map((o: string) => o.trim()) : []
     if (occasions.length > 0) {
-      const occasionText = occasions.slice(0, 2).join('、')
-      reasons.push(`专为${occasionText}等高端场合精心打造`)
-      
-      // 详细解释场合匹配
-      if (occasions.includes('Business Dinner')) {
-        reasons.push('商务晚宴的正式感与您的需求高度契合')
-      } else if (occasions.includes('Date Night')) {
-        reasons.push('约会场合的优雅感完美展现您的魅力')
-      } else if (occasions.includes('Everyday Casual')) {
-        reasons.push('日常休闲的舒适感让您轻松自在')
-      } else if (occasions.includes('Office')) {
-        reasons.push('职场穿搭的专业感提升您的形象')
+      const occasionMap: { [key: string]: string } = {
+        'Business Dinner': '商务晚宴的sophisticated look',
+        'Date Night': '约会夜的romantic vibe',
+        'Everyday Casual': '日常casual的comfortable chic',
+        'Office': '职场office的professional style',
+        'Cocktail': 'cocktail party的glamorous appeal',
+        'Party': 'party night的dramatic flair',
+        'Weekend Brunch': 'weekend brunch的relaxed elegance'
       }
+      
+      const occasionText = occasions.slice(0, 2).map(occ => occasionMap[occ] || occ).join('、')
+      reasons.push(`专为${occasionText}而设计`)
     }
     
-    // 强调形象效果
+    // 强调形象效果，使用时尚术语
     if (score >= 85) {
-      reasons.push('助您在重要场合中展现最佳状态')
+      reasons.push('整体造型散发着confident and stylish的气场')
     } else {
-      reasons.push('让您在相应场合中自信得体')
+      reasons.push('这个搭配让你展现出独特的fashion sense')
     }
     
     return reasons.join('，') + '。'
@@ -252,15 +256,15 @@ export class RecommendationService {
     try {
       // 检查是否配置了FASHN API
       if (!virtualTryOnService.isConfigured()) {
-        console.log('⚠️ Virtual try-on not configured, skipping...')
+        console.log('Virtual try-on not configured, skipping...')
         return undefined
       }
 
-      console.log('🎭 Generating virtual try-on...')
+      console.log('Generating virtual try-on...')
 
       // 情况1：有连衣裙
       if (items.dress) {
-        console.log('👗 Trying on dress:', items.dress.imageUrl)
+        console.log('Trying on dress:', items.dress.imageUrl)
         const tryOnUrl = await virtualTryOnService.generateTryOn(items.dress.imageUrl, 'one-pieces')
         return {
           imageUrl: tryOnUrl,
@@ -270,7 +274,7 @@ export class RecommendationService {
 
       // 情况2：有上装和下装
       if (items.upper && items.lower) {
-        console.log('👕👖 Trying on upper + lower:', items.upper.imageUrl, items.lower.imageUrl)
+        console.log('Trying on upper + lower:', items.upper.imageUrl, items.lower.imageUrl)
         const tryOnUrl = await virtualTryOnService.generateUpperLowerTryOn(
           items.upper.imageUrl,
           items.lower.imageUrl
@@ -283,7 +287,7 @@ export class RecommendationService {
 
       // 情况3：只有上装
       if (items.upper) {
-        console.log('👕 Trying on upper only:', items.upper.imageUrl)
+        console.log('Trying on upper only:', items.upper.imageUrl)
         const tryOnUrl = await virtualTryOnService.generateTryOn(items.upper.imageUrl, 'tops')
         return {
           imageUrl: tryOnUrl,
@@ -293,7 +297,7 @@ export class RecommendationService {
 
       // 情况4：只有下装
       if (items.lower) {
-        console.log('👖 Trying on lower only:', items.lower.imageUrl)
+        console.log('Trying on lower only:', items.lower.imageUrl)
         const tryOnUrl = await virtualTryOnService.generateTryOn(items.lower.imageUrl, 'bottoms')
         return {
           imageUrl: tryOnUrl,
@@ -301,10 +305,10 @@ export class RecommendationService {
         }
       }
 
-      console.log('⚠️ No suitable items for virtual try-on')
+      console.log('No suitable items for virtual try-on')
       return undefined
     } catch (error) {
-      console.error('❌ Virtual try-on failed:', error)
+      console.error('Virtual try-on failed:', error)
       return {
         imageUrl: '',
         status: 'failed',
@@ -368,7 +372,7 @@ export class RecommendationService {
     return selected
   }
 
-  async getRecommendations(scenario: string): Promise<{
+  async getRecommendations(scenario: string, skipVirtualTryOn: boolean = true): Promise<{
     recommendations: OutfitRecommendation[]
     analysis: ScenarioAnalysis
   }> {
@@ -381,7 +385,7 @@ export class RecommendationService {
         analysis = await openaiService.analyzeScenario(scenario)
         console.log('Analysis result:', analysis)
       } catch (aiError) {
-        console.warn('⚠️ AI analysis failed, using fallback logic:', aiError)
+        console.warn('AI analysis failed, using fallback logic:', aiError)
         // 备用分析逻辑
         analysis = this.fallbackAnalysis(scenario)
         console.log('Fallback analysis result:', analysis)
@@ -454,17 +458,17 @@ export class RecommendationService {
         let reason: string
         try {
           const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis)
-          reason = `感谢您选择我们的专业造型服务。针对您提到的"${scenario}"这一场合，我为您精心挑选了适合${analysis.occasions?.join('、') || '各种'}场合的搭配方案。每一套搭配都经过专业考量，既符合场合的优雅要求，又能充分展现您的个人魅力与品味。相信这些搭配将助您在重要时刻展现最佳状态。\n\n${aiReason}`
+          reason = `这套搭配特别适合您说的"${scenario}"！我根据您的需求，从${analysis.occasions?.join('、') || '各种'}场合中精心挑选了这套搭配。\n\n${aiReason}`
         } catch (reasonError) {
-          console.warn('⚠️ AI reason generation failed, using fallback:', reasonError)
+          console.warn('AI reason generation failed, using fallback:', reasonError)
           const fallbackReason = this.fallbackReason(scenario, outfit, Math.round(score * 100))
-          reason = `感谢您选择我们的专业造型服务。针对您提到的"${scenario}"这一场合，我为您精心挑选了适合${analysis.occasions?.join('、') || '各种'}场合的搭配方案。每一套搭配都经过专业考量，既符合场合的优雅要求，又能充分展现您的个人魅力与品味。相信这些搭配将助您在重要时刻展现最佳状态。\n\n${fallbackReason}`
+          reason = `这套搭配特别适合您说的"${scenario}"！我根据您的需求，从${analysis.occasions?.join('、') || '各种'}场合中精心挑选了这套搭配。\n\n${fallbackReason}`
           console.log('Generated fallback reason:', reason)
         }
 
         // 生成虚拟试穿效果
-        console.log('🎭 Generating virtual try-on for outfit:', outfit.id)
-        const virtualTryOn = await this.generateVirtualTryOn(items)
+        console.log('Generating virtual try-on for outfit:', outfit.id, 'skipVirtualTryOn:', skipVirtualTryOn)
+        const virtualTryOn = skipVirtualTryOn ? undefined : await this.generateVirtualTryOn(items)
 
         recommendations.push({
           outfit: {

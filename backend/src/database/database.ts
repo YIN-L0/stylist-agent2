@@ -11,7 +11,7 @@ export class Database {
       if (err) {
         console.error('Error opening database:', err.message)
       } else {
-        console.log('📊 Connected to SQLite database')
+             console.log('Connected to SQLite database')
       }
     })
   }

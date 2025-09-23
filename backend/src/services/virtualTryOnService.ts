@@ -10,13 +10,17 @@ export class VirtualTryOnService {
   private readonly API_KEY = process.env.FASHN_API_KEY
   private readonly BASE_URL = 'https://api.fashn.ai/v1'
   private readonly MODEL_IMAGE = 'https://i.imgur.com/r6GqWxn.png'
-  private readonly POLLING_INTERVAL = 2000 // 2秒轮询间隔
-  private readonly MAX_POLLING_ATTEMPTS = 30 // 最大轮询次数 (60秒超时)
+  private readonly POLLING_INTERVAL = 1500 // 1.5秒轮询间隔（更快响应）
+  private readonly MAX_POLLING_ATTEMPTS = 40 // 最大轮询次数 (60秒超时)
 
   constructor() {
     if (!this.API_KEY) {
-      console.warn('⚠️ FASHN_API_KEY not found in environment variables')
+           console.warn('FASHN_API_KEY not found in environment variables')
     }
+  }
+
+  isConfigured(): boolean {
+    return !!this.API_KEY
   }
 
   /**
@@ -31,7 +35,7 @@ export class VirtualTryOnService {
     }
 
     try {
-      console.log(`🎭 Starting virtual try-on for garment: ${garmentImageUrl}`)
+      console.log(`Starting virtual try-on for garment: ${garmentImageUrl}`)
       
       // 1. 提交试穿请求
       const response = await axios.post(
@@ -60,12 +64,22 @@ export class VirtualTryOnService {
       )
 
       const predictionId = response.data.id
-      console.log(`📝 Virtual try-on request submitted: ${predictionId}`)
+             console.log(`Virtual try-on request submitted: ${predictionId}`)
 
       // 2. 轮询获取结果
       return await this.pollForResult(predictionId)
-    } catch (error) {
-      console.error('❌ Virtual try-on failed:', error)
+    } catch (error: any) {
+      console.error('Virtual try-on failed:', error)
+      
+      // 处理特定的API错误
+      if (error.response?.status === 429) {
+        if (error.response?.data?.error === 'OutOfCredits') {
+          throw new Error('FASHN AI API credits exhausted. Please contact administrator to add more credits.')
+        } else {
+          throw new Error('FASHN AI API rate limit exceeded. Please try again later.')
+        }
+      }
+      
       throw new Error(`Virtual try-on failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -82,20 +96,20 @@ export class VirtualTryOnService {
     }
 
     try {
-      console.log(`👕 Starting upper-lower try-on: ${upperUrl} + ${lowerUrl}`)
+      console.log(`Starting upper-lower try-on: ${upperUrl} + ${lowerUrl}`)
       
       // 1. 先试穿上装
-      console.log('👕 Trying on upper garment...')
+      console.log('Trying on upper garment...')
       const upperResult = await this.generateTryOn(upperUrl, 'tops')
       
       // 2. 用上装试穿结果作为模特图，试穿下装
-      console.log('👖 Trying on lower garment...')
+      console.log('Trying on lower garment...')
       const finalResult = await this.generateTryOnWithModel(lowerUrl, upperResult, 'bottoms')
       
-      console.log('✅ Upper-lower try-on completed')
+      console.log('Upper-lower try-on completed')
       return finalResult
     } catch (error) {
-      console.error('❌ Upper-lower try-on failed:', error)
+      console.error('Upper-lower try-on failed:', error)
       throw new Error(`Upper-lower try-on failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -113,7 +127,7 @@ export class VirtualTryOnService {
     category: 'auto' | 'tops' | 'bottoms' | 'one-pieces' = 'auto'
   ): Promise<string> {
     try {
-      console.log(`🎭 Starting virtual try-on with custom model: ${garmentImageUrl}`)
+      console.log(`Starting virtual try-on with custom model: ${garmentImageUrl}`)
       
       // 1. 提交试穿请求
       const response = await axios.post(
@@ -142,12 +156,12 @@ export class VirtualTryOnService {
       )
 
       const predictionId = response.data.id
-      console.log(`📝 Virtual try-on request submitted: ${predictionId}`)
+             console.log(`Virtual try-on request submitted: ${predictionId}`)
 
       // 2. 轮询获取结果
       return await this.pollForResult(predictionId)
     } catch (error) {
-      console.error('❌ Virtual try-on with custom model failed:', error)
+      console.error('Virtual try-on with custom model failed:', error)
       throw new Error(`Virtual try-on failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -172,29 +186,29 @@ export class VirtualTryOnService {
         const { status, output, error } = response.data
 
         if (status === 'completed' && output && output.length > 0) {
-          console.log(`✅ Virtual try-on completed: ${output[0]}`)
+          console.log(`Virtual try-on completed: ${output[0]}`)
           return output[0]
         }
 
         if (status === 'failed') {
           const errorMessage = error?.message || 'Unknown error'
-          console.error(`❌ Virtual try-on failed: ${errorMessage}`)
+          console.error(`Virtual try-on failed: ${errorMessage}`)
           throw new Error(`Virtual try-on failed: ${errorMessage}`)
         }
 
         if (status === 'processing' || status === 'queued') {
-          console.log(`⏳ Virtual try-on ${status}... (attempt ${attempts + 1}/${this.MAX_POLLING_ATTEMPTS})`)
+          console.log(`Virtual try-on ${status}... (attempt ${attempts + 1}/${this.MAX_POLLING_ATTEMPTS})`)
           await new Promise(resolve => setTimeout(resolve, this.POLLING_INTERVAL))
           attempts++
           continue
         }
 
         // 未知状态
-        console.warn(`⚠️ Unknown status: ${status}`)
+        console.warn(`Unknown status: ${status}`)
         await new Promise(resolve => setTimeout(resolve, this.POLLING_INTERVAL))
         attempts++
       } catch (error) {
-        console.error(`❌ Polling error (attempt ${attempts + 1}):`, error)
+        console.error(`Polling error (attempt ${attempts + 1}):`, error)
         attempts++
         
         if (attempts >= this.MAX_POLLING_ATTEMPTS) {
@@ -208,12 +222,6 @@ export class VirtualTryOnService {
     throw new Error('Virtual try-on polling timeout')
   }
 
-  /**
-   * 检查API密钥是否配置
-   */
-  isConfigured(): boolean {
-    return !!this.API_KEY
-  }
 }
 
 export const virtualTryOnService = new VirtualTryOnService()

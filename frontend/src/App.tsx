@@ -1,10 +1,13 @@
 import StylistAgent from './components/StylistAgent'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function App() {
   return (
     <div className="min-h-screen">
       <main>
-        <StylistAgent />
+        <ErrorBoundary>
+          <StylistAgent />
+        </ErrorBoundary>
       </main>
       
       <footer className="bg-gray-900 text-white py-8">

@@ -15,6 +15,7 @@ const PORT = process.env.PORT || 3001
 app.use(cors({
   origin: [
     process.env.CORS_ORIGIN || 'http://localhost:3000',
+    'http://localhost:3002', // 添加3002端口支持
     'https://stylist-agent2.vercel.app',
     'https://stylist-agent2-git-main.vercel.app'
   ],
@@ -26,19 +27,19 @@ app.use(express.urlencoded({ extended: true }))
 // 数据库初始化
 async function initializeDatabase() {
   try {
-    console.log('🔄 Initializing database...')
+         console.log('Initializing database...')
     await database.initializeTables()
     
     // 检查是否已有数据
     const stats = await database.getStats()
     if (stats.total === 0) {
-      console.log('📥 No data found, importing from CSV...')
+         console.log('No data found, importing from CSV...')
       await importData()
     } else {
-      console.log(`✅ Database ready with ${stats.total} outfits`)
+      console.log(`Database ready with ${stats.total} outfits`)
     }
   } catch (error) {
-    console.error('❌ Database initialization failed:', error)
+    console.error('Database initialization failed:', error)
     // 不退出，让服务器继续运行，但记录错误
   }
 }
@@ -55,10 +56,12 @@ app.get('/api/health', (req, res) => {
 // 路由导入
 import recommendRoutes from './routes/recommendRoutes'
 import outfitRoutes from './routes/outfitRoutes'
+import virtualTryOnRoutes from './routes/virtualTryOnRoutes'
 
 // 路由设置
 app.use('/api/recommend', recommendRoutes)
 app.use('/api/outfits', outfitRoutes)
+app.use('/api/virtual-tryon', virtualTryOnRoutes)
 
 // 错误处理中间件
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -78,8 +81,8 @@ app.use('*', (req, res) => {
 })
 
 app.listen(PORT, async () => {
-  console.log(`🚀 Server running on port ${PORT}`)
-  console.log(`📚 API Documentation: http://localhost:${PORT}/api/health`)
+         console.log(`Server running on port ${PORT}`)
+         console.log(`API Documentation: http://localhost:${PORT}/api/health`)
   
   // 初始化数据库
   await initializeDatabase()

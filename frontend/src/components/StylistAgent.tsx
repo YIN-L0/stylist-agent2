@@ -9,6 +9,7 @@ const StylistAgent: React.FC = () => {
   const [scenario, setScenario] = useState('')
   const [currentScenario, setCurrentScenario] = useState('') // 保存当前推荐使用的场景
   const [isLoading, setIsLoading] = useState(false)
+  const [loadingMessage, setLoadingMessage] = useState('')
   const [recommendations, setRecommendations] = useState<RecommendationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -18,11 +19,17 @@ const StylistAgent: React.FC = () => {
     if (!scenario.trim() || isLoading) return
 
     setIsLoading(true)
+    setLoadingMessage('正在分析场景并生成推荐...')
     setError(null)
     
     try {
       console.log('Getting recommendations for:', scenario)
-      const result = await apiService.getRecommendations({ scenario })
+      const result = await apiService.getRecommendations({ 
+        scenario,
+        skipVirtualTryOn: true 
+      })
+      console.log('Received recommendations:', result)
+      console.log('Number of recommendations:', result?.recommendations?.length || 0)
       setRecommendations(result)
       setCurrentScenario(scenario) // 保存当前场景
       
@@ -36,6 +43,7 @@ const StylistAgent: React.FC = () => {
       setError(error instanceof Error ? error.message : '获取推荐失败，请稍后重试')
     } finally {
       setIsLoading(false)
+      setLoadingMessage('')
     }
   }
 
@@ -67,7 +75,10 @@ const StylistAgent: React.FC = () => {
     
     try {
       console.log('Refreshing recommendations for:', currentScenario)
-      const result = await apiService.getRecommendations({ scenario: currentScenario })
+      const result = await apiService.getRecommendations({ 
+        scenario: currentScenario,
+        skipVirtualTryOn: true 
+      })
       setRecommendations(result)
     } catch (error) {
       console.error('Error refreshing recommendations:', error)
@@ -132,6 +143,7 @@ const StylistAgent: React.FC = () => {
                   disabled={isLoading}
                   rows={3}
                 />
+                
                 {scenario && (
                   <button
                     type="button"
@@ -174,7 +186,7 @@ const StylistAgent: React.FC = () => {
                 {isLoading ? (
                   <>
                     <LoadingSpinner />
-                    <span>AI正在为您精心挑选...</span>
+                    <span>{loadingMessage || 'AI正在为您精心挑选...'}</span>
                   </>
                 ) : (
                   <>

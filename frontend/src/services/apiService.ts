@@ -1,13 +1,13 @@
 import axios from 'axios'
-import { RecommendationRequest, RecommendationResponse, ApiResponse, Outfit } from '@shared/types'
+import { RecommendationRequest, RecommendationResponse, ApiResponse, Outfit, VirtualTryOnResult } from '@shared/types'
 
-const API_BASE_URL = 'https://stylist-agent2-production.up.railway.app/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
 
-console.log('Using hardcoded API_BASE_URL:', API_BASE_URL) // 调试日志
+console.log('API_BASE_URL:', API_BASE_URL) // 调试日志
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // 30秒超时
+  timeout: 120000, // 120秒超时（虚拟试穿需要更长时间）
   headers: {
     'Content-Type': 'application/json'
   }
@@ -81,6 +81,27 @@ export const apiService = {
       
       return response.data.data!
     } catch (error) {
+      throw error
+    }
+  },
+
+  // 生成虚拟试穿效果
+  async generateVirtualTryOn(outfitId: number, items: any): Promise<VirtualTryOnResult> {
+    try {
+      console.log('Generating virtual try-on for outfit:', outfitId)
+      
+      const response = await apiClient.post<ApiResponse<VirtualTryOnResult>>('/virtual-tryon', {
+        outfitId,
+        items
+      })
+
+      if (!response.data.success) {
+        throw new Error(response.data.error || '虚拟试穿生成失败')
+      }
+
+      return response.data.data!
+    } catch (error) {
+      console.error('Virtual try-on generation failed:', error)
       throw error
     }
   },

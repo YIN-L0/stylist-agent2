@@ -96,12 +96,12 @@ async function importData() {
         quote: '"'
       }, async (err, records: CSVRecord[]) => {
         if (err) {
-          console.error('❌ CSV parsing error:', err)
+          console.error('CSV parsing error:', err)
           reject(err)
           return
         }
 
-        console.log(`📄 Found ${records.length} records in CSV`)
+        console.log(`Found ${records.length} records in CSV`)
         
         try {
           let imported = 0
@@ -119,7 +119,7 @@ async function importData() {
             if (!result.isValid) {
               skipped++
               errors.push(`Row ${i + 1}: ${result.errors?.join(', ')}`)
-              console.log(`⚠️ Skipping row ${i + 1}: ${result.errors?.join(', ')}`)
+              console.log(`Skipping row ${i + 1}: ${result.errors?.join(', ')}`)
               continue
             }
             
@@ -128,21 +128,21 @@ async function importData() {
               imported++
               
               if (imported % 5 === 0) {
-                console.log(`📥 Imported ${imported} outfits...`)
+                console.log(`Imported ${imported} outfits...`)
               }
             } catch (insertError) {
               skipped++
               errors.push(`Row ${i + 1}: Database insert failed - ${insertError}`)
-              console.error(`❌ Failed to insert row ${i + 1}:`, insertError)
+              console.error(`Failed to insert row ${i + 1}:`, insertError)
             }
           }
           
-          console.log('\n📊 Import Summary:')
-          console.log(`✅ Successfully imported: ${imported} outfits`)
-          console.log(`⚠️ Skipped: ${skipped} records`)
+          console.log('\nImport Summary:')
+          console.log(`Successfully imported: ${imported} outfits`)
+          console.log(`Skipped: ${skipped} records`)
           
           if (errors.length > 0) {
-            console.log('\n❌ Errors encountered:')
+            console.log('\nErrors encountered:')
             errors.slice(0, 10).forEach(error => console.log(`  - ${error}`))
             if (errors.length > 10) {
               console.log(`  ... and ${errors.length - 10} more errors`)
@@ -152,7 +152,7 @@ async function importData() {
           // 显示数据统计
           try {
             const stats = await database.getStats()
-            console.log('\n📊 Database Statistics:')
+            console.log('\nDatabase Statistics:')
             console.log(`Total outfits: ${stats.total}`)
             console.log('Styles:', Object.entries(stats.styles).map(([k, v]) => `${k}(${v})`).join(', '))
             console.log('Top occasions:', Object.entries(stats.occasions)
@@ -161,18 +161,18 @@ async function importData() {
               .map(([k, v]) => `${k}(${v})`)
               .join(', '))
           } catch (statsError) {
-            console.log('⚠️ Could not retrieve statistics:', statsError)
+            console.log('Could not retrieve statistics:', statsError)
           }
           
           resolve()
         } catch (error) {
-          console.error('❌ Import process failed:', error)
+          console.error('Import process failed:', error)
           reject(error)
         }
       })
     })
   } catch (error) {
-    console.error('❌ Error importing data:', error)
+    console.error('Error importing data:', error)
     throw error
   }
 }
@@ -180,11 +180,11 @@ async function importData() {
 // 只有直接运行此脚本时才执行
 if (require.main === module) {
   importData().then(() => {
-    console.log('🎉 Data import completed successfully!')
+    console.log('Data import completed successfully!')
     database.close()
     process.exit(0)
   }).catch((error) => {
-    console.error('❌ Data import failed:', error)
+    console.error('Data import failed:', error)
     database.close()
     process.exit(1)
   })
