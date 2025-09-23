@@ -20,7 +20,8 @@ app.use(cors({
     'https://stylist-agent2-git-main.vercel.app',
     'https://stylist-agent3-8jzozo3iw-bella-ts-projects.vercel.app',
     'https://stylist-agent3.vercel.app',
-    'https://stylist-agent3-2z5wpocs2-bella-ts-projects.vercel.app'
+    'https://stylist-agent3-2z5wpocs2-bella-ts-projects.vercel.app',
+    'https://stylist-agent3-5anx9ykv3-bella-ts-projects.vercel.app'
   ],
   credentials: true
 }))
