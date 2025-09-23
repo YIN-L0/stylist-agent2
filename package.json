@@ -1,0 +1,24 @@
+{
+  "name": "stylist-agent",
+  "version": "1.0.0",
+  "description": "AI-powered fashion recommendation system",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "setup": "npm run install:all && npm run db:setup && npm run db:import",
+    "db:setup": "cd backend && npm run db:setup",
+    "db:import": "cd backend && npm run db:import"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": ["fashion", "ai", "recommendation", "stylist"],
+  "author": "",
+  "license": "MIT"
+}
+
