@@ -30,10 +30,12 @@ COPY . .
 
 # Build frontend
 WORKDIR /app/frontend
+RUN npm ci
 RUN npm run build
 
 # Build backend
 WORKDIR /app/backend
+RUN npm ci
 RUN npm run build
 
 # Production stage
