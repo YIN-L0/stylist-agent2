@@ -1,6 +1,6 @@
 import { database } from '../database/database'
 import { openaiService, ScenarioAnalysis } from './openaiService'
-import { OutfitRecommendation, ProductItem } from '@shared/types'
+import { OutfitRecommendation, ProductItem } from '../types'
 
 export class RecommendationService {
   // 备用场景分析逻辑

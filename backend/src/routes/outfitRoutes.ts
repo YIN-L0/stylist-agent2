@@ -1,6 +1,6 @@
 import express from 'express'
 import { database } from '../database/database'
-import { ApiResponse, Outfit } from '@shared/types'
+import { ApiResponse, Outfit } from '../types'
 
 const router = express.Router()
 

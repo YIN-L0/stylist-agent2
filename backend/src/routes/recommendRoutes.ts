@@ -1,6 +1,6 @@
 import express from 'express'
 import { recommendationService } from '../services/recommendationService'
-import { RecommendationRequest, ApiResponse, RecommendationResponse } from '@shared/types'
+import { RecommendationRequest, ApiResponse, RecommendationResponse } from '../types'
 
 const router = express.Router()
 
