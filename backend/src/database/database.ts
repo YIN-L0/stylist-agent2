@@ -30,6 +30,9 @@ export class Database {
           shoes_id TEXT,
           style TEXT NOT NULL,
           occasions TEXT NOT NULL,
+          upper_fab TEXT,
+          lower_fab TEXT,
+          dress_fab TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           
           -- 添加索引以提升查询性能
@@ -50,32 +53,58 @@ export class Database {
         }
         
         console.log('✅ Outfits table initialized')
-        
-        // 创建索引
-        let indexCount = 0
-        const totalIndexes = createIndexes.length
-        
-        if (totalIndexes === 0) {
-          resolve()
-          return
-        }
-        
-        createIndexes.forEach((indexSql) => {
-          this.db.run(indexSql, (indexErr) => {
-            if (indexErr) {
-              console.error('Error creating index:', indexErr.message)
-            } else {
-              console.log('✅ Index created successfully')
-            }
-            
-            indexCount++
-            if (indexCount === totalIndexes) {
-              resolve()
-            }
+        // 确保新增列存在（兼容旧表）
+        this.ensureOutfitColumns(['upper_fab', 'lower_fab', 'dress_fab']).then(() => {
+          // 创建索引
+          let indexCount = 0
+          const totalIndexes = createIndexes.length
+          
+          if (totalIndexes === 0) {
+            resolve()
+            return
+          }
+          
+          createIndexes.forEach((indexSql) => {
+            this.db.run(indexSql, (indexErr) => {
+              if (indexErr) {
+                console.error('Error creating index:', indexErr.message)
+              } else {
+                console.log('✅ Index created successfully')
+              }
+              
+              indexCount++
+              if (indexCount === totalIndexes) {
+                resolve()
+              }
+            })
           })
-        })
+        }).catch(reject)
       })
     })
+  }
+
+  private async ensureOutfitColumns(columns: string[]): Promise<void> {
+    const existingColumns = await new Promise<string[]>((resolve, reject) => {
+      this.db.all("PRAGMA table_info(outfits)", (err, rows: any[]) => {
+        if (err) return reject(err)
+        resolve(rows.map(r => r.name as string))
+      })
+    })
+
+    await Promise.all(columns.map(col => {
+      if (existingColumns.includes(col)) return Promise.resolve()
+      return new Promise<void>((resolve, reject) => {
+        this.db.run(`ALTER TABLE outfits ADD COLUMN ${col} TEXT`, (err) => {
+          if (err) {
+            // 若失败，输出日志但不阻断
+            console.warn(`Could not add column ${col}:`, err.message)
+          } else {
+            console.log(`✅ Added missing column: ${col}`)
+          }
+          resolve()
+        })
+      })
+    }))
   }
 
   // 插入服装数据
@@ -88,12 +117,15 @@ export class Database {
     shoes_id?: string
     style: string
     occasions: string
+    upper_fab?: string
+    lower_fab?: string
+    dress_fab?: string
   }): Promise<number> {
     return new Promise((resolve, reject) => {
       const sql = `
         INSERT OR REPLACE INTO outfits 
-        (outfit_name, jacket_id, upper_id, lower_id, dress_id, shoes_id, style, occasions)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        (outfit_name, jacket_id, upper_id, lower_id, dress_id, shoes_id, style, occasions, upper_fab, lower_fab, dress_fab)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `
       
       const params = [
@@ -104,7 +136,10 @@ export class Database {
         outfit.dress_id || null,
         outfit.shoes_id || null,
         outfit.style,
-        outfit.occasions
+        outfit.occasions,
+        outfit.upper_fab || null,
+        outfit.lower_fab || null,
+        outfit.dress_fab || null
       ]
 
       this.db.run(sql, params, function(err) {

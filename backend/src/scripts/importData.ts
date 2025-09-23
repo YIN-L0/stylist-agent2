@@ -13,6 +13,9 @@ interface CSVRecord {
   'Shoes': string
   'Style': string
   'Occasion': string
+  'UpperFAB'?: string
+  'LowerFAB'?: string
+  'DressFAB'?: string
 }
 
 // 数据清洗和验证
@@ -43,7 +46,10 @@ function cleanAndValidateRecord(record: CSVRecord, index: number): {
   
   // 检查是否至少有一个服装单品
   const hasAnyItem = ['Jacket', 'Upper', 'Lower', 'Dress', 'Shoes'].some(
-    key => record[key as keyof CSVRecord] && record[key as keyof CSVRecord].trim() !== ''
+    key => {
+      const v = record[key as keyof CSVRecord]
+      return typeof v === 'string' && v.trim() !== ''
+    }
   )
   
   if (!hasAnyItem) {
@@ -68,7 +74,10 @@ function cleanAndValidateRecord(record: CSVRecord, index: number): {
     dress_id: cleanValue(record['Dress']),
     shoes_id: cleanValue(record['Shoes']),
     style: record['Style'].trim(),
-    occasions: record['Occasion'].trim()
+    occasions: record['Occasion'].trim(),
+    upper_fab: cleanValue(record['UpperFAB'] || ''),
+    lower_fab: cleanValue(record['LowerFAB'] || ''),
+    dress_fab: cleanValue(record['DressFAB'] || '')
   }
   
   return { isValid: true, outfit }
@@ -78,7 +87,11 @@ async function importData() {
   try {
     console.log('🔄 Importing outfit data from CSV...')
     
-    const csvPath = path.join(__dirname, '../../../data/Women Outfit Detail, Style & Occasion - Sheet1.csv')
+    // 支持新文件名 women_outfits_with_all_attributes.csv
+    let csvPath = path.join(__dirname, '../../../data/women_outfits_with_all_attributes.csv')
+    if (!fs.existsSync(csvPath)) {
+      csvPath = path.join(__dirname, '../../../data/Women Outfit Detail, Style & Occasion - Sheet1.csv')
+    }
     
     if (!fs.existsSync(csvPath)) {
       throw new Error(`CSV file not found at: ${csvPath}`)

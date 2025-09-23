@@ -51,6 +51,7 @@ export interface ProductItem {
   type: string;
   imageUrl: string;
   productUrl: string;
+  fab?: string;
 }
 
 // 虚拟试穿结果接口
@@ -87,5 +88,8 @@ export interface OutfitRecord {
   shoes?: string;
   style: string;
   occasions: string;
+  upper_fab?: string;
+  lower_fab?: string;
+  dress_fab?: string;
 }
 

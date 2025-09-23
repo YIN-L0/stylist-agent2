@@ -8,19 +8,19 @@ export class RecommendationService {
   private fallbackAnalysis(scenario: string): ScenarioAnalysis {
     const lowerScenario = scenario.toLowerCase()
     
-    const occasionKeywords = {
-      'Office': ['公司', '办公', '工作', '上班', '会议', '面试'],
-      'Business Dinner': ['商务', '晚宴', '正式', '商务晚餐'],
-      'Date Night': ['约会', '浪漫', '晚餐', '电影', '情侣'],
-      'Cocktail': ['鸡尾酒', '酒会', '社交', '聚会'],
-      'Party': ['聚会', '派对', '生日', '狂欢', '夜店', '酒吧', 'club', 'going out'],
-      'Celebration': ['庆祝', '庆典', '节日', '纪念', '生日派对', '聚会', 'party'],
-      'Everyday Casual': ['休闲', '放松', '咖啡', '购物', '逛街', '日常'],
-      'Weekend Brunch': ['早午餐', '周末', '朋友', 'brunch'],
-      'Travel': ['旅行', '度假', '出游', '旅游'],
-      'Festival': ['节日', '庆典', '活动'],
-      'Concert': ['音乐会', '演出', '演唱会'],
-      'Interview': ['面试', '求职', '应聘']
+    const occasionKeywords: Record<string, string[]> = {
+      '办公室': ['公司', '办公', '工作', '上班', '会议', '面试', '职场', '通勤'],
+      '商务晚宴': ['商务', '晚宴', '正式', '商务餐叙', '商务餐会'],
+      '约会夜晚': ['约会', '浪漫', '晚餐', '电影', '情侣', '男朋友', '女朋友', '情人节'],
+      '鸡尾酒活动': ['鸡尾酒', '酒会', '社交', '沙龙', 'party'],
+      '派对活动': ['聚会', '派对', '生日', '狂欢', '夜店', '酒吧', 'club'],
+      '庆祝活动': ['庆祝', '庆典', '纪念日', '周年', '祝贺'],
+      '日常休闲': ['休闲', '放松', '咖啡', '购物', '逛街', '日常', '朋友聚会'],
+      '周末早午餐': ['早午餐', '周末', 'brunch', '咖啡厅'],
+      '旅行': ['旅行', '度假', '出游', '旅游', 'citywalk'],
+      '节日活动': ['节日', '庆典', '活动', '年会'],
+      '音乐会': ['音乐会', '演出', '演唱会', 'livehouse'],
+      '面试': ['面试', '求职', '应聘']
     }
     
     const detectedOccasions: string[] = []
@@ -36,15 +36,15 @@ export class RecommendationService {
     
     // 默认值
     if (detectedOccasions.length === 0) {
-      detectedOccasions.push('Everyday Casual')
+      detectedOccasions.push('日常休闲')
       keywords.push('休闲', '日常')
     }
     
     // 确定正式程度
     let formality = 'Casual'
-    if (lowerScenario.includes('正式') || lowerScenario.includes('商务') || lowerScenario.includes('面试')) {
+    if (lowerScenario.includes('正式') || lowerScenario.includes('商务') || lowerScenario.includes('晚宴') || lowerScenario.includes('面试')) {
       formality = 'Formal'
-    } else if (lowerScenario.includes('半正式') || lowerScenario.includes('得体') || lowerScenario.includes('smart')) {
+    } else if (lowerScenario.includes('鸡尾酒') || lowerScenario.includes('约会') || lowerScenario.includes('庆祝')) {
       formality = 'Semi-Formal'
     }
     
@@ -130,12 +130,13 @@ export class RecommendationService {
   }
 
   // 将服装记录转换为产品项目
-  private createProductItem(productId: string, type: string): ProductItem {
+  private createProductItem(productId: string, type: string, fab?: string): ProductItem {
     return {
       productId,
       type,
       imageUrl: this.generateImageUrl(productId),
-      productUrl: this.generateProductUrl(productId)
+      productUrl: this.generateProductUrl(productId),
+      fab
     }
   }
 
@@ -442,27 +443,31 @@ export class RecommendationService {
           items.jacket = this.createProductItem(outfit.jacket_id, 'jacket')
         }
         if (outfit.upper_id) {
-          items.upper = this.createProductItem(outfit.upper_id, 'upper')
+          items.upper = this.createProductItem(outfit.upper_id, 'upper', outfit.upper_fab)
         }
         if (outfit.lower_id) {
-          items.lower = this.createProductItem(outfit.lower_id, 'lower')
+          items.lower = this.createProductItem(outfit.lower_id, 'lower', outfit.lower_fab)
         }
         if (outfit.dress_id) {
-          items.dress = this.createProductItem(outfit.dress_id, 'dress')
+          items.dress = this.createProductItem(outfit.dress_id, 'dress', outfit.dress_fab)
         }
         if (outfit.shoes_id) {
           items.shoes = this.createProductItem(outfit.shoes_id, 'shoes')
         }
 
-        // 生成推荐理由（包含AI分析内容）
+        // 生成推荐理由（包含AI分析内容 + FAB 面料/工艺）
         let reason: string
         try {
           const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis)
-          reason = `这套搭配特别适合您说的"${scenario}"！我根据您的需求，从${analysis.occasions?.join('、') || '各种'}场合中精心挑选了这套搭配。\n\n${aiReason}`
+          const fabParts = [items.upper?.fab, items.lower?.fab, items.dress?.fab].filter(Boolean)
+          const fabText = fabParts.length ? `面料/工艺要点：${fabParts.join('；')}` : ''
+          reason = `这套搭配契合“${analysis.occasions?.join('、') || '场合'}”，在版型比例与正式度上拿捏到位。${aiReason}${fabText ? '\n\n' + fabText : ''}`
         } catch (reasonError) {
           console.warn('AI reason generation failed, using fallback:', reasonError)
           const fallbackReason = this.fallbackReason(scenario, outfit, Math.round(score * 100))
-          reason = `这套搭配特别适合您说的"${scenario}"！我根据您的需求，从${analysis.occasions?.join('、') || '各种'}场合中精心挑选了这套搭配。\n\n${fallbackReason}`
+          const fabParts = [items.upper?.fab, items.lower?.fab, items.dress?.fab].filter(Boolean)
+          const fabText = fabParts.length ? `面料/工艺要点：${fabParts.join('；')}` : ''
+          reason = `这套搭配契合“${analysis.occasions?.join('、') || '场合'}”，在版型比例与正式度上拿捏到位。${fallbackReason}${fabText ? '\n\n' + fabText : ''}`
           console.log('Generated fallback reason:', reason)
         }
 

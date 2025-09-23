@@ -16,28 +16,23 @@ export class OpenAIService {
   async analyzeScenario(scenario: string): Promise<ScenarioAnalysis> {
     try {
       const prompt = `
-你是一个专业的时尚顾问。请分析用户描述的场景，专注于提取场合和正式程度信息。
+你是一个专业的时尚顾问。请分析用户描述的场景，专注于提取中文「场合」与「正式程度」。
 
 用户场景：${scenario}
 
-请分析并返回JSON格式的结果：
+请分析并返回JSON格式的结果（注意 occasions 只能从下方中文列表中选择）：
 {
-  "occasions": ["场合列表，从以下选项中选择：Office, Business Dinner, Date Night, Cocktail, Party, Celebration, Everyday Casual, Travel, Weekend Brunch, Festival, Concert, Interview"],
-  "formality": "正式程度（Formal/Semi-Formal/Casual）",
-  "keywords": ["关键词列表，用于模糊匹配"],
-  "context": "场景上下文描述",
+  "occasions": ["从以下选项中选择 1-3 个：办公室, 商务晚宴, 约会夜晚, 鸡尾酒活动, 派对活动, 庆祝活动, 日常休闲, 旅行, 周末早午餐, 节日活动, 音乐会, 面试"],
+  "formality": "Formal | Semi-Formal | Casual",
+  "keywords": ["与场合相关的中文关键词与同义词，用于模糊匹配"],
+  "context": "场景上下文描述（简短中文）",
   "confidence": 0.8
 }
 
-分析规则：
-1. 专注于场合匹配，不考虑具体风格
-2. 从给定的场合列表中选择最匹配的1-3个
-3. 评估正式程度：Formal(正式), Semi-Formal(半正式), Casual(休闲)
-4. 提取关键词用于模糊匹配
-5. 提供场景上下文描述
-6. confidence表示分析的准确度(0-1)
-
-只返回JSON格式，不要其他文字。
+规则：
+1) 场合请使用上面提供的中文标签，不要输出英文标签。
+2) 结合同义词联想：如“约会”联想到“男朋友/女朋友/情人节/浪漫晚餐”等。
+3) 仅返回 JSON，不要多余文字。
       `.trim();
 
       const completion = await openai.chat.completions.create({
