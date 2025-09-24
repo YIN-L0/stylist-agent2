@@ -33,7 +33,6 @@ export interface RecommendationResponse {
 // 单个推荐结果接口
 export interface OutfitRecommendation {
   outfit: Outfit;
-  matchScore: number;
   reason: string;
   items: {
     jacket?: ProductItem;

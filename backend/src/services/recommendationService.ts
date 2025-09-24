@@ -584,7 +584,7 @@ export class RecommendationService {
             style: outfit.style,
             occasions: outfit.occasions ? this.toChineseOccasions(outfit.occasions.split(',').map((o: string) => o.trim())) : []
           },
-          matchScore: Math.round(score * 100), // 转换为百分比
+          // 内部排序仅基于匹配度，不对外暴露
           reason,
           items,
           virtualTryOn
