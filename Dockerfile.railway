@@ -24,11 +24,11 @@ WORKDIR /app/backend
 RUN npm ci
 RUN npm run build
 
-# Copy data files
-COPY data ./data
-
 # Set working directory to backend
 WORKDIR /app/backend
+
+# Copy data files to backend directory
+COPY data ../data
 
 # Expose port
 EXPOSE 3001

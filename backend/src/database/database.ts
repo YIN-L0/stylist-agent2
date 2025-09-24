@@ -1,7 +1,7 @@
 import sqlite3 from 'sqlite3'
 import path from 'path'
 
-const DATABASE_PATH = process.env.DATABASE_PATH || (process.env.NODE_ENV === 'production' ? ':memory:' : './database.sqlite')
+const DATABASE_PATH = process.env.DATABASE_PATH || './database.sqlite'
 
 export class Database {
   private db: sqlite3.Database

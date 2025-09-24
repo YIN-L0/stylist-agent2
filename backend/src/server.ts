@@ -60,12 +60,41 @@ async function initializeDatabase() {
 }
 
 // 路由
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    message: 'Stylist Agent API is running',
-    timestamp: new Date().toISOString()
-  })
+app.get('/api/health', async (req, res) => {
+  try {
+    // 检查数据库状态
+    let dbStatus = 'unknown'
+    let womenCount = 0
+    let menCount = 0
+    
+    try {
+      const womenStats = await database.getStats()
+      const menStats = await menDatabase.getStats()
+      womenCount = womenStats.total
+      menCount = menStats.total
+      dbStatus = 'connected'
+    } catch (error) {
+      dbStatus = 'error'
+    }
+    
+    res.json({ 
+      status: 'ok', 
+      message: 'Stylist Agent API is running',
+      timestamp: new Date().toISOString(),
+      database: {
+        status: dbStatus,
+        womenOutfits: womenCount,
+        menOutfits: menCount
+      },
+      environment: process.env.NODE_ENV || 'development'
+    })
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Health check failed',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
 })
 
 // 路由导入
@@ -95,10 +124,26 @@ app.use('*', (req, res) => {
   })
 })
 
-app.listen(PORT, async () => {
-         console.log(`Server running on port ${PORT} - Updated for 9 recommendations`)
-         console.log(`API Documentation: http://localhost:${PORT}/api/health`)
-  
-  // 初始化数据库
-  await initializeDatabase()
+// 启动服务器
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT} - Updated for 9 recommendations`)
+  console.log(`API Documentation: http://localhost:${PORT}/api/health`)
+})
+
+// 异步初始化数据库，不阻塞服务器启动
+initializeDatabase()
+  .then(() => {
+    console.log('Database initialization completed')
+  })
+  .catch((error) => {
+    console.error('Database initialization failed:', error)
+    // 不退出进程，让健康检查仍然可以工作
+  })
+
+// 优雅关闭
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully')
+  server.close(() => {
+    console.log('Process terminated')
+  })
 })
