@@ -1,7 +1,11 @@
 import axios from 'axios'
 import { RecommendationRequest, RecommendationResponse, ApiResponse, Outfit, VirtualTryOnResult } from '@shared/types'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://stylist-agent2-production.up.railway.app/api'
+// 规范化 API 基础地址：如果未包含 /api，则自动补齐
+const RAW_API_BASE_URL = import.meta.env.VITE_API_URL || 'https://stylist-agent2-production.up.railway.app/api'
+const API_BASE_URL = RAW_API_BASE_URL.endsWith('/api')
+  ? RAW_API_BASE_URL
+  : `${RAW_API_BASE_URL.replace(/\/$/, '')}/api`
 
 console.log('API_BASE_URL:', API_BASE_URL) // 调试日志
 
