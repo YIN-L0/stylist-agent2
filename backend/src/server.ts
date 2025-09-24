@@ -2,7 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
-import { database } from './database/database'
+import { database, menDatabase } from './database/database'
 import { importData } from './scripts/importData'
 
 // 配置环境变量
@@ -28,16 +28,30 @@ app.use(express.urlencoded({ extended: true }))
 // 数据库初始化
 async function initializeDatabase() {
   try {
-         console.log('Initializing database...')
+         console.log('Initializing databases...')
     await database.initializeTables()
+    await menDatabase.initializeTables()
     
     // 检查是否已有数据
-    const stats = await database.getStats()
-    if (stats.total === 0) {
-         console.log('No data found, importing from CSV...')
+    const womenStats = await database.getStats()
+    const menStats = await menDatabase.getStats()
+    
+    if (womenStats.total === 0) {
+         console.log('No women data found, importing from CSV...')
+      process.env.IMPORT_GENDER = 'women'
+      process.env.IMPORT_TARGET_DB = 'women'
       await importData()
     } else {
-      console.log(`Database ready with ${stats.total} outfits`)
+      console.log(`Women database ready with ${womenStats.total} outfits`)
+    }
+    
+    if (menStats.total === 0) {
+         console.log('No men data found, importing from CSV...')
+      process.env.IMPORT_GENDER = 'men'
+      process.env.IMPORT_TARGET_DB = 'men'
+      await importData()
+    } else {
+      console.log(`Men database ready with ${menStats.total} outfits`)
     }
   } catch (error) {
     console.error('Database initialization failed:', error)

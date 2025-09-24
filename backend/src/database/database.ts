@@ -354,3 +354,4 @@ export class Database {
 }
 
 export const database = new Database()
+export const menDatabase = new Database() // 男装数据库实例

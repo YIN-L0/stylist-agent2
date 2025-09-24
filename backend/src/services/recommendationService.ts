@@ -1,4 +1,4 @@
-import { database } from '../database/database'
+import { database, menDatabase } from '../database/database'
 import { openaiService, ScenarioAnalysis } from './openaiService'
 import { OutfitRecommendation, ProductItem, VirtualTryOnResult } from '../types'
 import { virtualTryOnService } from './virtualTryOnService'
@@ -480,18 +480,20 @@ export class RecommendationService {
       }
       const searchOccasions = expandOccasions(analysis.occasions)
 
-      let outfits = await database.searchOutfits(
+      // 根据性别选择对应的数据库实例
+      const targetDb = gender === 'men' ? menDatabase : database
+      
+      let outfits = await targetDb.searchOutfits(
         searchOccasions,
         [], // 不再使用styles参数
-        10000,
-        gender
+        10000
       )
       console.log('Found outfits:', outfits.length)
 
       if (outfits.length === 0) {
         console.warn('No outfits found for occasions, trying relaxed fallback...')
         const fallbackOccs = expandOccasions(['日常休闲', '周末早午餐'])
-        outfits = await database.searchOutfits(fallbackOccs, [], 10000, gender)
+        outfits = await targetDb.searchOutfits(fallbackOccs, [], 10000)
         console.log('Fallback found outfits:', outfits.length)
         if (outfits.length === 0) {
           throw new Error('No matching outfits found')

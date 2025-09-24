@@ -35,6 +35,7 @@ const StylistAgent: React.FC = () => {
       console.log('Number of recommendations:', result?.recommendations?.length || 0)
       setRecommendations(result)
       setCurrentScenario(scenario) // 保存当前场景
+      setVisibleCount(9) // 重置显示数量
       
       // 成功后清空输入框
       setScenario('')
@@ -84,6 +85,7 @@ const StylistAgent: React.FC = () => {
         gender
       })
       setRecommendations(result)
+      setVisibleCount(9) // 重置显示数量
     } catch (error) {
       console.error('Error refreshing recommendations:', error)
       setError(error instanceof Error ? error.message : '刷新推荐失败，请稍后重试')
@@ -258,7 +260,7 @@ const StylistAgent: React.FC = () => {
                   ✨ 专属搭配推荐
                 </h2>
                 <p className="text-xl text-gray-600 mb-6">
-                  为你精选的 {recommendations.recommendations.length} 套完美搭配
+                  为你精选的搭配推荐 {visibleCount < recommendations.recommendations.length ? `(显示 ${visibleCount}/${recommendations.recommendations.length} 套)` : `(共 ${recommendations.recommendations.length} 套)`}
                 </p>
                 
                 {/* 刷新推荐按钮 */}

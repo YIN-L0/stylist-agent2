@@ -12,7 +12,7 @@ interface OutfitCardProps {
 }
 
 const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
-  console.log('Rendering OutfitCard for:', recommendation.outfit.name, 'with items:', recommendation.items)
+  // 已移除调试日志以避免泄露outfit信息
   const [virtualTryOn, setVirtualTryOn] = useState<VirtualTryOnResult | undefined>(recommendation.virtualTryOn)
   const [isGeneratingTryOn, setIsGeneratingTryOn] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
@@ -54,7 +54,19 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
       setIsGeneratingTryOn(false)
     }
   }
-  // 已移除匹配度相关逻辑
+  const getMatchColor = (score: number) => {
+    if (score >= 90) return 'text-green-600 bg-green-100'
+    if (score >= 75) return 'text-blue-600 bg-blue-100'
+    if (score >= 60) return 'text-yellow-600 bg-yellow-100'
+    return 'text-gray-600 bg-gray-100'
+  }
+
+  const getMatchIcon = (score: number) => {
+    if (score >= 90) return '🎯'
+    if (score >= 75) return '✨'
+    if (score >= 60) return '👍'
+    return '📌'
+  }
 
   const handleDownload = async () => {
     // 下载虚拟试衣图片

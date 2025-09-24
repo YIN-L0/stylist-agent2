@@ -91,19 +91,21 @@ export class OpenAIService {
   async generateRecommendationReason(scenario: string, outfit: any, analysis: ScenarioAnalysis): Promise<string> {
     try {
       const prompt = `
-你是一名高端品牌造型顾问，请基于以下信息生成中文“概括型”推荐理由，字数控制在350字以内：
+你是一名专业时尚顾问，请基于以下信息生成中文推荐总结，字数严格控制在350字以内：
 
 【用户场景】${scenario}
 【场合】${(analysis.occasions || []).join('、') || '日常'}；【正式度】${analysis.formality || '休闲'}
 【风格】${outfit.style}
-【单品要点】将上衣、下装、连衣裙/外套等要点（若存在）合并为一段自然流畅的“总结”，不要出现“FAB”字样，不要分小标题。
 
 写作要求：
-1) 专业、克制、概括性强；重点强调整体风格与场合适配；
-2) 略过过细的工艺/术语细节；避免内部命名与冗余细节；
-3) 统一中文表达，只输出“一段话”，不分段/不列表；
-4) 严禁出现“匹配度/评分/分数/百分比/Outfit/编号”等词汇或类似表述（如 85%）；
-5) 超出长度时自动收敛至 350 字以内。
+1) 概括整套搭配的整体思路与风格要点，避免过于细节化的专业术语；
+2) 语气自然、易读，如时尚博主推荐，重点突出搭配亮点与场合适配性；
+3) 适度使用简洁的时尚表达，但保持通俗易懂；
+4) 只输出一段连贯文字，不要分段或列表；
+5) 严禁出现"匹配度/评分/分数/百分比/Outfit/编号/排名"等词汇；
+6) 字数必须在350字以内，语言精练。
+
+只返回推荐理由文字，不要其他内容。
       `.trim();
 
       const completion = await openai.chat.completions.create({
@@ -111,20 +113,21 @@ export class OpenAIService {
         messages: [
           {
             role: "system",
-            content: "你是高端品牌的时尚顾问，输出专业、精炼、概括型、中文的一段式推荐理由，绝不超过350字；严禁出现‘匹配度/评分/分数/百分比/Outfit/编号’等内容。"
+            content: "你是专业时尚顾问，输出概括性、易读的搭配推荐总结，严格控制在350字以内，不得出现匹配度/评分/编号等词汇。"
           },
           {
             role: "user",
             content: prompt
           }
         ],
-        temperature: 0.5,
+        temperature: 0.6,
         max_tokens: 300
       });
 
       let text = completion.choices[0].message.content || ''
+      // 强制限制到350字以内
       if (text.length > 350) text = text.slice(0, 347) + '...'
-      return text || '这套搭配经过精心挑选，非常适合您的场景需求';
+      return text || '这套搭配经过精心甄选，版型与场合契合度出色。';
     } catch (error) {
       console.error('Error generating recommendation reason:', error);
       throw error; // 抛出错误，让推荐服务使用fallback逻辑
