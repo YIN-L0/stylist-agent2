@@ -124,12 +124,9 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
       {/* 卡片头部 */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-bold text-sm">
-            {index + 1}
-          </div>
+        <div>
           <h4 className="text-xl font-semibold text-gray-900">
-            {recommendation.outfit.name || `推荐搭配 ${index + 1}`}
+            {recommendation.outfit.name ? recommendation.outfit.name.replace(/Outfit \d+/g, '').replace(/推荐搭配 \d+/g, '').trim() || '精选搭配' : '精选搭配'}
           </h4>
         </div>
         <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
@@ -137,29 +134,21 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         </button>
       </div>
 
-      {/* 匹配度显示 */}
-      <div className="mb-6">
-        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${getMatchColor(recommendation.matchScore)}`}>
-          <span>{getMatchIcon(recommendation.matchScore)}</span>
-          <span>匹配度 {recommendation.matchScore}%</span>
-        </div>
+      {/* 服装单品网格 - 响应式布局，暂时不显示鞋子 */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+        {Object.entries(recommendation.items)
+          .filter(([type, item]) => type !== 'shoes' && item) // 暂时不显示鞋子，并确保item存在
+          .map(([type, item]) => (
+            <ProductImage
+              key={type}
+              productId={item.productId}
+              type={type}
+              imageUrl={item.imageUrl}
+              productUrl={item.productUrl}
+              className="aspect-square rounded-xl"
+            />
+          ))}
       </div>
-
-              {/* 服装单品网格 - 响应式布局，暂时不显示鞋子 */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-                {Object.entries(recommendation.items)
-                  .filter(([type, item]) => type !== 'shoes' && item) // 暂时不显示鞋子，并确保item存在
-                  .map(([type, item]) => (
-                    <ProductImage
-                      key={type}
-                      productId={item.productId}
-                      type={type}
-                      imageUrl={item.imageUrl}
-                      productUrl={item.productUrl}
-                      className="aspect-square rounded-xl"
-                    />
-                  ))}
-              </div>
 
       {/* 推荐信息 */}
       <div className="space-y-4">

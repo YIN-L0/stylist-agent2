@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { ExternalLink, ImageOff, Maximize2, Copy, Check } from 'lucide-react'
-import ProductModal from './ProductModal'
+import { ImageOff } from 'lucide-react'
 
 interface ProductImageProps {
   productId: string
@@ -20,8 +19,6 @@ const ProductImage: React.FC<ProductImageProps> = ({
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [isInView, setIsInView] = useState(false)
-  const [showModal, setShowModal] = useState(false)
-  const [copied, setCopied] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -56,33 +53,9 @@ const ProductImage: React.FC<ProductImageProps> = ({
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    setShowModal(true)
+    window.open(imageUrl, '_blank', 'noopener,noreferrer')
   }
 
-  const handleDirectLink = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    window.open(productUrl, '_blank', 'noopener,noreferrer')
-  }
-
-  const handleCopyImageLink = async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    try {
-      await navigator.clipboard.writeText(imageUrl)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000) // 2秒后重置状态
-    } catch (err) {
-      console.error('Failed to copy image link:', err)
-      // 降级方案：使用传统方法
-      const textArea = document.createElement('textarea')
-      textArea.value = imageUrl
-      document.body.appendChild(textArea)
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
 
   const getFallbackImage = () => {
     const typeColors: { [key: string]: string } = {
@@ -143,33 +116,14 @@ const ProductImage: React.FC<ProductImageProps> = ({
             getFallbackImage()
           )}
 
-                  {/* 悬停遮罩 */}
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-                    <div className="transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex gap-2">
-                      <div className="bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform">
-                        <Maximize2 className="w-4 h-4 text-gray-700" />
-                      </div>
-                      <div 
-                        className="bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform cursor-pointer"
-                        onClick={handleDirectLink}
-                      >
-                        <ExternalLink className="w-4 h-4 text-gray-700" />
-                      </div>
-                      <div 
-                        className={`rounded-full p-2 shadow-lg hover:scale-110 transition-transform cursor-pointer ${
-                          copied ? 'bg-green-100' : 'bg-white'
-                        }`}
-                        onClick={handleCopyImageLink}
-                        title="复制图片链接"
-                      >
-                        {copied ? (
-                          <Check className="w-4 h-4 text-green-600" />
-                        ) : (
-                          <Copy className="w-4 h-4 text-gray-700" />
-                        )}
-                      </div>
-                    </div>
-                  </div>
+          {/* 悬停遮罩 - 移除所有按钮，只保留视觉反馈 */}
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+            <div className="transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+              <div className="bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
+                <span className="text-sm font-medium text-gray-700">点击查看大图</span>
+              </div>
+            </div>
+          </div>
 
           {/* 产品类型标签 */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
@@ -184,16 +138,6 @@ const ProductImage: React.FC<ProductImageProps> = ({
           </div>
         </>
       )}
-
-      {/* 产品详情弹窗 */}
-      <ProductModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        productId={productId}
-        type={type}
-        imageUrl={imageUrl}
-        productUrl={productUrl}
-      />
     </div>
   )
 }
