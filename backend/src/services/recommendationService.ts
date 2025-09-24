@@ -432,7 +432,7 @@ export class RecommendationService {
     return selected
   }
 
-  async getRecommendations(scenario: string, skipVirtualTryOn: boolean = true): Promise<{
+  async getRecommendations(scenario: string, skipVirtualTryOn: boolean = true, gender?: 'women' | 'men'): Promise<{
     recommendations: OutfitRecommendation[]
     analysis: ScenarioAnalysis
   }> {
@@ -494,7 +494,7 @@ export class RecommendationService {
       let outfits = await database.searchOutfits(
         searchOccasions,
         [], // 不再使用styles参数
-        10000 // 尽可能多地获取匹配结果
+        10000 // 不设上限，尽可能多地获取匹配结果
       )
       console.log('Found outfits:', outfits.length)
 
@@ -530,7 +530,7 @@ export class RecommendationService {
         return scoreDiff * 0.8 + randomDiff * 0.2
       })
 
-      // 5. 不再设置上限：返回所有排序后的匹配结果
+      // 5. 不设置上限：返回所有排序后的匹配结果
       const selectedOutfits = sortedOutfits
 
       // 6. 生成推荐结果

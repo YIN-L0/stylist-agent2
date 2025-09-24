@@ -54,7 +54,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
       setIsGeneratingTryOn(false)
     }
   }
-  // 已移除匹配度相关UI与逻辑
+  // 已移除匹配度相关逻辑
 
   const handleDownload = async () => {
     // 下载虚拟试衣图片

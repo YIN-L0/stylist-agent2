@@ -7,7 +7,7 @@ const router = express.Router()
 // POST /api/recommend - 获取服装推荐
 router.post('/', async (req: express.Request, res: express.Response) => {
   try {
-    const { scenario, skipVirtualTryOn = false }: RecommendationRequest = req.body
+    const { scenario, skipVirtualTryOn = false, gender }: any = req.body
 
     if (!scenario || typeof scenario !== 'string') {
       return res.status(400).json({
@@ -23,9 +23,9 @@ router.post('/', async (req: express.Request, res: express.Response) => {
       } as ApiResponse<null>)
     }
 
-    console.log(`Processing recommendation request: "${scenario}" (skipVirtualTryOn: ${skipVirtualTryOn})`)
+    console.log(`Processing recommendation request: "${scenario}" (skipVirtualTryOn: ${skipVirtualTryOn}, gender: ${gender || 'women'})`)
 
-    const result = await recommendationService.getRecommendations(scenario, skipVirtualTryOn)
+    const result = await recommendationService.getRecommendations(scenario, skipVirtualTryOn, gender)
 
     const response: RecommendationResponse = {
       recommendations: result.recommendations,

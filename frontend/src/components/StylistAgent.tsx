@@ -9,6 +9,7 @@ const StylistAgent: React.FC = () => {
   const [scenario, setScenario] = useState('')
   const [currentScenario, setCurrentScenario] = useState('') // 保存当前推荐使用的场景
   const [isLoading, setIsLoading] = useState(false)
+  const [gender, setGender] = useState<'women' | 'men'>('women')
   const [loadingMessage, setLoadingMessage] = useState('')
   const [recommendations, setRecommendations] = useState<RecommendationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -26,7 +27,8 @@ const StylistAgent: React.FC = () => {
       console.log('Getting recommendations for:', scenario)
       const result = await apiService.getRecommendations({ 
         scenario,
-        skipVirtualTryOn: true 
+        skipVirtualTryOn: true,
+        gender
       })
       console.log('Received recommendations:', result)
       console.log('Number of recommendations:', result?.recommendations?.length || 0)
@@ -77,7 +79,8 @@ const StylistAgent: React.FC = () => {
       console.log('Refreshing recommendations for:', currentScenario)
       const result = await apiService.getRecommendations({ 
         scenario: currentScenario,
-        skipVirtualTryOn: true 
+        skipVirtualTryOn: true,
+        gender
       })
       setRecommendations(result)
     } catch (error) {
@@ -129,6 +132,19 @@ const StylistAgent: React.FC = () => {
 
             {/* 输入表单 */}
             <form onSubmit={handleSubmit} className="space-y-8">
+              {/* 性别切换 */}
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setGender('women')}
+                  className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender === 'women' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                >女装</button>
+                <button
+                  type="button"
+                  onClick={() => setGender('men')}
+                  className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender === 'men' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                >男装</button>
+              </div>
               <div className="relative">
                 <div className="absolute top-4 left-4 text-gray-400">
                   <Sparkles className="w-5 h-5" />
@@ -196,25 +212,6 @@ const StylistAgent: React.FC = () => {
                 )}
               </button>
             </form>
-          </div>
-        </div>
-
-        {/* 男装按钮 */}
-        <div className="max-w-4xl mx-auto mt-8">
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              切换到男装推荐
-            </h2>
-            <p className="text-gray-700 mb-6">
-              如果您想查看男装搭配，请点击下方按钮。
-            </p>
-            <button
-              onClick={() => setScenario('男装')}
-              className="w-full bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 hover:from-blue-600 hover:via-purple-700 hover:to-pink-600 text-white font-bold py-6 px-8 rounded-2xl transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 text-lg"
-            >
-              <Sparkles className="w-6 h-6 mr-4" />
-              <span>获取男装时尚推荐</span>
-            </button>
           </div>
         </div>
 
