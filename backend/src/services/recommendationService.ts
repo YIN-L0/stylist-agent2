@@ -4,6 +4,17 @@ import { OutfitRecommendation, ProductItem, VirtualTryOnResult } from '../types'
 import { virtualTryOnService } from './virtualTryOnService'
 
 export class RecommendationService {
+  // 统一清洗推荐理由，移除编号/匹配度/百分比等
+  private sanitizeReason(text: string): string {
+    if (!text) return ''
+    return text
+      .replace(/Outfit\s*\d+/gi, '')
+      .replace(/匹配度|评分|得分|分数/gi, '')
+      .replace(/\b\d{1,3}\s*%/g, '')
+      .replace(/编号\s*[:：]?\s*\d+/g, '')
+      .replace(/[，。\s]+$/g, '')
+      .trim()
+  }
   private toChineseOccasions(occs: string[] | undefined): string[] {
     if (!occs || occs.length === 0) return []
     const map: Record<string, string> = {
@@ -572,10 +583,13 @@ export class RecommendationService {
         console.log('Generating virtual try-on for outfit:', outfit.id, 'skipVirtualTryOn:', skipVirtualTryOn)
         const virtualTryOn = skipVirtualTryOn ? undefined : await this.generateVirtualTryOn(items)
 
+        // 统一清洗推荐理由，确保不出现匹配度/编号/百分比
+        reason = this.sanitizeReason(reason)
+
         recommendations.push({
           outfit: {
             id: outfit.id,
-            name: outfit.outfit_name,
+            name: '精选搭配',
             jacket: outfit.jacket_id,
             upper: outfit.upper_id,
             lower: outfit.lower_id,

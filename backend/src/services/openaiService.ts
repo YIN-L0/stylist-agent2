@@ -102,7 +102,8 @@ export class OpenAIService {
 写作要求：
 1) 专业、精炼、像杂志编辑；2) 重点强调版型比例、材质手感、穿着场合；
 3) 适度使用时尚术语（如 effortless chic / casual elegance），但整体中文表达；
-4) 不出现“FAB”或任何小标题；只输出一段话，不要列表，不要多段。
+4) 不出现“FAB”或任何小标题；只输出一段话，不要列表，不要多段；
+5) 严禁出现“匹配度/评分/分数/百分比/Outfit/编号”等词汇或类似表述（如 85%）。
       `.trim();
 
       const completion = await openai.chat.completions.create({
@@ -110,7 +111,7 @@ export class OpenAIService {
         messages: [
           {
             role: "system",
-            content: "你是高端品牌的时尚顾问，输出专业、精炼、中文的一段式推荐理由，绝不超过400字，不出现FAB字样。"
+            content: "你是高端品牌的时尚顾问，输出专业、精炼、中文的一段式推荐理由，绝不超过400字，不出现FAB字样；严禁出现‘匹配度/评分/分数/百分比/Outfit/编号’等内容。"
           },
           {
             role: "user",
