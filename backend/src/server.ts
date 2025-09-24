@@ -82,7 +82,7 @@ app.use('*', (req, res) => {
 })
 
 app.listen(PORT, async () => {
-         console.log(`Server running on port ${PORT}`)
+         console.log(`Server running on port ${PORT} - Updated for 9 recommendations`)
          console.log(`API Documentation: http://localhost:${PORT}/api/health`)
   
   // 初始化数据库
