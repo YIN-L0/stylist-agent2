@@ -13,6 +13,7 @@ interface CSVRecord {
   'Shoes': string
   'Style': string
   'Occasion': string
+  'JacketFAB'?: string
   'UpperFAB'?: string
   'LowerFAB'?: string
   'DressFAB'?: string
@@ -75,6 +76,7 @@ function cleanAndValidateRecord(record: CSVRecord, index: number): {
     shoes_id: cleanValue(record['Shoes']),
     style: record['Style'].trim(),
     occasions: record['Occasion'].trim(),
+    jacket_fab: cleanValue(record['JacketFAB'] || ''),
     upper_fab: cleanValue(record['UpperFAB'] || ''),
     lower_fab: cleanValue(record['LowerFAB'] || ''),
     dress_fab: cleanValue(record['DressFAB'] || '')

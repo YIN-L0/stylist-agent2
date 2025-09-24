@@ -30,6 +30,7 @@ export class Database {
           shoes_id TEXT,
           style TEXT NOT NULL,
           occasions TEXT NOT NULL,
+          jacket_fab TEXT,
           upper_fab TEXT,
           lower_fab TEXT,
           dress_fab TEXT,
@@ -54,7 +55,7 @@ export class Database {
         
         console.log('✅ Outfits table initialized')
         // 确保新增列存在（兼容旧表）
-        this.ensureOutfitColumns(['upper_fab', 'lower_fab', 'dress_fab']).then(() => {
+        this.ensureOutfitColumns(['jacket_fab', 'upper_fab', 'lower_fab', 'dress_fab']).then(() => {
           // 创建索引
           let indexCount = 0
           const totalIndexes = createIndexes.length
@@ -117,6 +118,7 @@ export class Database {
     shoes_id?: string
     style: string
     occasions: string
+    jacket_fab?: string
     upper_fab?: string
     lower_fab?: string
     dress_fab?: string
@@ -124,8 +126,8 @@ export class Database {
     return new Promise((resolve, reject) => {
       const sql = `
         INSERT OR REPLACE INTO outfits 
-        (outfit_name, jacket_id, upper_id, lower_id, dress_id, shoes_id, style, occasions, upper_fab, lower_fab, dress_fab)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (outfit_name, jacket_id, upper_id, lower_id, dress_id, shoes_id, style, occasions, jacket_fab, upper_fab, lower_fab, dress_fab)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `
       
       const params = [
@@ -137,6 +139,7 @@ export class Database {
         outfit.shoes_id || null,
         outfit.style,
         outfit.occasions,
+        outfit.jacket_fab || null,
         outfit.upper_fab || null,
         outfit.lower_fab || null,
         outfit.dress_fab || null

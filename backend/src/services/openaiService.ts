@@ -91,19 +91,18 @@ export class OpenAIService {
   async generateRecommendationReason(scenario: string, outfit: any, analysis: ScenarioAnalysis): Promise<string> {
     try {
       const prompt = `
-用户场景：${scenario}
-推荐服装：风格=${outfit.style}，适用场合=${outfit.occasions}
-分析结果：场合=${analysis.occasions?.join(',') || '未指定'}，正式程度=${analysis.formality || 'Casual'}
+你是一名高端品牌造型顾问，请基于以下信息生成中文推荐理由，字数控制在400字以内：
 
-请用中文生成一个时尚杂志风格的推荐理由（最多80字），解释为什么这套服装适合这个场景。
-要求：
-1. 使用时尚术语和英文词汇，如effortless chic、power dressing、casual elegance等
-2. 语言要简洁优雅，像时尚杂志的编辑推荐
-3. 突出搭配的时尚感和场合适配性
-4. 避免过于口语化的表达，保持专业时尚感
-5. 不要使用网络用语或过于夸张的形容词
+【用户场景】${scenario}
+【场合】${(analysis.occasions || []).join('、') || '日常'}；【正式度】${analysis.formality || '休闲'}
+【风格】${outfit.style}
+【单品要点】将上衣、下装、连衣裙、外套等FAB内容（若存在）合并为一段自然流畅的描述，不要出现“FAB”字样，不要分小标题：
+- 示例：\n“羊毛混纺针织，触感柔软且保暖；微修身圆领优化肩颈比例，轮廓利落。牛仔面料四面弹，回弹佳不易皱，微喇剪裁拉长腿部线条，日常通勤亦可从容。”
 
-只返回推荐理由文字，不要其他内容。
+写作要求：
+1) 专业、精炼、像杂志编辑；2) 重点强调版型比例、材质手感、穿着场合；
+3) 适度使用时尚术语（如 effortless chic / casual elegance），但整体中文表达；
+4) 不出现“FAB”或任何小标题；只输出一段话，不要列表，不要多段。
       `.trim();
 
       const completion = await openai.chat.completions.create({
@@ -111,67 +110,24 @@ export class OpenAIService {
         messages: [
           {
             role: "system",
-            content: "你是一个时尚杂志的资深编辑，需要为用户推荐服装搭配。请用专业、优雅、简洁的语言，使用时尚术语，像时尚杂志的编辑推荐一样，说明为什么这套搭配适合这个场合。"
+            content: "你是高端品牌的时尚顾问，输出专业、精炼、中文的一段式推荐理由，绝不超过400字，不出现FAB字样。"
           },
           {
             role: "user",
             content: prompt
           }
         ],
-        temperature: 0.7,
-        max_tokens: 100
+        temperature: 0.6,
+        max_tokens: 350
       });
 
-      return completion.choices[0].message.content || '这套搭配经过精心挑选，非常适合您的场景需求';
+      let text = completion.choices[0].message.content || ''
+      // 保险裁剪到400字以内
+      if (text.length > 400) text = text.slice(0, 397) + '...'
+      return text || '这套搭配经过精心甄选，版型与场合匹配度出色。'
     } catch (error) {
       console.error('Error generating recommendation reason:', error);
       throw error; // 抛出错误，让推荐服务使用fallback逻辑
-    }
-  }
-
-  async generateCompleteSummary(scenario: string, outfit: any, analysis: ScenarioAnalysis, fabParts: string[]): Promise<string> {
-    try {
-      const fabContent = fabParts.length > 0 ? fabParts.join('。') : ''
-      
-      const prompt = `
-用户场景：${scenario}
-推荐服装：风格=${outfit.style}，适用场合=${outfit.occasions}
-分析结果：场合=${analysis.occasions?.join(',') || '未指定'}，正式程度=${analysis.formality || 'Casual'}
-产品详情：${fabContent}
-
-请生成一个专业的中文推荐理由，严格控制在400字以内。要求：
-1. 开头说明为什么这套搭配适合用户的场景
-2. 如果有产品详情，请融合这些信息（去掉"设计FAB"、"面料FAB"、"工艺FAB"等标题）
-3. 语言专业但易懂，像时尚顾问的推荐
-4. 突出搭配的优势和适用性
-5. 字数严格控制在400字以内，不要超出
-
-只返回推荐理由文字，不要其他内容。
-      `.trim()
-
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "你是一个专业的时尚顾问，需要根据用户场景和产品信息生成简洁专业的推荐理由。严格控制字数在400字以内。"
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 200 // 限制token数量确保不超过400字
-      })
-
-      const result = completion.choices[0].message.content || '这套搭配经过精心挑选，非常适合您的场景需求'
-      
-      // 确保不超过400字
-      return result.length <= 400 ? result : result.substring(0, 397) + '...'
-    } catch (error) {
-      console.error('Error generating complete summary:', error)
-      throw error
     }
   }
 }

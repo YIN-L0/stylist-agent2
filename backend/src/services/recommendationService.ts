@@ -50,9 +50,7 @@ export class RecommendationService {
     })
     
     const merged = cleanedParts.join('。')
-    // 限制推荐理由长度到350字以内
-    const fullReason = `针对"${scenario}"，这套搭配在${occText}场合表现出色。${merged}这样的设计既保证了舒适性，又完美契合了您的需求。`
-    return fullReason.length <= 350 ? fullReason : fullReason.substring(0, 347) + '...'
+    return `针对"${scenario}"，这套搭配在${occText}场合表现出色。${merged}这样的设计既保证了舒适性，又完美契合了您的需求。`
   }
   // 备用场景分析逻辑
   private fallbackAnalysis(scenario: string): ScenarioAnalysis {
@@ -164,9 +162,7 @@ export class RecommendationService {
       reasons.push('这个搭配让你展现出独特的fashion sense')
     }
     
-    const fullReason = reasons.join('，') + '。'
-    // 限制推荐理由长度到350字以内
-    return fullReason.length <= 350 ? fullReason : fullReason.substring(0, 347) + '...'
+    return reasons.join('，') + '。'
   }
 
   // 生成产品图片URL
@@ -523,11 +519,9 @@ export class RecommendationService {
         return scoreDiff * 0.8 + randomDiff * 0.2
       })
 
-      // 5. 返回所有匹配的搭配，不再限制数量
-      const selectedOutfits = sortedOutfits.map(item => ({
-        outfit: item.outfit,
-        score: item.score
-      }))
+      // 5. 选择前15个结果，然后随机选择9个不同的搭配
+      const topCandidates = sortedOutfits.slice(0, Math.min(15, sortedOutfits.length))
+      const selectedOutfits = this.selectDiverseOutfits(topCandidates, 9)
 
       // 6. 生成推荐结果
       const recommendations: OutfitRecommendation[] = []
@@ -537,7 +531,7 @@ export class RecommendationService {
 
         // 为每个服装单品创建产品项目
         if (outfit.jacket_id) {
-          items.jacket = this.createProductItem(outfit.jacket_id, 'jacket')
+          items.jacket = this.createProductItem(outfit.jacket_id, 'jacket', outfit.jacket_fab)
         }
         if (outfit.upper_id) {
           items.upper = this.createProductItem(outfit.upper_id, 'upper', outfit.upper_fab)
@@ -552,21 +546,25 @@ export class RecommendationService {
           items.shoes = this.createProductItem(outfit.shoes_id, 'shoes')
         }
 
-        // 生成推荐理由（使用OpenAI API重新生成400字以内的理由）
+        // 生成推荐理由（FAB 优先：若有 FAB，优先使用 FAB 内容作为主要描述）
         let reason: string
         try {
-          // 收集FAB内容
-          const fabParts: string[] = []
-          if (items?.dress?.fab) fabParts.push(items.dress.fab)
-          if (items?.upper?.fab) fabParts.push(items.upper.fab)
-          if (items?.lower?.fab) fabParts.push(items.lower.fab)
-          
-          // 使用OpenAI重新生成完整的推荐理由
-          reason = await openaiService.generateCompleteSummary(scenario, outfit, analysis, fabParts)
+          const fabReason = this.buildFabReason(scenario, analysis.occasions, items)
+          if (fabReason) {
+            reason = fabReason
+          } else {
+            const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis)
+            reason = `这套搭配契合“${this.toChineseOccasions(analysis.occasions).join('、') || '场合'}”，在版型比例与正式度上拿捏到位。${aiReason}`
+          }
         } catch (reasonError) {
           console.warn('AI reason generation failed, using fallback:', reasonError)
           const fallbackReason = this.fallbackReason(scenario, outfit, Math.round(score * 100))
-          reason = `针对"${scenario}"，这套搭配在${this.toChineseOccasions(analysis.occasions).join('、') || '日常'}场合表现出色。${fallbackReason}`
+          const fabReason = this.buildFabReason(scenario, analysis.occasions, items)
+          if (fabReason) {
+            reason = fabReason
+          } else {
+            reason = `这套搭配契合“${this.toChineseOccasions(analysis.occasions).join('、') || '场合'}”，在版型比例与正式度上拿捏到位。${fallbackReason}`
+          }
           console.log('Generated fallback reason:', reason)
         }
 
