@@ -54,19 +54,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
       setIsGeneratingTryOn(false)
     }
   }
-  const getMatchColor = (score: number) => {
-    if (score >= 90) return 'text-green-600 bg-green-100'
-    if (score >= 75) return 'text-blue-600 bg-blue-100'
-    if (score >= 60) return 'text-yellow-600 bg-yellow-100'
-    return 'text-gray-600 bg-gray-100'
-  }
-
-  const getMatchIcon = (score: number) => {
-    if (score >= 90) return '🎯'
-    if (score >= 75) return '✨'
-    if (score >= 60) return '👍'
-    return '📌'
-  }
+  // 已移除匹配度相关UI与逻辑
 
   const handleDownload = async () => {
     // 下载虚拟试衣图片
@@ -122,7 +110,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-      {/* 卡片头部 - Updated */}
+      {/* 卡片头部 */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h4 className="text-xl font-semibold text-gray-900">

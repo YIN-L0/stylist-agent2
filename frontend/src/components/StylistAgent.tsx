@@ -199,6 +199,25 @@ const StylistAgent: React.FC = () => {
           </div>
         </div>
 
+        {/* 男装按钮 */}
+        <div className="max-w-4xl mx-auto mt-8">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12 text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              切换到男装推荐
+            </h2>
+            <p className="text-gray-700 mb-6">
+              如果您想查看男装搭配，请点击下方按钮。
+            </p>
+            <button
+              onClick={() => setScenario('男装')}
+              className="w-full bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 hover:from-blue-600 hover:via-purple-700 hover:to-pink-600 text-white font-bold py-6 px-8 rounded-2xl transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 text-lg"
+            >
+              <Sparkles className="w-6 h-6 mr-4" />
+              <span>获取男装时尚推荐</span>
+            </button>
+          </div>
+        </div>
+
         {/* 错误信息 */}
         {error && (
           <div className="max-w-4xl mx-auto mb-8">
@@ -223,20 +242,28 @@ const StylistAgent: React.FC = () => {
         {/* 推荐结果区域 */}
         {recommendations && (
           <div className="space-y-12">
+            {/* 用户输入场景展示 */}
+            {currentScenario && (
+              <div className="max-w-4xl mx-auto">
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-6 shadow-lg">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <Sparkles className="w-5 h-5 text-white" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">您的场景需求</h3>
+                      <p className="text-gray-700 text-base leading-relaxed">"{currentScenario}"</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* 推荐搭配卡片 */}
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-10">
-                {/* 显示用户输入的场景 */}
-                {currentScenario && (
-                  <div className="mb-6">
-                    <div className="bg-gradient-to-r from-gray-50 to-blue-50 border border-blue-200 rounded-2xl p-4 mx-auto max-w-2xl">
-                      <p className="text-lg font-medium text-gray-700">
-                        <span className="text-blue-600">您的需求：</span>"{currentScenario}"
-                      </p>
-                    </div>
-                  </div>
-                )}
-                
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                   ✨ 专属搭配推荐
                 </h2>

@@ -494,14 +494,14 @@ export class RecommendationService {
       let outfits = await database.searchOutfits(
         searchOccasions,
         [], // 不再使用styles参数
-        50 // 获取更多结果用于推荐9个搭配
+        10000 // 尽可能多地获取匹配结果
       )
       console.log('Found outfits:', outfits.length)
 
       if (outfits.length === 0) {
         console.warn('No outfits found for occasions, trying relaxed fallback...')
         const fallbackOccs = expandOccasions(['日常休闲', '周末早午餐'])
-        outfits = await database.searchOutfits(fallbackOccs, [], 50)
+        outfits = await database.searchOutfits(fallbackOccs, [], 10000)
         console.log('Fallback found outfits:', outfits.length)
         if (outfits.length === 0) {
           throw new Error('No matching outfits found')
@@ -530,9 +530,8 @@ export class RecommendationService {
         return scoreDiff * 0.8 + randomDiff * 0.2
       })
 
-      // 5. 选择前15个结果，然后随机选择9个不同的搭配
-      const topCandidates = sortedOutfits.slice(0, Math.min(15, sortedOutfits.length))
-      const selectedOutfits = this.selectDiverseOutfits(topCandidates, 9)
+      // 5. 不再设置上限：返回所有排序后的匹配结果
+      const selectedOutfits = sortedOutfits
 
       // 6. 生成推荐结果
       const recommendations: OutfitRecommendation[] = []
