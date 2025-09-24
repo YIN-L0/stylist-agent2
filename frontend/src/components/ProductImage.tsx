@@ -19,6 +19,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [isInView, setIsInView] = useState(false)
+  const [isZoomed, setIsZoomed] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -53,7 +54,18 @@ const ProductImage: React.FC<ProductImageProps> = ({
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    window.open(imageUrl, '_blank', 'noopener,noreferrer')
+    setIsZoomed(true)
+  }
+
+  const handleCloseZoom = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsZoomed(false)
+  }
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsZoomed(false)
+    }
   }
 
 
@@ -76,6 +88,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
   }
 
   return (
+    <>
     <div
       ref={containerRef}
       className={`group cursor-pointer relative overflow-hidden bg-gray-100 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${className}`}
@@ -116,11 +129,11 @@ const ProductImage: React.FC<ProductImageProps> = ({
             getFallbackImage()
           )}
 
-          {/* 悬停遮罩 - 移除所有按钮，只保留视觉反馈 */}
+          {/* 悬停遮罩 - 点击放大提示 */}
           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
             <div className="transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
               <div className="bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
-                <span className="text-sm font-medium text-gray-700">点击查看大图</span>
+                <span className="text-sm font-medium text-gray-700">点击放大</span>
               </div>
             </div>
           </div>
@@ -132,13 +145,33 @@ const ProductImage: React.FC<ProductImageProps> = ({
             </div>
           </div>
 
-          {/* 产品ID */}
-          <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            {productId}
-          </div>
         </>
       )}
     </div>
+    
+    {/* 放大遮罩 */}
+    {isZoomed && (
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 cursor-pointer"
+        onClick={handleBackdropClick}
+      >
+        <div className="relative max-w-[90vw] max-h-[90vh]">
+          <img 
+            src={imageUrl} 
+            alt={`${type} - ${productId}`}
+            className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button 
+            className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-70 transition-colors"
+            onClick={handleCloseZoom}
+          >
+            ×
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
 

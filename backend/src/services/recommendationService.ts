@@ -574,10 +574,21 @@ export class RecommendationService {
         console.log('Generating virtual try-on for outfit:', outfit.id, 'skipVirtualTryOn:', skipVirtualTryOn)
         const virtualTryOn = skipVirtualTryOn ? undefined : await this.generateVirtualTryOn(items)
 
+        // Server-side sanitization: force outfit name and clean reason
+        const sanitizedReason = reason
+          .replace(/匹配度\s*\d+%?/g, '')
+          .replace(/评分\s*\d+/g, '')
+          .replace(/分数\s*\d+/g, '')
+          .replace(/Outfit\s*\d+/g, '')
+          .replace(/编号\s*\d+/g, '')
+          .replace(/^\s*[,，。、]+/g, '')
+          .replace(/\s*[,，。、]+\s*$/g, '')
+          .trim()
+
         recommendations.push({
           outfit: {
             id: outfit.id,
-            name: outfit.outfit_name,
+            name: '精选搭配', // Force uniform naming
             jacket: outfit.jacket_id,
             upper: outfit.upper_id,
             lower: outfit.lower_id,
@@ -587,7 +598,7 @@ export class RecommendationService {
             occasions: outfit.occasions ? this.toChineseOccasions(outfit.occasions.split(',').map((o: string) => o.trim())) : []
           },
           // 内部排序依据为匹配度，但不对外暴露
-          reason,
+          reason: sanitizedReason,
           items,
           virtualTryOn
         })

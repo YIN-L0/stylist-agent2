@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Download, Share2, Star, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { OutfitRecommendation, VirtualTryOnResult } from '@shared/types'
 import ProductImage from './ProductImage'
 import VirtualTryOnImage from './VirtualTryOnImage'
@@ -53,19 +53,6 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
     } finally {
       setIsGeneratingTryOn(false)
     }
-  }
-  const getMatchColor = (score: number) => {
-    if (score >= 90) return 'text-green-600 bg-green-100'
-    if (score >= 75) return 'text-blue-600 bg-blue-100'
-    if (score >= 60) return 'text-yellow-600 bg-yellow-100'
-    return 'text-gray-600 bg-gray-100'
-  }
-
-  const getMatchIcon = (score: number) => {
-    if (score >= 90) return '🎯'
-    if (score >= 75) return '✨'
-    if (score >= 60) return '👍'
-    return '📌'
   }
 
   const handleDownload = async () => {
@@ -126,16 +113,13 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h4 className="text-xl font-semibold text-gray-900">
-            精选搭配
+            搭配 {index + 1}
           </h4>
         </div>
-        <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
-          <Star className="w-5 h-5" />
-        </button>
       </div>
 
-      {/* 服装单品网格 - 响应式布局，暂时不显示鞋子 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+      {/* 服装单品网格 - 更大的图片显示 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {Object.entries(recommendation.items)
           .filter(([type, item]) => type !== 'shoes' && item) // 暂时不显示鞋子，并确保item存在
           .map(([type, item]) => (
@@ -145,7 +129,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
               type={type}
               imageUrl={item.imageUrl}
               productUrl={item.productUrl}
-              className="aspect-square rounded-xl"
+              className="aspect-[3/4] rounded-xl"
             />
           ))}
       </div>
@@ -175,57 +159,12 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         </div>
       </div>
 
-      {/* 虚拟试穿效果 */}
-      {virtualTryOn ? (
+      {/* 虚拟试穿效果 - 只显示，不包含任何按钮 */}
+      {virtualTryOn && (
         <VirtualTryOnImage 
           virtualTryOn={virtualTryOn}
           className="mt-6"
         />
-      ) : (
-        <div className="mt-6">
-          <button
-            onClick={handleGenerateTryOn}
-            disabled={isGeneratingTryOn}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 disabled:cursor-not-allowed"
-          >
-            {isGeneratingTryOn ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>正在生成试穿效果...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5" />
-                <span>🎭 生成虚拟试穿效果</span>
-              </>
-            )}
-          </button>
-        </div>
-      )}
-
-      {/* 底部操作按钮 - 只在有虚拟试穿效果时显示 */}
-      {virtualTryOn && virtualTryOn.status === 'completed' && virtualTryOn.imageUrl && (
-        <div className="mt-6 pt-4 border-t border-gray-200">
-          <div className="flex gap-3">
-            <button 
-              onClick={handleDownload}
-              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              <span>下载试衣图片</span>
-            </button>
-            <button 
-              onClick={handleShare}
-              className="px-4 py-3 border-2 border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center justify-center"
-              title="复制试衣图片链接"
-            >
-              <Share2 className="w-4 h-4" />
-            </button>
-            <button className="px-4 py-3 border-2 border-yellow-200 text-yellow-600 text-sm font-medium rounded-xl hover:bg-yellow-50 hover:border-yellow-300 transition-all duration-200 flex items-center justify-center">
-              <Star className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
       )}
 
       {/* Toast 提示 */}

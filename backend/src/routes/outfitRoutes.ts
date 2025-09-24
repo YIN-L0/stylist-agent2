@@ -11,7 +11,7 @@ router.get('/', async (req: express.Request, res: express.Response) => {
     
     const formattedOutfits: Outfit[] = outfits.map(outfit => ({
       id: outfit.id,
-      name: outfit.outfit_name,
+      name: '精选搭配', // Force uniform naming
       jacket: outfit.jacket_id,
       upper: outfit.upper_id,
       lower: outfit.lower_id,
@@ -73,7 +73,7 @@ router.get('/search', async (req: express.Request, res: express.Response) => {
     
     const formattedOutfits: Outfit[] = outfits.map(outfit => ({
       id: outfit.id,
-      name: outfit.outfit_name,
+      name: '精选搭配', // Force uniform naming
       jacket: outfit.jacket_id,
       upper: outfit.upper_id,
       lower: outfit.lower_id,
@@ -121,7 +121,7 @@ router.get('/:id', async (req: express.Request, res: express.Response) => {
 
     const formattedOutfit: Outfit = {
       id: outfit.id,
-      name: outfit.outfit_name,
+      name: '精选搭配', // Force uniform naming
       jacket: outfit.jacket_id,
       upper: outfit.upper_id,
       lower: outfit.lower_id,
