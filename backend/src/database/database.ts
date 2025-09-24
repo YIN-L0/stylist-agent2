@@ -31,7 +31,6 @@ export class Database {
           style TEXT NOT NULL,
           occasions TEXT NOT NULL,
           gender TEXT,
-          jacket_fab TEXT,
           upper_fab TEXT,
           lower_fab TEXT,
           dress_fab TEXT,
@@ -56,7 +55,7 @@ export class Database {
         
         console.log('✅ Outfits table initialized')
         // 确保新增列存在（兼容旧表）
-        this.ensureOutfitColumns(['gender', 'jacket_fab', 'upper_fab', 'lower_fab', 'dress_fab']).then(() => {
+        this.ensureOutfitColumns(['gender', 'upper_fab', 'lower_fab', 'dress_fab']).then(() => {
           // 创建索引
           let indexCount = 0
           const totalIndexes = createIndexes.length
@@ -119,8 +118,7 @@ export class Database {
     shoes_id?: string
     style: string
     occasions: string
-    gender?: 'women' | 'men'
-    jacket_fab?: string
+    gender?: string
     upper_fab?: string
     lower_fab?: string
     dress_fab?: string
@@ -128,8 +126,8 @@ export class Database {
     return new Promise((resolve, reject) => {
       const sql = `
         INSERT OR REPLACE INTO outfits 
-        (outfit_name, jacket_id, upper_id, lower_id, dress_id, shoes_id, style, occasions, gender, jacket_fab, upper_fab, lower_fab, dress_fab)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (outfit_name, jacket_id, upper_id, lower_id, dress_id, shoes_id, style, occasions, gender, upper_fab, lower_fab, dress_fab)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `
       
       const params = [
@@ -141,8 +139,7 @@ export class Database {
         outfit.shoes_id || null,
         outfit.style,
         outfit.occasions,
-        outfit.gender || 'women',
-        outfit.jacket_fab || null,
+        outfit.gender || null,
         outfit.upper_fab || null,
         outfit.lower_fab || null,
         outfit.dress_fab || null
@@ -159,7 +156,7 @@ export class Database {
   }
 
   // 根据场合和风格搜索服装
-  async searchOutfits(occasions: string[], styles: string[], limit: number = 10, gender?: 'women' | 'men'): Promise<any[]> {
+  async searchOutfits(occasions: string[], styles: string[], limit: number = 10000, gender?: 'women' | 'men'): Promise<any[]> {
     return new Promise((resolve, reject) => {
       let sql = 'SELECT * FROM outfits WHERE 1=1'
       const params: any[] = []

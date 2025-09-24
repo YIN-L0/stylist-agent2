@@ -483,7 +483,7 @@ export class RecommendationService {
       let outfits = await database.searchOutfits(
         searchOccasions,
         [], // 不再使用styles参数
-        10000, // 尽可能多地获取匹配结果
+        10000, // 不设上限
         gender
       )
       console.log('Found outfits:', outfits.length)
