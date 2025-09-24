@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Sparkles } from 'lucide-react'
+import { Download, Share2, Star, Sparkles } from 'lucide-react'
 import { OutfitRecommendation, VirtualTryOnResult } from '@shared/types'
 import ProductImage from './ProductImage'
 import VirtualTryOnImage from './VirtualTryOnImage'
@@ -13,7 +13,6 @@ interface OutfitCardProps {
 
 const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
   // 已移除调试日志以避免泄露outfit信息
-  // 不再记录任何outfit.name信息到控制台
   const [virtualTryOn, setVirtualTryOn] = useState<VirtualTryOnResult | undefined>(recommendation.virtualTryOn)
   const [isGeneratingTryOn, setIsGeneratingTryOn] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
@@ -55,7 +54,71 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
       setIsGeneratingTryOn(false)
     }
   }
+  const getMatchColor = (score: number) => {
+    if (score >= 90) return 'text-green-600 bg-green-100'
+    if (score >= 75) return 'text-blue-600 bg-blue-100'
+    if (score >= 60) return 'text-yellow-600 bg-yellow-100'
+    return 'text-gray-600 bg-gray-100'
+  }
 
+  const getMatchIcon = (score: number) => {
+    if (score >= 90) return '🎯'
+    if (score >= 75) return '✨'
+    if (score >= 60) return '👍'
+    return '📌'
+  }
+
+  const handleDownload = async () => {
+    // 下载虚拟试衣图片
+    if (virtualTryOn && virtualTryOn.status === 'completed' && virtualTryOn.imageUrl) {
+      try {
+        // 使用fetch获取图片数据
+        const response = await fetch(virtualTryOn.imageUrl)
+        const blob = await response.blob()
+        
+        // 创建下载链接
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `outfit-${recommendation.outfit.id}-tryon.png`
+        link.style.display = 'none'
+        
+        // 触发下载
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        // 清理URL对象
+        window.URL.revokeObjectURL(url)
+        
+        setToast({ message: '试衣图片下载成功！', type: 'success' })
+      } catch (error) {
+        console.error('下载失败:', error)
+        setToast({ message: '下载失败，请重试', type: 'error' })
+      }
+    }
+  }
+
+  const handleShare = async () => {
+    // 复制虚拟试衣图片链接到剪贴板
+    if (virtualTryOn && virtualTryOn.status === 'completed' && virtualTryOn.imageUrl) {
+      try {
+        await navigator.clipboard.writeText(virtualTryOn.imageUrl)
+        console.log('试衣图片链接已复制到剪贴板')
+        setToast({ message: '试衣图片链接已复制到剪贴板！', type: 'success' })
+      } catch (err) {
+        console.error('复制失败:', err)
+        // 降级方案：使用传统的复制方法
+        const textArea = document.createElement('textarea')
+        textArea.value = virtualTryOn.imageUrl
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+        setToast({ message: '试衣图片链接已复制到剪贴板！', type: 'success' })
+      }
+    }
+  }
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -66,10 +129,13 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
             精选搭配
           </h4>
         </div>
+        <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+          <Star className="w-5 h-5" />
+        </button>
       </div>
 
-      {/* 服装单品网格 - 更大的图片显示 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      {/* 服装单品网格 - 响应式布局，暂时不显示鞋子 */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
         {Object.entries(recommendation.items)
           .filter(([type, item]) => type !== 'shoes' && item) // 暂时不显示鞋子，并确保item存在
           .map(([type, item]) => (
@@ -79,7 +145,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
               type={type}
               imageUrl={item.imageUrl}
               productUrl={item.productUrl}
-              className="aspect-[3/4] rounded-xl h-64 md:h-80"
+              className="aspect-square rounded-xl"
             />
           ))}
       </div>
@@ -137,6 +203,30 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         </div>
       )}
 
+      {/* 底部操作按钮 - 只在有虚拟试穿效果时显示 */}
+      {virtualTryOn && virtualTryOn.status === 'completed' && virtualTryOn.imageUrl && (
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <div className="flex gap-3">
+            <button 
+              onClick={handleDownload}
+              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              <span>下载试衣图片</span>
+            </button>
+            <button 
+              onClick={handleShare}
+              className="px-4 py-3 border-2 border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center justify-center"
+              title="复制试衣图片链接"
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+            <button className="px-4 py-3 border-2 border-yellow-200 text-yellow-600 text-sm font-medium rounded-xl hover:bg-yellow-50 hover:border-yellow-300 transition-all duration-200 flex items-center justify-center">
+              <Star className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Toast 提示 */}
       {toast && (

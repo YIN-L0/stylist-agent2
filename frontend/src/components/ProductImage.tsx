@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { ImageOff } from 'lucide-react'
-import ImageModal from './ImageModal'
 
 interface ProductImageProps {
   productId: string
@@ -20,7 +19,6 @@ const ProductImage: React.FC<ProductImageProps> = ({
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [isInView, setIsInView] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -55,7 +53,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    setIsModalOpen(true)
+    window.open(imageUrl, '_blank', 'noopener,noreferrer')
   }
 
 
@@ -118,11 +116,11 @@ const ProductImage: React.FC<ProductImageProps> = ({
             getFallbackImage()
           )}
 
-          {/* 悬停遮罩 - 点击放大提示 */}
+          {/* 悬停遮罩 - 移除所有按钮，只保留视觉反馈 */}
           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
             <div className="transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
               <div className="bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
-                <span className="text-sm font-medium text-gray-700">点击放大查看</span>
+                <span className="text-sm font-medium text-gray-700">点击查看大图</span>
               </div>
             </div>
           </div>
@@ -140,15 +138,6 @@ const ProductImage: React.FC<ProductImageProps> = ({
           </div>
         </>
       )}
-      
-      {/* 图片放大模态框 */}
-      <ImageModal
-        isOpen={isModalOpen}
-        imageUrl={imageUrl}
-        onClose={() => setIsModalOpen(false)}
-        productId={productId}
-        type={type}
-      />
     </div>
   )
 }
