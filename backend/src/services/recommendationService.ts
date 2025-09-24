@@ -552,25 +552,21 @@ export class RecommendationService {
           items.shoes = this.createProductItem(outfit.shoes_id, 'shoes')
         }
 
-        // 生成推荐理由（FAB 优先：若有 FAB，优先使用 FAB 内容作为主要描述）
+        // 生成推荐理由（使用OpenAI API重新生成400字以内的理由）
         let reason: string
         try {
-          const fabReason = this.buildFabReason(scenario, analysis.occasions, items)
-          if (fabReason) {
-            reason = fabReason
-          } else {
-            const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis)
-            reason = `这套搭配契合“${this.toChineseOccasions(analysis.occasions).join('、') || '场合'}”，在版型比例与正式度上拿捏到位。${aiReason}`
-          }
+          // 收集FAB内容
+          const fabParts: string[] = []
+          if (items?.dress?.fab) fabParts.push(items.dress.fab)
+          if (items?.upper?.fab) fabParts.push(items.upper.fab)
+          if (items?.lower?.fab) fabParts.push(items.lower.fab)
+          
+          // 使用OpenAI重新生成完整的推荐理由
+          reason = await openaiService.generateCompleteSummary(scenario, outfit, analysis, fabParts)
         } catch (reasonError) {
           console.warn('AI reason generation failed, using fallback:', reasonError)
           const fallbackReason = this.fallbackReason(scenario, outfit, Math.round(score * 100))
-          const fabReason = this.buildFabReason(scenario, analysis.occasions, items)
-          if (fabReason) {
-            reason = fabReason
-          } else {
-            reason = `这套搭配契合“${this.toChineseOccasions(analysis.occasions).join('、') || '场合'}”，在版型比例与正式度上拿捏到位。${fallbackReason}`
-          }
+          reason = `针对"${scenario}"，这套搭配在${this.toChineseOccasions(analysis.occasions).join('、') || '日常'}场合表现出色。${fallbackReason}`
           console.log('Generated fallback reason:', reason)
         }
 

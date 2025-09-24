@@ -128,6 +128,52 @@ export class OpenAIService {
       throw error; // 抛出错误，让推荐服务使用fallback逻辑
     }
   }
+
+  async generateCompleteSummary(scenario: string, outfit: any, analysis: ScenarioAnalysis, fabParts: string[]): Promise<string> {
+    try {
+      const fabContent = fabParts.length > 0 ? fabParts.join('。') : ''
+      
+      const prompt = `
+用户场景：${scenario}
+推荐服装：风格=${outfit.style}，适用场合=${outfit.occasions}
+分析结果：场合=${analysis.occasions?.join(',') || '未指定'}，正式程度=${analysis.formality || 'Casual'}
+产品详情：${fabContent}
+
+请生成一个专业的中文推荐理由，严格控制在400字以内。要求：
+1. 开头说明为什么这套搭配适合用户的场景
+2. 如果有产品详情，请融合这些信息（去掉"设计FAB"、"面料FAB"、"工艺FAB"等标题）
+3. 语言专业但易懂，像时尚顾问的推荐
+4. 突出搭配的优势和适用性
+5. 字数严格控制在400字以内，不要超出
+
+只返回推荐理由文字，不要其他内容。
+      `.trim()
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: "你是一个专业的时尚顾问，需要根据用户场景和产品信息生成简洁专业的推荐理由。严格控制字数在400字以内。"
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 200 // 限制token数量确保不超过400字
+      })
+
+      const result = completion.choices[0].message.content || '这套搭配经过精心挑选，非常适合您的场景需求'
+      
+      // 确保不超过400字
+      return result.length <= 400 ? result : result.substring(0, 397) + '...'
+    } catch (error) {
+      console.error('Error generating complete summary:', error)
+      throw error
+    }
+  }
 }
 
 export const openaiService = new OpenAIService()
