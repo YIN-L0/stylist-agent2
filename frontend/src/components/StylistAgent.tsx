@@ -135,11 +135,6 @@ const StylistAgent: React.FC = () => {
 
             {/* 输入表单 */}
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* 性别切换 */}
-              <div className="flex items-center justify-center gap-3">
-                <button type="button" onClick={() => setGender('women')} className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender==='women'?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>女装</button>
-                <button type="button" onClick={() => setGender('men')} className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender==='men'?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>男装</button>
-              </div>
               <div className="relative">
                 <div className="absolute top-4 left-4 text-gray-400">
                   <Sparkles className="w-5 h-5" />
@@ -207,6 +202,12 @@ const StylistAgent: React.FC = () => {
                 )}
               </button>
             </form>
+            
+            {/* 性别切换 - 移到对话框下面 */}
+            <div className="flex items-center justify-center gap-3 mt-6">
+              <button type="button" onClick={() => setGender('women')} className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender==='women'?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>女装</button>
+              <button type="button" onClick={() => setGender('men')} className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender==='men'?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>男装</button>
+            </div>
           </div>
         </div>
 

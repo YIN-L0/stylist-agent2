@@ -13,6 +13,7 @@ interface OutfitCardProps {
 
 const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
   // 已移除调试日志以避免泄露outfit信息
+  // 不再记录任何outfit.name信息到控制台
   const [virtualTryOn, setVirtualTryOn] = useState<VirtualTryOnResult | undefined>(recommendation.virtualTryOn)
   const [isGeneratingTryOn, setIsGeneratingTryOn] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
@@ -55,57 +56,6 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
     }
   }
 
-  const handleDownload = async () => {
-    // 下载虚拟试衣图片
-    if (virtualTryOn && virtualTryOn.status === 'completed' && virtualTryOn.imageUrl) {
-      try {
-        // 使用fetch获取图片数据
-        const response = await fetch(virtualTryOn.imageUrl)
-        const blob = await response.blob()
-        
-        // 创建下载链接
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `outfit-${recommendation.outfit.id}-tryon.png`
-        link.style.display = 'none'
-        
-        // 触发下载
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        
-        // 清理URL对象
-        window.URL.revokeObjectURL(url)
-        
-        setToast({ message: '试衣图片下载成功！', type: 'success' })
-      } catch (error) {
-        console.error('下载失败:', error)
-        setToast({ message: '下载失败，请重试', type: 'error' })
-      }
-    }
-  }
-
-  const handleShare = async () => {
-    // 复制虚拟试衣图片链接到剪贴板
-    if (virtualTryOn && virtualTryOn.status === 'completed' && virtualTryOn.imageUrl) {
-      try {
-        await navigator.clipboard.writeText(virtualTryOn.imageUrl)
-        console.log('试衣图片链接已复制到剪贴板')
-        setToast({ message: '试衣图片链接已复制到剪贴板！', type: 'success' })
-      } catch (err) {
-        console.error('复制失败:', err)
-        // 降级方案：使用传统的复制方法
-        const textArea = document.createElement('textarea')
-        textArea.value = virtualTryOn.imageUrl
-        document.body.appendChild(textArea)
-        textArea.select()
-        document.execCommand('copy')
-        document.body.removeChild(textArea)
-        setToast({ message: '试衣图片链接已复制到剪贴板！', type: 'success' })
-      }
-    }
-  }
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -113,7 +63,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h4 className="text-xl font-semibold text-gray-900">
-            搭配 {index + 1}
+            精选搭配
           </h4>
         </div>
       </div>
@@ -129,7 +79,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
               type={type}
               imageUrl={item.imageUrl}
               productUrl={item.productUrl}
-              className="aspect-[3/4] rounded-xl"
+              className="aspect-[3/4] rounded-xl h-64 md:h-80"
             />
           ))}
       </div>
@@ -159,13 +109,34 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         </div>
       </div>
 
-      {/* 虚拟试穿效果 - 只显示，不包含任何按钮 */}
-      {virtualTryOn && (
+      {/* 虚拟试穿效果 */}
+      {virtualTryOn ? (
         <VirtualTryOnImage 
           virtualTryOn={virtualTryOn}
           className="mt-6"
         />
+      ) : (
+        <div className="mt-6">
+          <button
+            onClick={handleGenerateTryOn}
+            disabled={isGeneratingTryOn}
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 disabled:cursor-not-allowed"
+          >
+            {isGeneratingTryOn ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>正在生成试穿效果...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5" />
+                <span>🎭 生成虚拟试穿效果</span>
+              </>
+            )}
+          </button>
+        </div>
       )}
+
 
       {/* Toast 提示 */}
       {toast && (
