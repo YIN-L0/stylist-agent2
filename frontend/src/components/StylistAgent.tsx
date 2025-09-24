@@ -10,6 +10,7 @@ const StylistAgent: React.FC = () => {
   const [currentScenario, setCurrentScenario] = useState('') // 保存当前推荐使用的场景
   const [isLoading, setIsLoading] = useState(false)
   const [gender, setGender] = useState<'women' | 'men'>('women')
+  const [visibleCount, setVisibleCount] = useState(9)
   const [loadingMessage, setLoadingMessage] = useState('')
   const [recommendations, setRecommendations] = useState<RecommendationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -134,16 +135,8 @@ const StylistAgent: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* 性别切换 */}
               <div className="flex items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setGender('women')}
-                  className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender === 'women' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
-                >女装</button>
-                <button
-                  type="button"
-                  onClick={() => setGender('men')}
-                  className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender === 'men' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
-                >男装</button>
+                <button type="button" onClick={() => setGender('women')} className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender==='women'?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>女装</button>
+                <button type="button" onClick={() => setGender('men')} className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender==='men'?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>男装</button>
               </div>
               <div className="relative">
                 <div className="absolute top-4 left-4 text-gray-400">
@@ -289,7 +282,7 @@ const StylistAgent: React.FC = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {recommendations.recommendations.map((recommendation, index) => (
+                {recommendations.recommendations.slice(0, visibleCount).map((recommendation, index) => (
                   <OutfitCard
                     key={recommendation.outfit.id}
                     recommendation={recommendation}
@@ -297,6 +290,16 @@ const StylistAgent: React.FC = () => {
                   />
                 ))}
               </div>
+
+              {/* 加载更多 */}
+              {visibleCount < recommendations.recommendations.length && (
+                <div className="text-center mt-10">
+                  <button
+                    onClick={() => setVisibleCount(v => v + 9)}
+                    className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm hover:bg-white text-gray-700 font-semibold py-4 px-8 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl border border-gray-200"
+                  >加载更多</button>
+                </div>
+              )}
 
               {/* 底部操作 */}
               <div className="text-center mt-12">

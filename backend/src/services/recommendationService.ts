@@ -421,7 +421,7 @@ export class RecommendationService {
     return selected
   }
 
-  async getRecommendations(scenario: string, skipVirtualTryOn: boolean = true, gender?: 'women' | 'men'): Promise<{
+  async getRecommendations(scenario: string, skipVirtualTryOn: boolean = true, gender: 'women' | 'men' = 'women'): Promise<{
     recommendations: OutfitRecommendation[]
     analysis: ScenarioAnalysis
   }> {
@@ -483,7 +483,7 @@ export class RecommendationService {
       let outfits = await database.searchOutfits(
         searchOccasions,
         [], // 不再使用styles参数
-        10000, // 不设上限
+        10000,
         gender
       )
       console.log('Found outfits:', outfits.length)
@@ -584,7 +584,7 @@ export class RecommendationService {
             style: outfit.style,
             occasions: outfit.occasions ? this.toChineseOccasions(outfit.occasions.split(',').map((o: string) => o.trim())) : []
           },
-          // 内部排序仅基于匹配度，不对外暴露
+          // 内部排序依据为匹配度，但不对外暴露
           reason,
           items,
           virtualTryOn

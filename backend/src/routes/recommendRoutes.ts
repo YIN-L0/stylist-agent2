@@ -7,7 +7,7 @@ const router = express.Router()
 // POST /api/recommend - 获取服装推荐
 router.post('/', async (req: express.Request, res: express.Response) => {
   try {
-    const { scenario, skipVirtualTryOn = false, gender }: any = req.body
+    const { scenario, skipVirtualTryOn = false, gender }: RecommendationRequest & { gender?: 'women' | 'men' } = req.body
 
     if (!scenario || typeof scenario !== 'string') {
       return res.status(400).json({

@@ -22,6 +22,7 @@ export interface Outfit {
 export interface RecommendationRequest {
   scenario: string;
   skipVirtualTryOn?: boolean; // 可选：跳过虚拟试穿以加快响应
+  gender?: 'women' | 'men';
 }
 
 // 推荐响应接口

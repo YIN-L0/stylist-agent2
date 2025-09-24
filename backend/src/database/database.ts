@@ -139,7 +139,7 @@ export class Database {
         outfit.shoes_id || null,
         outfit.style,
         outfit.occasions,
-        outfit.gender || 'women',
+        outfit.gender || null,
         outfit.upper_fab || null,
         outfit.lower_fab || null,
         outfit.dress_fab || null
@@ -160,7 +160,6 @@ export class Database {
     return new Promise((resolve, reject) => {
       let sql = 'SELECT * FROM outfits WHERE 1=1'
       const params: any[] = []
-
       if (gender) {
         sql += ' AND gender = ?'
         params.push(gender)
