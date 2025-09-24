@@ -122,7 +122,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-      {/* 卡片头部 */}
+      {/* 卡片头部 - Updated */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h4 className="text-xl font-semibold text-gray-900">

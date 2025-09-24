@@ -50,7 +50,9 @@ export class RecommendationService {
     })
     
     const merged = cleanedParts.join('。')
-    return `针对"${scenario}"，这套搭配在${occText}场合表现出色。${merged}这样的设计既保证了舒适性，又完美契合了您的需求。`
+    // 限制推荐理由长度到350字以内
+    const fullReason = `针对"${scenario}"，这套搭配在${occText}场合表现出色。${merged}这样的设计既保证了舒适性，又完美契合了您的需求。`
+    return fullReason.length <= 350 ? fullReason : fullReason.substring(0, 347) + '...'
   }
   // 备用场景分析逻辑
   private fallbackAnalysis(scenario: string): ScenarioAnalysis {
@@ -162,7 +164,9 @@ export class RecommendationService {
       reasons.push('这个搭配让你展现出独特的fashion sense')
     }
     
-    return reasons.join('，') + '。'
+    const fullReason = reasons.join('，') + '。'
+    // 限制推荐理由长度到350字以内
+    return fullReason.length <= 350 ? fullReason : fullReason.substring(0, 347) + '...'
   }
 
   // 生成产品图片URL
@@ -519,9 +523,11 @@ export class RecommendationService {
         return scoreDiff * 0.8 + randomDiff * 0.2
       })
 
-      // 5. 选择前15个结果，然后随机选择9个不同的搭配
-      const topCandidates = sortedOutfits.slice(0, Math.min(15, sortedOutfits.length))
-      const selectedOutfits = this.selectDiverseOutfits(topCandidates, 9)
+      // 5. 返回所有匹配的搭配，不再限制数量
+      const selectedOutfits = sortedOutfits.map(item => ({
+        outfit: item.outfit,
+        score: item.score
+      }))
 
       // 6. 生成推荐结果
       const recommendations: OutfitRecommendation[] = []

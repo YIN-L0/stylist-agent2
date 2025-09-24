@@ -95,7 +95,7 @@ export class OpenAIService {
 推荐服装：风格=${outfit.style}，适用场合=${outfit.occasions}
 分析结果：场合=${analysis.occasions?.join(',') || '未指定'}，正式程度=${analysis.formality || 'Casual'}
 
-请用中文生成一个时尚杂志风格的推荐理由（50-70字），解释为什么这套服装适合这个场景。
+请用中文生成一个时尚杂志风格的推荐理由（最多80字），解释为什么这套服装适合这个场景。
 要求：
 1. 使用时尚术语和英文词汇，如effortless chic、power dressing、casual elegance等
 2. 语言要简洁优雅，像时尚杂志的编辑推荐
