@@ -4,17 +4,6 @@ import { OutfitRecommendation, ProductItem, VirtualTryOnResult } from '../types'
 import { virtualTryOnService } from './virtualTryOnService'
 
 export class RecommendationService {
-  // 统一清洗推荐理由，移除编号/匹配度/百分比等
-  private sanitizeReason(text: string): string {
-    if (!text) return ''
-    return text
-      .replace(/Outfit\s*\d+/gi, '')
-      .replace(/匹配度|评分|得分|分数/gi, '')
-      .replace(/\b\d{1,3}\s*%/g, '')
-      .replace(/编号\s*[:：]?\s*\d+/g, '')
-      .replace(/[，。\s]+$/g, '')
-      .trim()
-  }
   private toChineseOccasions(occs: string[] | undefined): string[] {
     if (!occs || occs.length === 0) return []
     const map: Record<string, string> = {
@@ -494,14 +483,15 @@ export class RecommendationService {
       let outfits = await database.searchOutfits(
         searchOccasions,
         [], // 不再使用styles参数
-        10000 // 不设上限，尽可能多地获取匹配结果
+        10000, // 尽可能多地获取匹配结果
+        gender
       )
       console.log('Found outfits:', outfits.length)
 
       if (outfits.length === 0) {
         console.warn('No outfits found for occasions, trying relaxed fallback...')
         const fallbackOccs = expandOccasions(['日常休闲', '周末早午餐'])
-        outfits = await database.searchOutfits(fallbackOccs, [], 10000)
+        outfits = await database.searchOutfits(fallbackOccs, [], 10000, gender)
         console.log('Fallback found outfits:', outfits.length)
         if (outfits.length === 0) {
           throw new Error('No matching outfits found')
@@ -541,7 +531,7 @@ export class RecommendationService {
 
         // 为每个服装单品创建产品项目
         if (outfit.jacket_id) {
-          items.jacket = this.createProductItem(outfit.jacket_id, 'jacket', outfit.jacket_fab)
+          items.jacket = this.createProductItem(outfit.jacket_id, 'jacket')
         }
         if (outfit.upper_id) {
           items.upper = this.createProductItem(outfit.upper_id, 'upper', outfit.upper_fab)
@@ -582,13 +572,10 @@ export class RecommendationService {
         console.log('Generating virtual try-on for outfit:', outfit.id, 'skipVirtualTryOn:', skipVirtualTryOn)
         const virtualTryOn = skipVirtualTryOn ? undefined : await this.generateVirtualTryOn(items)
 
-        // 统一清洗推荐理由，确保不出现匹配度/编号/百分比
-        reason = this.sanitizeReason(reason)
-
         recommendations.push({
           outfit: {
             id: outfit.id,
-            name: '精选搭配',
+            name: outfit.outfit_name,
             jacket: outfit.jacket_id,
             upper: outfit.upper_id,
             lower: outfit.lower_id,
