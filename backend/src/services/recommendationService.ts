@@ -37,8 +37,20 @@ export class RecommendationService {
 
     const cnOccs = this.toChineseOccasions(analysisOccs)
     const occText = cnOccs.length ? cnOccs.join('、') : '日常'
-    const merged = fabParts.join('；')
-    return `针对“${scenario}”，这套搭配在${occText}尤为合适。${merged}`
+    
+    // 清理FAB内容：移除"设计FAB:"、"面料FAB:"、"工艺FAB:"等标题
+    const cleanedParts = fabParts.map(part => {
+      return part
+        .replace(/设计FAB：/g, '')
+        .replace(/面料FAB：/g, '')
+        .replace(/工艺FAB：/g, '')
+        .replace(/FAB：/g, '')
+        .replace(/；/g, '，')
+        .trim()
+    })
+    
+    const merged = cleanedParts.join('。')
+    return `针对"${scenario}"，这套搭配在${occText}场合表现出色。${merged}这样的设计既保证了舒适性，又完美契合了您的需求。`
   }
   // 备用场景分析逻辑
   private fallbackAnalysis(scenario: string): ScenarioAnalysis {
@@ -471,14 +483,14 @@ export class RecommendationService {
       let outfits = await database.searchOutfits(
         searchOccasions,
         [], // 不再使用styles参数
-        30 // 获取更多结果用于排序
+        50 // 获取更多结果用于推荐9个搭配
       )
       console.log('Found outfits:', outfits.length)
 
       if (outfits.length === 0) {
         console.warn('No outfits found for occasions, trying relaxed fallback...')
         const fallbackOccs = expandOccasions(['日常休闲', '周末早午餐'])
-        outfits = await database.searchOutfits(fallbackOccs, [], 30)
+        outfits = await database.searchOutfits(fallbackOccs, [], 50)
         console.log('Fallback found outfits:', outfits.length)
         if (outfits.length === 0) {
           throw new Error('No matching outfits found')
@@ -507,9 +519,9 @@ export class RecommendationService {
         return scoreDiff * 0.8 + randomDiff * 0.2
       })
 
-      // 5. 选择前6个结果，然后随机选择3个不同的搭配
-      const topCandidates = sortedOutfits.slice(0, Math.min(6, sortedOutfits.length))
-      const selectedOutfits = this.selectDiverseOutfits(topCandidates, 3)
+      // 5. 选择前15个结果，然后随机选择9个不同的搭配
+      const topCandidates = sortedOutfits.slice(0, Math.min(15, sortedOutfits.length))
+      const selectedOutfits = this.selectDiverseOutfits(topCandidates, 9)
 
       // 6. 生成推荐结果
       const recommendations: OutfitRecommendation[] = []

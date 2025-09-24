@@ -126,7 +126,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h4 className="text-xl font-semibold text-gray-900">
-            {recommendation.outfit.name ? recommendation.outfit.name.replace(/Outfit \d+/g, '').replace(/推荐搭配 \d+/g, '').trim() || '精选搭配' : '精选搭配'}
+            精选搭配
           </h4>
         </div>
         <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
