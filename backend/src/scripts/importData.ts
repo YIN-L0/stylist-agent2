@@ -13,13 +13,14 @@ interface CSVRecord {
   'Shoes': string
   'Style': string
   'Occasion': string
+  'Gender'?: string
   'UpperFAB'?: string
   'LowerFAB'?: string
   'DressFAB'?: string
 }
 
 // 数据清洗和验证
-function cleanAndValidateRecord(record: CSVRecord, index: number, gender: 'women' | 'men'): {
+function cleanAndValidateRecord(record: CSVRecord, index: number): {
   isValid: boolean
   outfit?: {
     outfit_name: string
@@ -30,7 +31,6 @@ function cleanAndValidateRecord(record: CSVRecord, index: number, gender: 'women
     shoes_id?: string
     style: string
     occasions: string
-    gender?: string
   }
   errors?: string[]
 } {
@@ -76,7 +76,7 @@ function cleanAndValidateRecord(record: CSVRecord, index: number, gender: 'women
     shoes_id: cleanValue(record['Shoes']),
     style: record['Style'].trim(),
     occasions: record['Occasion'].trim(),
-    gender,
+    gender: (record['Gender']?.trim().toLowerCase() === 'men' ? 'men' : 'women') as 'women' | 'men',
     upper_fab: cleanValue(record['UpperFAB'] || ''),
     lower_fab: cleanValue(record['LowerFAB'] || ''),
     dress_fab: cleanValue(record['DressFAB'] || '')
@@ -88,100 +88,104 @@ function cleanAndValidateRecord(record: CSVRecord, index: number, gender: 'women
 async function importData() {
   try {
     console.log('🔄 Importing outfit data from CSV...')
-    const womenPath = path.join(__dirname, '../../../data/women_outfits_with_all_attributes.csv')
-    const menPath = path.join(__dirname, '../../../data/men_outfits_withallattributes_merged.csv')
-
-    const filesToImport: { path: string, gender: 'women' | 'men' }[] = []
-    if (fs.existsSync(womenPath)) filesToImport.push({ path: womenPath, gender: 'women' })
-    if (fs.existsSync(menPath)) filesToImport.push({ path: menPath, gender: 'men' })
-
-    if (filesToImport.length === 0) {
-      throw new Error('No CSV files found for import')
+    
+    // 支持新文件名 women_outfits_with_all_attributes.csv
+    let csvPath = path.join(__dirname, '../../../data/women_outfits_with_all_attributes.csv')
+    if (!fs.existsSync(csvPath)) {
+      csvPath = path.join(__dirname, '../../../data/Women Outfit Detail, Style & Occasion - Sheet1.csv')
+    }
+    
+    if (!fs.existsSync(csvPath)) {
+      throw new Error(`CSV file not found at: ${csvPath}`)
     }
 
-    // 清空现有数据
-    console.log('🗑️ Clearing existing data...')
-    await database.clearOutfits()
+    console.log(`📁 Reading CSV file: ${csvPath}`)
+    const csvData = fs.readFileSync(csvPath, 'utf-8')
+    
+    return new Promise<void>((resolve, reject) => {
+      parse(csvData, {
+        columns: true,
+        skip_empty_lines: true,
+        trim: true,
+        delimiter: ',',
+        quote: '"'
+      }, async (err, records: CSVRecord[]) => {
+        if (err) {
+          console.error('CSV parsing error:', err)
+          reject(err)
+          return
+        }
 
-    let imported = 0
-    let skipped = 0
-    const errors: string[] = []
-
-    for (const file of filesToImport) {
-      console.log(`📁 Reading CSV file: ${file.path} (gender: ${file.gender})`)
-      const csvData = fs.readFileSync(file.path, 'utf-8')
-
-      await new Promise<void>((resolveFile, rejectFile) => {
-        parse(csvData, {
-          columns: true,
-          skip_empty_lines: true,
-          trim: true,
-          delimiter: ',',
-          quote: '"'
-        }, async (err, records: CSVRecord[]) => {
-          if (err) {
-            console.error('CSV parsing error:', err)
-            rejectFile(err)
-            return
-          }
-
-          console.log(`Found ${records.length} records in ${file.gender} CSV`)
-
+        console.log(`Found ${records.length} records in CSV`)
+        
+        try {
+          let imported = 0
+          let skipped = 0
+          const errors: string[] = []
+          
+          // 清空现有数据（可选）
+          console.log('🗑️ Clearing existing data...')
+          await database.clearOutfits()
+          
           for (let i = 0; i < records.length; i++) {
             const record = records[i]
-            const result = cleanAndValidateRecord(record, i + 1, file.gender)
-
+            const result = cleanAndValidateRecord(record, i + 1)
+            
             if (!result.isValid) {
               skipped++
-              errors.push(`Row ${i + 1} (${file.gender}): ${result.errors?.join(', ')}`)
+              errors.push(`Row ${i + 1}: ${result.errors?.join(', ')}`)
+              console.log(`Skipping row ${i + 1}: ${result.errors?.join(', ')}`)
               continue
             }
-
+            
             try {
               await database.insertOutfit(result.outfit!)
               imported++
-              if (imported % 20 === 0) {
+              
+              if (imported % 5 === 0) {
                 console.log(`Imported ${imported} outfits...`)
               }
             } catch (insertError) {
               skipped++
-              errors.push(`Row ${i + 1} (${file.gender}): Database insert failed - ${insertError}`)
+              errors.push(`Row ${i + 1}: Database insert failed - ${insertError}`)
+              console.error(`Failed to insert row ${i + 1}:`, insertError)
             }
           }
-
-          resolveFile()
-        })
+          
+          console.log('\nImport Summary:')
+          console.log(`Successfully imported: ${imported} outfits`)
+          console.log(`Skipped: ${skipped} records`)
+          
+          if (errors.length > 0) {
+            console.log('\nErrors encountered:')
+            errors.slice(0, 10).forEach(error => console.log(`  - ${error}`))
+            if (errors.length > 10) {
+              console.log(`  ... and ${errors.length - 10} more errors`)
+            }
+          }
+          
+          // 显示数据统计
+          try {
+            const stats = await database.getStats()
+            console.log('\nDatabase Statistics:')
+            console.log(`Total outfits: ${stats.total}`)
+            console.log('Styles:', Object.entries(stats.styles).map(([k, v]) => `${k}(${v})`).join(', '))
+            console.log('Top occasions:', Object.entries(stats.occasions)
+              .sort(([,a], [,b]) => b - a)
+              .slice(0, 5)
+              .map(([k, v]) => `${k}(${v})`)
+              .join(', '))
+          } catch (statsError) {
+            console.log('Could not retrieve statistics:', statsError)
+          }
+          
+          resolve()
+        } catch (error) {
+          console.error('Import process failed:', error)
+          reject(error)
+        }
       })
-    }
-
-    console.log('\nImport Summary:')
-    console.log(`Successfully imported: ${imported} outfits`)
-    console.log(`Skipped: ${skipped} records`)
-
-    if (errors.length > 0) {
-      console.log('\nErrors encountered:')
-      errors.slice(0, 10).forEach(error => console.log(`  - ${error}`))
-      if (errors.length > 10) {
-        console.log(`  ... and ${errors.length - 10} more errors`)
-      }
-    }
-
-    // 显示数据统计
-    try {
-      const stats = await database.getStats()
-      console.log('\nDatabase Statistics:')
-      console.log(`Total outfits: ${stats.total}`)
-      console.log('Styles:', Object.entries(stats.styles).map(([k, v]) => `${k}(${v})`).join(', '))
-      console.log('Top occasions:', Object.entries(stats.occasions)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 5)
-        .map(([k, v]) => `${k}(${v})`)
-        .join(', '))
-    } catch (statsError) {
-      console.log('Could not retrieve statistics:', statsError)
-    }
-
-    return
+    })
   } catch (error) {
     console.error('Error importing data:', error)
     throw error

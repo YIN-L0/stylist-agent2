@@ -91,19 +91,19 @@ export class OpenAIService {
   async generateRecommendationReason(scenario: string, outfit: any, analysis: ScenarioAnalysis): Promise<string> {
     try {
       const prompt = `
-你是一名高端品牌造型顾问，请基于以下信息生成中文推荐理由，字数控制在400字以内：
+你是一名高端品牌造型顾问，请基于以下信息生成中文“概括型”推荐理由，字数控制在350字以内：
 
 【用户场景】${scenario}
 【场合】${(analysis.occasions || []).join('、') || '日常'}；【正式度】${analysis.formality || '休闲'}
 【风格】${outfit.style}
-【单品要点】将上衣、下装、连衣裙、外套等FAB内容（若存在）合并为一段自然流畅的描述，不要出现“FAB”字样，不要分小标题：
-- 示例：\n“羊毛混纺针织，触感柔软且保暖；微修身圆领优化肩颈比例，轮廓利落。牛仔面料四面弹，回弹佳不易皱，微喇剪裁拉长腿部线条，日常通勤亦可从容。”
+【单品要点】将上衣、下装、连衣裙/外套等要点（若存在）合并为一段自然流畅的“总结”，不要出现“FAB”字样，不要分小标题。
 
 写作要求：
-1) 专业、精炼、像杂志编辑；2) 重点强调版型比例、材质手感、穿着场合；
-3) 适度使用时尚术语（如 effortless chic / casual elegance），但整体中文表达；
-4) 不出现“FAB”或任何小标题；只输出一段话，不要列表，不要多段；
-5) 严禁出现“匹配度/评分/分数/百分比/Outfit/编号”等词汇或类似表述（如 85%）。
+1) 专业、克制、概括性强；重点强调整体风格与场合适配；
+2) 略过过细的工艺/术语细节；避免内部命名与冗余细节；
+3) 统一中文表达，只输出“一段话”，不分段/不列表；
+4) 严禁出现“匹配度/评分/分数/百分比/Outfit/编号”等词汇或类似表述（如 85%）；
+5) 超出长度时自动收敛至 350 字以内。
       `.trim();
 
       const completion = await openai.chat.completions.create({
@@ -111,21 +111,20 @@ export class OpenAIService {
         messages: [
           {
             role: "system",
-            content: "你是高端品牌的时尚顾问，输出专业、精炼、中文的一段式推荐理由，绝不超过400字，不出现FAB字样；严禁出现‘匹配度/评分/分数/百分比/Outfit/编号’等内容。"
+            content: "你是高端品牌的时尚顾问，输出专业、精炼、概括型、中文的一段式推荐理由，绝不超过350字；严禁出现‘匹配度/评分/分数/百分比/Outfit/编号’等内容。"
           },
           {
             role: "user",
             content: prompt
           }
         ],
-        temperature: 0.6,
-        max_tokens: 350
+        temperature: 0.5,
+        max_tokens: 300
       });
 
       let text = completion.choices[0].message.content || ''
-      // 保险裁剪到400字以内
-      if (text.length > 400) text = text.slice(0, 397) + '...'
-      return text || '这套搭配经过精心甄选，版型与场合匹配度出色。'
+      if (text.length > 350) text = text.slice(0, 347) + '...'
+      return text || '这套搭配经过精心挑选，非常适合您的场景需求';
     } catch (error) {
       console.error('Error generating recommendation reason:', error);
       throw error; // 抛出错误，让推荐服务使用fallback逻辑

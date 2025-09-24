@@ -145,7 +145,6 @@ const StylistAgent: React.FC = () => {
                   className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender === 'men' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
                 >男装</button>
               </div>
-
               <div className="relative">
                 <div className="absolute top-4 left-4 text-gray-400">
                   <Sparkles className="w-5 h-5" />

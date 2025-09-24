@@ -118,7 +118,7 @@ export class Database {
     shoes_id?: string
     style: string
     occasions: string
-    gender?: string
+    gender?: 'women' | 'men'
     upper_fab?: string
     lower_fab?: string
     dress_fab?: string
@@ -139,7 +139,7 @@ export class Database {
         outfit.shoes_id || null,
         outfit.style,
         outfit.occasions,
-        outfit.gender || null,
+        outfit.gender || 'women',
         outfit.upper_fab || null,
         outfit.lower_fab || null,
         outfit.dress_fab || null
@@ -156,10 +156,15 @@ export class Database {
   }
 
   // 根据场合和风格搜索服装
-  async searchOutfits(occasions: string[], styles: string[], limit: number = 10000, gender?: 'women' | 'men'): Promise<any[]> {
+  async searchOutfits(occasions: string[], styles: string[], limit: number = 10, gender?: 'women' | 'men'): Promise<any[]> {
     return new Promise((resolve, reject) => {
       let sql = 'SELECT * FROM outfits WHERE 1=1'
       const params: any[] = []
+
+      if (gender) {
+        sql += ' AND gender = ?'
+        params.push(gender)
+      }
 
       if (occasions.length > 0) {
         const occasionConditions = occasions.map(() => 'occasions LIKE ?').join(' OR ')
@@ -171,11 +176,6 @@ export class Database {
         const styleConditions = styles.map(() => 'style LIKE ?').join(' OR ')
         sql += ` AND (${styleConditions})`
         styles.forEach(style => params.push(`%${style}%`))
-      }
-
-      if (gender) {
-        sql += ' AND gender = ?'
-        params.push(gender)
       }
 
       sql += ` ORDER BY id LIMIT ?`
