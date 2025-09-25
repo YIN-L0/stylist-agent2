@@ -18,25 +18,23 @@ COPY package*.json ./
 # Install backend dependencies (including devDependencies for build)
 WORKDIR /app/backend
 
-# Clean npm cache and install with more verbose output
+# Clean npm cache and install dependencies without triggering postinstall
 RUN npm cache clean --force
-RUN npm install --verbose
+RUN npm ci --include=dev
 
-# Verify TypeScript installation
+# Verify TypeScript installation after dependencies are installed
 RUN npx tsc --version
 
-# Copy source code and data
+# Copy source code and configuration files
 WORKDIR /app
-COPY backend/src ./backend/src
-COPY backend/tsconfig.json ./backend/
+COPY backend/ ./backend/
 COPY data ./data
 
-# Build the project with explicit TypeScript configuration
+# Build the project now that all files are in place
 WORKDIR /app/backend
-RUN ls -la node_modules/.bin/tsc || echo "TypeScript not found in node_modules"
-RUN node_modules/.bin/tsc --project tsconfig.json || npm run build:alt || tsc --build
+RUN npm run build
 
-# Clean up devDependencies after build (optional optimization)
+# Clean up devDependencies after build for smaller image (optional)
 # RUN npm prune --production
 
 # Expose port

@@ -5,11 +5,10 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc --build",
+    "build": "tsc -p tsconfig.json",
     "build:alt": "node_modules/.bin/tsc --project tsconfig.json",
     "build:clean": "rm -rf dist && npm run build",
     "start": "node dist/server.js",
-    "postinstall": "npm run build",
     "db:setup": "ts-node src/scripts/setupDatabase.ts",
     "db:import": "ts-node src/scripts/importData.ts",
     "db:reset": "rm -f database.sqlite && npm run db:setup && npm run db:import"
