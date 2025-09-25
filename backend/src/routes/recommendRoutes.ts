@@ -40,7 +40,7 @@ router.post('/', async (req: express.Request, res: express.Response) => {
   } catch (error) {
     console.error('Recommendation error:', error)
     
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : '推荐服务暂时不可用，请稍后重试'
     } as ApiResponse<null>)

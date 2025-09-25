@@ -1,12 +1,11 @@
-# Railway Dockerfile - Using debian with Node.js
-FROM debian:bullseye-slim
+# Railway Dockerfile - Using Node.js LTS
+FROM node:18-bullseye-slim
 
-# Install Node.js via package manager
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    curl \
-    ca-certificates \
-    && curl -sL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
+    python3 \
+    make \
+    g++ \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -18,7 +17,13 @@ COPY package*.json ./
 
 # Install backend dependencies (including devDependencies for build)
 WORKDIR /app/backend
-RUN npm install
+
+# Clean npm cache and install with more verbose output
+RUN npm cache clean --force
+RUN npm install --verbose
+
+# Verify TypeScript installation
+RUN npx tsc --version
 
 # Copy source code and data
 WORKDIR /app
@@ -26,9 +31,12 @@ COPY backend/src ./backend/src
 COPY backend/tsconfig.json ./backend/
 COPY data ./data
 
-# Build the project
+# Build the project with explicit TypeScript path
 WORKDIR /app/backend
-RUN npm run build
+RUN npx tsc --build
+
+# Clean up devDependencies after build (optional optimization)
+# RUN npm prune --production
 
 # Expose port
 EXPOSE 3001

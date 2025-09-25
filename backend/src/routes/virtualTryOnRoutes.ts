@@ -82,7 +82,7 @@ router.post('/', async (req: express.Request, res: express.Response) => {
   } catch (error) {
     console.error('Virtual try-on generation failed:', error)
     
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : '虚拟试穿生成失败'
     } as ApiResponse<null>)

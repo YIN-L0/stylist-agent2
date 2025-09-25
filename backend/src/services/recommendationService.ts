@@ -23,6 +23,25 @@ export class RecommendationService {
     return occs.map(o => map[o] || o)
   }
 
+  // 服务器端数据清理：移除匹配度/评分/编号等信息
+  private sanitizeReason(reason: string): string {
+    if (!reason) return reason
+    
+    return reason
+      // 移除匹配度相关文字 
+      .replace(/匹配度[^\d]*\d+[%％]/g, '')
+      .replace(/评分[^\d]*\d+[分%％]/g, '')
+      .replace(/\d+[%％]/g, '')
+      .replace(/Outfit\s*\d+/gi, '')
+      .replace(/编号[^\d]*\d+/g, '')
+      .replace(/排名[^\d]*\d+/g, '')
+      .replace(/第\d+[名位]/g, '')
+      // 清理多余的空格和标点
+      .replace(/\s+/g, ' ')
+      .replace(/[，。！？]{2,}/g, '。')
+      .trim()
+  }
+
   private buildFabReason(
     scenario: string,
     analysisOccs: string[] | undefined,
@@ -574,10 +593,13 @@ export class RecommendationService {
         console.log('Generating virtual try-on for outfit:', outfit.id, 'skipVirtualTryOn:', skipVirtualTryOn)
         const virtualTryOn = skipVirtualTryOn ? undefined : await this.generateVirtualTryOn(items)
 
+        // 服务器端数据清理：强制设置outfit名称并清理推荐理由
+        const sanitizedReason = this.sanitizeReason(reason)
+        
         recommendations.push({
           outfit: {
             id: outfit.id,
-            name: outfit.outfit_name,
+            name: '精选搭配', // 强制设置为统一标题
             jacket: outfit.jacket_id,
             upper: outfit.upper_id,
             lower: outfit.lower_id,
@@ -587,7 +609,7 @@ export class RecommendationService {
             occasions: outfit.occasions ? this.toChineseOccasions(outfit.occasions.split(',').map((o: string) => o.trim())) : []
           },
           // 内部排序依据为匹配度，但不对外暴露
-          reason,
+          reason: sanitizedReason,
           items,
           virtualTryOn
         })

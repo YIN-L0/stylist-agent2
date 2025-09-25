@@ -91,7 +91,7 @@ router.get('/search', async (req: express.Request, res: express.Response) => {
   } catch (error) {
     console.error('❌ Error searching outfits:', error)
     
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: '搜索失败'
     } as ApiResponse<null>)
@@ -139,7 +139,7 @@ router.get('/:id', async (req: express.Request, res: express.Response) => {
   } catch (error) {
     console.error('❌ Error fetching outfit:', error)
     
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: '获取服装详情失败'
     } as ApiResponse<null>)
