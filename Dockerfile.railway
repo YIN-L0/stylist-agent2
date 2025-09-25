@@ -1,5 +1,14 @@
-# Railway Dockerfile - Simple approach  
-FROM node:18.17.0
+# Railway Dockerfile - Using debian with Node.js
+FROM debian:bullseye-slim
+
+# Install Node.js via package manager
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    && curl -sL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
