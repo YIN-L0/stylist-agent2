@@ -1,33 +1,28 @@
-# Railway Dockerfile
-FROM node:18
+# Railway Dockerfile - Simple approach  
+FROM node:18.17.0
 
-# Set working directory
 WORKDIR /app
 
-# Copy all package.json files
-COPY package*.json ./
+# Copy package files first for better caching
 COPY backend/package*.json ./backend/
-COPY frontend/package*.json ./frontend/
+COPY package*.json ./
 
-# Install root dependencies
-RUN npm install
-
-# Copy all source code
-COPY . .
-
-# Install backend dependencies and build
+# Install backend dependencies (including devDependencies for build)
 WORKDIR /app/backend
 RUN npm install
+
+# Copy source code and data
+WORKDIR /app
+COPY backend/src ./backend/src
+COPY backend/tsconfig.json ./backend/
+COPY data ./data
+
+# Build the project
+WORKDIR /app/backend
 RUN npm run build
 
-# Copy data files to the correct location
-COPY data /app/data
-
-# Create database directory
-RUN mkdir -p /app/backend
-
-# Expose the port (Railway will set PORT env var)
+# Expose port
 EXPOSE 3001
 
-# Start the application
+# Start command
 CMD ["npm", "start"]
