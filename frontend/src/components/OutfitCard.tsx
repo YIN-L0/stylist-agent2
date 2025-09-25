@@ -134,10 +134,10 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         </button>
       </div>
 
-      {/* 服装单品网格 - 响应式布局，暂时不显示鞋子 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+      {/* 服装单品网格 - 调整为更大的图片尺寸 */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         {Object.entries(recommendation.items)
-          .filter(([type, item]) => type !== 'shoes' && item) // 暂时不显示鞋子，并确保item存在
+          .filter(([type, item]) => item) // 确保item存在
           .map(([type, item]) => (
             <ProductImage
               key={type}
@@ -145,7 +145,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
               type={type}
               imageUrl={item.imageUrl}
               productUrl={item.productUrl}
-              className="aspect-square rounded-xl"
+              className="aspect-square rounded-xl h-32 md:h-40"
             />
           ))}
       </div>
@@ -175,58 +175,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         </div>
       </div>
 
-      {/* 虚拟试穿效果 */}
-      {virtualTryOn ? (
-        <VirtualTryOnImage 
-          virtualTryOn={virtualTryOn}
-          className="mt-6"
-        />
-      ) : (
-        <div className="mt-6">
-          <button
-            onClick={handleGenerateTryOn}
-            disabled={isGeneratingTryOn}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 disabled:cursor-not-allowed"
-          >
-            {isGeneratingTryOn ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>正在生成试穿效果...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5" />
-                <span>🎭 生成虚拟试穿效果</span>
-              </>
-            )}
-          </button>
-        </div>
-      )}
-
-      {/* 底部操作按钮 - 只在有虚拟试穿效果时显示 */}
-      {virtualTryOn && virtualTryOn.status === 'completed' && virtualTryOn.imageUrl && (
-        <div className="mt-6 pt-4 border-t border-gray-200">
-          <div className="flex gap-3">
-            <button 
-              onClick={handleDownload}
-              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              <span>下载试衣图片</span>
-            </button>
-            <button 
-              onClick={handleShare}
-              className="px-4 py-3 border-2 border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center justify-center"
-              title="复制试衣图片链接"
-            >
-              <Share2 className="w-4 h-4" />
-            </button>
-            <button className="px-4 py-3 border-2 border-yellow-200 text-yellow-600 text-sm font-medium rounded-xl hover:bg-yellow-50 hover:border-yellow-300 transition-all duration-200 flex items-center justify-center">
-              <Star className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
+      {/* 暂时隐藏虚拟试穿功能 */}
 
       {/* Toast 提示 */}
       {toast && (

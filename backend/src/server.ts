@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import path from 'path'
 import { database, menDatabase } from './database/database'
 import { importData } from './scripts/importData'
+import { csvDataService } from './services/csvDataService'
 
 // 配置环境变量
 dotenv.config()
@@ -130,13 +131,18 @@ const server = app.listen(PORT, () => {
   console.log(`API Documentation: http://localhost:${PORT}/api/health`)
 })
 
-// 异步初始化数据库，不阻塞服务器启动
+// 异步初始化数据库和CSV数据，不阻塞服务器启动
 initializeDatabase()
   .then(() => {
     console.log('Database initialization completed')
+    // 初始化CSV数据服务
+    return csvDataService.initialize()
+  })
+  .then(() => {
+    console.log('CSV data service initialization completed')
   })
   .catch((error) => {
-    console.error('Database initialization failed:', error)
+    console.error('Initialization failed:', error)
     // 不退出进程，让健康检查仍然可以工作
   })
 

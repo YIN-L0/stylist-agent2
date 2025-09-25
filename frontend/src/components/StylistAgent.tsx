@@ -9,7 +9,7 @@ const StylistAgent: React.FC = () => {
   const [scenario, setScenario] = useState('')
   const [currentScenario, setCurrentScenario] = useState('') // 保存当前推荐使用的场景
   const [isLoading, setIsLoading] = useState(false)
-  const [gender, setGender] = useState<'women' | 'men'>('men')
+  const [gender, setGender] = useState<'women' | 'men'>('women')
   const [visibleCount, setVisibleCount] = useState(9)
   const [loadingMessage, setLoadingMessage] = useState('')
   const [recommendations, setRecommendations] = useState<RecommendationResponse | null>(null)
@@ -103,33 +103,6 @@ const StylistAgent: React.FC = () => {
     }
   }
 
-  // 处理性别切换
-  const handleGenderChange = async (newGender: 'women' | 'men') => {
-    setGender(newGender)
-    
-    // 如果当前有推荐结果，重新获取对应性别的推荐
-    if (currentScenario && recommendations && !isLoading) {
-      setIsLoading(true)
-      setError(null)
-      
-      try {
-        console.log('Switching gender to:', newGender, 'for scenario:', currentScenario)
-        const result = await apiService.getRecommendations({ 
-          scenario: currentScenario,
-          skipVirtualTryOn: true,
-          gender: newGender
-        })
-        setRecommendations(result)
-        setVisibleCount(9) // 重置显示数量
-      } catch (error) {
-        console.error('Error switching gender recommendations:', error)
-        setError(error instanceof Error ? error.message : '切换性别推荐失败，请稍后重试')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-  }
-
   const exampleScenarios = [
     '参加公司年会，需要正式但不过于隆重的着装',
     '周末和朋友去咖啡厅聚会，舒适休闲的风格',
@@ -162,6 +135,11 @@ const StylistAgent: React.FC = () => {
 
             {/* 输入表单 */}
             <form onSubmit={handleSubmit} className="space-y-8">
+              {/* 性别切换 */}
+              <div className="flex items-center justify-center gap-3">
+                <button type="button" onClick={() => setGender('women')} className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender==='women'?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>女装</button>
+                <button type="button" onClick={() => setGender('men')} className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender==='men'?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>男装</button>
+              </div>
               <div className="relative">
                 <div className="absolute top-4 left-4 text-gray-400">
                   <Sparkles className="w-5 h-5" />
@@ -229,40 +207,6 @@ const StylistAgent: React.FC = () => {
                 )}
               </button>
             </form>
-          </div>
-        </div>
-
-        {/* 男装/女装切换按钮 */}
-        <div className="max-w-4xl mx-auto mb-8">
-          <div className="flex items-center justify-center">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 p-2">
-              <div className="flex items-center gap-1">
-                <button 
-                  type="button" 
-                  onClick={() => handleGenderChange('men')}
-                  disabled={isLoading}
-                  className={`px-6 py-3 rounded-xl font-semibold text-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    gender === 'men' 
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105' 
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                  }`}
-                >
-                  男装
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => handleGenderChange('women')}
-                  disabled={isLoading}
-                  className={`px-6 py-3 rounded-xl font-semibold text-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    gender === 'women' 
-                      ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg transform scale-105' 
-                      : 'text-gray-600 hover:text-pink-600 hover:bg-pink-50'
-                  }`}
-                >
-                  女装
-                </button>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -339,7 +283,7 @@ const StylistAgent: React.FC = () => {
                 </button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                 {recommendations.recommendations.slice(0, visibleCount).map((recommendation, index) => (
                   <OutfitCard
                     key={recommendation.outfit.id}

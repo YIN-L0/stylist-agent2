@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { ImageOff } from 'lucide-react'
+import ImageModal from './ImageModal'
 
 interface ProductImageProps {
   productId: string
@@ -19,6 +20,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [isInView, setIsInView] = useState(false)
+  const [showModal, setShowModal] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -53,7 +55,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    window.open(imageUrl, '_blank', 'noopener,noreferrer')
+    setShowModal(true)
   }
 
 
@@ -78,7 +80,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`group cursor-pointer relative overflow-hidden bg-gray-100 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${className}`}
+      className={`cursor-pointer relative overflow-hidden bg-gray-100 ${className}`}
       onClick={handleClick}
     >
       {/* 加载骨架屏 */}
@@ -97,7 +99,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
                 ref={imgRef}
                 src={imageUrl}
                 alt={`${type} - ${productId}`}
-                className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
+                className={`w-full h-full object-cover transition-opacity duration-500 ${
                   isLoaded ? 'opacity-100' : 'opacity-0'
                 }`}
                 onLoad={handleImageLoad}
@@ -116,28 +118,21 @@ const ProductImage: React.FC<ProductImageProps> = ({
             getFallbackImage()
           )}
 
-          {/* 悬停遮罩 - 移除所有按钮，只保留视觉反馈 */}
-          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-            <div className="transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
-              <div className="bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
-                <span className="text-sm font-medium text-gray-700">点击查看大图</span>
-              </div>
-            </div>
-          </div>
-
-          {/* 产品类型标签 */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-            <div className="text-white text-xs font-medium capitalize opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              {type}
-            </div>
-          </div>
-
-          {/* 产品ID */}
-          <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            {productId}
+          {/* 简单的点击提示 - 移除复杂的悬停效果 */}
+          <div className="absolute inset-0 cursor-pointer" title="点击放大查看">
+            {/* 移除所有悬停动画和按钮，避免闪烁 */}
           </div>
         </>
       )}
+
+      {/* 图片放大模态框 */}
+      <ImageModal
+        isOpen={showModal}
+        imageUrl={imageUrl}
+        productId={productId}
+        type={type}
+        onClose={() => setShowModal(false)}
+      />
     </div>
   )
 }

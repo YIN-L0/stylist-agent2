@@ -2,6 +2,7 @@ import { database, menDatabase } from '../database/database'
 import { openaiService, ScenarioAnalysis } from './openaiService'
 import { OutfitRecommendation, ProductItem, VirtualTryOnResult } from '../types'
 import { virtualTryOnService } from './virtualTryOnService'
+import { csvDataService } from './csvDataService'
 
 export class RecommendationService {
   private toChineseOccasions(occs: string[] | undefined): string[] {
@@ -21,25 +22,6 @@ export class RecommendationService {
       'Interview': '面试'
     }
     return occs.map(o => map[o] || o)
-  }
-
-  // 服务器端数据清理：移除匹配度/评分/编号等信息
-  private sanitizeReason(reason: string): string {
-    if (!reason) return reason
-    
-    return reason
-      // 移除匹配度相关文字 
-      .replace(/匹配度[^\d]*\d+[%％]/g, '')
-      .replace(/评分[^\d]*\d+[分%％]/g, '')
-      .replace(/\d+[%％]/g, '')
-      .replace(/Outfit\s*\d+/gi, '')
-      .replace(/编号[^\d]*\d+/g, '')
-      .replace(/排名[^\d]*\d+/g, '')
-      .replace(/第\d+[名位]/g, '')
-      // 清理多余的空格和标点
-      .replace(/\s+/g, ' ')
-      .replace(/[，。！？]{2,}/g, '。')
-      .trim()
   }
 
   private buildFabReason(
@@ -452,6 +434,7 @@ export class RecommendationService {
       try {
         analysis = await openaiService.analyzeScenario(scenario)
         console.log('Analysis result:', analysis)
+      console.log('🎨 Colors analysis:', analysis.colors)
       } catch (aiError) {
         console.warn('AI analysis failed, using fallback logic:', aiError)
         // 备用分析逻辑
@@ -509,6 +492,26 @@ export class RecommendationService {
       )
       console.log('Found outfits:', outfits.length)
 
+      // 如果有颜色偏好，使用颜色筛选进一步过滤搭配
+      if (analysis.colors && (analysis.colors.preferred || analysis.colors.excluded)) {
+        console.log('🎨 Applying color filtering:', analysis.colors)
+        
+        // 使用CSV服务进行颜色筛选
+        const colorFilteredDetails = await csvDataService.searchByContent(
+          scenario,
+          analysis.keywords,
+          gender,
+          outfits.length, // 保持当前找到的数量
+          analysis.colors
+        )
+        
+        // 将颜色筛选后的结果映射回outfit对象
+        const filteredOutfitNames = new Set(colorFilteredDetails.map(detail => detail.id))
+        outfits = outfits.filter(outfit => filteredOutfitNames.has(outfit.outfit_name))
+        
+        console.log('After color filtering:', outfits.length, 'outfits remaining')
+      }
+
       if (outfits.length === 0) {
         console.warn('No outfits found for occasions, trying relaxed fallback...')
         const fallbackOccs = expandOccasions(['日常休闲', '周末早午餐'])
@@ -541,8 +544,8 @@ export class RecommendationService {
         return scoreDiff * 0.8 + randomDiff * 0.2
       })
 
-      // 5. 不设置上限：返回所有排序后的匹配结果
-      const selectedOutfits = sortedOutfits
+      // 5. 限制返回数量：只返回前9个最佳匹配，减少AI调用次数
+      const selectedOutfits = this.selectDiverseOutfits(sortedOutfits, 9)
 
       // 6. 生成推荐结果
       const recommendations: OutfitRecommendation[] = []
@@ -567,15 +570,27 @@ export class RecommendationService {
           items.shoes = this.createProductItem(outfit.shoes_id, 'shoes')
         }
 
-        // 生成推荐理由（FAB 优先：若有 FAB，优先使用 FAB 内容作为主要描述）
+        // 获取详细搭配信息并生成推荐理由
         let reason: string
         try {
-          const fabReason = this.buildFabReason(scenario, analysis.occasions, items)
-          if (fabReason) {
-            reason = fabReason
+          // 获取搭配的详细信息（CSV服务应该已在服务启动时初始化）
+          const outfitDetails = csvDataService.getOutfitDetails(outfit.outfit_name, gender)
+          
+          if (outfitDetails) {
+            console.log('🎨 Using detailed outfit information for AI reasoning')
+            // 使用详细搭配信息生成AI推荐理由
+            const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis, outfitDetails)
+            reason = aiReason
           } else {
-            const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis)
-            reason = `这套搭配契合“${this.toChineseOccasions(analysis.occasions).join('、') || '场合'}”，在版型比例与正式度上拿捏到位。${aiReason}`
+            console.log('⚠️ No detailed outfit info found, using FAB-based reasoning')
+            // 回退到原有的FAB推理方式
+            const fabReason = this.buildFabReason(scenario, analysis.occasions, items)
+            if (fabReason) {
+              reason = fabReason
+            } else {
+              const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis)
+              reason = aiReason
+            }
           }
         } catch (reasonError) {
           console.warn('AI reason generation failed, using fallback:', reasonError)
@@ -584,7 +599,7 @@ export class RecommendationService {
           if (fabReason) {
             reason = fabReason
           } else {
-            reason = `这套搭配契合“${this.toChineseOccasions(analysis.occasions).join('、') || '场合'}”，在版型比例与正式度上拿捏到位。${fallbackReason}`
+            reason = fallbackReason
           }
           console.log('Generated fallback reason:', reason)
         }
@@ -593,13 +608,10 @@ export class RecommendationService {
         console.log('Generating virtual try-on for outfit:', outfit.id, 'skipVirtualTryOn:', skipVirtualTryOn)
         const virtualTryOn = skipVirtualTryOn ? undefined : await this.generateVirtualTryOn(items)
 
-        // 服务器端数据清理：强制设置outfit名称并清理推荐理由
-        const sanitizedReason = this.sanitizeReason(reason)
-        
         recommendations.push({
           outfit: {
             id: outfit.id,
-            name: '精选搭配', // 强制设置为统一标题
+            name: outfit.outfit_name,
             jacket: outfit.jacket_id,
             upper: outfit.upper_id,
             lower: outfit.lower_id,
@@ -609,7 +621,7 @@ export class RecommendationService {
             occasions: outfit.occasions ? this.toChineseOccasions(outfit.occasions.split(',').map((o: string) => o.trim())) : []
           },
           // 内部排序依据为匹配度，但不对外暴露
-          reason: sanitizedReason,
+          reason,
           items,
           virtualTryOn
         })

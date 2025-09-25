@@ -6,8 +6,9 @@ const DATABASE_PATH = process.env.DATABASE_PATH || './database.sqlite'
 export class Database {
   private db: sqlite3.Database
 
-  constructor() {
-    this.db = new sqlite3.Database(DATABASE_PATH, (err) => {
+  constructor(dbPath?: string) {
+    const actualPath = dbPath || DATABASE_PATH
+    this.db = new sqlite3.Database(actualPath, (err) => {
       if (err) {
         console.error('Error opening database:', err.message)
       } else {
@@ -353,5 +354,5 @@ export class Database {
   }
 }
 
-export const database = new Database()
-export const menDatabase = new Database() // 男装数据库实例
+export const database = new Database() // 女装数据库实例
+export const menDatabase = new Database('./men_database.sqlite') // 男装数据库实例
