@@ -9,30 +9,33 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-
-# Copy package files first for better caching
-COPY backend/package*.json ./backend/
-COPY package*.json ./
-
-# Install backend dependencies (including devDependencies for build)
+# 1. 进入 /app/backend 工作目录
 WORKDIR /app/backend
 
-# Clean npm cache and install dependencies without triggering postinstall
+# 2. 先仅 COPY backend/package*.json ./
+COPY backend/package*.json ./
+
+# 3. 执行 npm ci --include=dev (不会触发postinstall,因为已移除)
 RUN npm cache clean --force
 RUN npm ci --include=dev
 
-# Verify TypeScript installation after dependencies are installed
+# 验证 TypeScript 安装
 RUN npx tsc --version
 
-# Copy source code and configuration files
-WORKDIR /app
-COPY backend/ ./backend/
-COPY data ./data
+# 4. 再 COPY backend/ ./ (包含tsconfig.json和src/)
+COPY backend/ ./
 
-# Build the project now that all files are in place
-WORKDIR /app/backend
+# 验证必要文件存在
+RUN ls -la package.json tsconfig.json src/
+
+# Copy data directory to parent level
+COPY data /app/data
+
+# 5. 最后 RUN npm run build (此时tsconfig.json已存在)
 RUN npm run build
+
+# 验证构建结果
+RUN ls -la dist/
 
 # Clean up devDependencies after build for smaller image (optional)
 # RUN npm prune --production
