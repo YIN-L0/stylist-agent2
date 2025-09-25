@@ -1,37 +1,33 @@
-# Simplified Dockerfile for Railway deployment
-FROM node:18-alpine
+# Railway Dockerfile
+FROM node:18
 
+# Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy all package.json files
 COPY package*.json ./
-COPY frontend/package*.json ./frontend/
 COPY backend/package*.json ./backend/
+COPY frontend/package*.json ./frontend/
 
-# Install dependencies
-RUN npm ci
+# Install root dependencies
+RUN npm install
 
-# Copy source code
+# Copy all source code
 COPY . .
 
-# Build frontend
-WORKDIR /app/frontend
-RUN npm ci
+# Install backend dependencies and build
+WORKDIR /app/backend
+RUN npm install
 RUN npm run build
 
-# Build backend
-WORKDIR /app/backend
-RUN npm ci
-RUN npm run build
+# Copy data files to the correct location
+COPY data /app/data
 
-# Set working directory to backend
-WORKDIR /app/backend
+# Create database directory
+RUN mkdir -p /app/backend
 
-# Copy data files to backend directory
-COPY data ../data
-
-# Expose port
+# Expose the port (Railway will set PORT env var)
 EXPOSE 3001
 
-# Start the backend server
+# Start the application
 CMD ["npm", "start"]
