@@ -31,9 +31,10 @@ COPY backend/src ./backend/src
 COPY backend/tsconfig.json ./backend/
 COPY data ./data
 
-# Build the project with explicit TypeScript path
+# Build the project with explicit TypeScript configuration
 WORKDIR /app/backend
-RUN npx tsc --build
+RUN ls -la node_modules/.bin/tsc || echo "TypeScript not found in node_modules"
+RUN node_modules/.bin/tsc --project tsconfig.json || npm run build:alt || tsc --build
 
 # Clean up devDependencies after build (optional optimization)
 # RUN npm prune --production
