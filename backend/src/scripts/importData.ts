@@ -91,8 +91,8 @@ async function importData() {
   const gender = process.env.IMPORT_GENDER || 'women'
   const targetDb = process.env.IMPORT_TARGET_DB === 'men' ? menDatabase : database
   const csvFileName = gender === 'men' 
-    ? 'men_outfits_withallattributes_merged.csv'
-    : 'women_outfits_with_all_attributes.csv'
+    ? 'men_outfits_with_all_attributes2.csv'
+    : 'women_outfits_with_all_attributes2.csv'
   let csvPath = path.join(__dirname, '../../../data/', csvFileName)
     
     if (!fs.existsSync(csvPath)) {
