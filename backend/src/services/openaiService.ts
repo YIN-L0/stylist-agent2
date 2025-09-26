@@ -161,29 +161,29 @@ export class OpenAIService {
       }
 
       const prompt = `
-基于以下搭配信息，分析这套穿搭，字数严格控制在150-200字以内：
+基于以下搭配信息，写一段推荐理由，要求严格控制在200字以内：
 
 【用户需求】${scenario}
 【搭配详情】
 ${detailsText || '基础搭配信息'}
 
 写作要求：
-1) 如果搭配没有完全符合用户需求，先简短说明为什么这套穿搭仍符合用户的某个关键需求
-2) 重点分析FAB信息（面料、工艺、设计特点），解释各单品的特性
-3) 说明整体搭配的优势和适用场合
-4) 不要提及prompt、用户、感谢等词汇，直接分析穿搭
+1) 直接分析穿搭特点，重点描述FAB信息（面料、工艺、设计特点）
+2) 说明整体搭配的优势和适用场合  
+3) 如果搭配与用户需求略有差异，可简短说明为什么这套穿搭仍适合
+4) 不要提及prompt、用户、感谢等词汇
 5) 严禁出现"匹配度/评分/分数/百分比/Outfit/编号/排名"等词汇
-6) 字数必须在150-200字之间，语言精练
+6) 控制在200字以内，确保语句完整，不要出现话说一半的情况
 
-只返回推荐理由文字，不要其他内容。
+只返回完整的推荐理由文字。
       `.trim();
 
       const completion = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: [
           {
-            role: "system",
-            content: "你是专业时尚顾问，基于FAB信息分析穿搭特点，语言精练，150-200字以内，不提及用户和感谢词汇。"
+            role: "system", 
+            content: "你是专业时尚顾问，擅长基于FAB信息分析穿搭特点。写作时语言精练，确保200字以内完整表达，不说半句话。"
           },
           {
             role: "user",
@@ -191,12 +191,26 @@ ${detailsText || '基础搭配信息'}
           }
         ],
         temperature: 0.5,
-        max_tokens: 200
+        max_tokens: 300
       });
 
       let text = completion.choices[0].message.content || ''
-      // 强制限制到200字以内
-      if (text.length > 200) text = text.slice(0, 197) + '...'
+      
+      // 智能截断：如果超过200字，寻找最近的句号或逗号截断，保持完整性
+      if (text.length > 200) {
+        const truncated = text.slice(0, 200)
+        const lastPeriod = truncated.lastIndexOf('。')
+        const lastComma = truncated.lastIndexOf('，')
+        const lastCutPoint = Math.max(lastPeriod, lastComma)
+        
+        if (lastCutPoint > 150) {
+          // 如果在150字后找到了合适的断点，就在那里截断
+          text = text.slice(0, lastCutPoint + 1)
+        } else {
+          // 否则在200字处强制截断，但不加省略号，让AI学会控制长度
+          text = text.slice(0, 200)
+        }
+      }
       return text || '这套搭配经过精心甄选，版型与场合契合度出色。';
     } catch (error) {
       console.error('Error generating recommendation reason:', error);

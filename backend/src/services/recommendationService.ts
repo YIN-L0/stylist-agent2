@@ -51,7 +51,7 @@ export class RecommendationService {
     })
     
     const merged = cleanedParts.join('。')
-    return `针对"${scenario}"，这套搭配在${occText}场合表现出色。${merged}这样的设计既保证了舒适性，又完美契合了您的需求。`
+    return `${merged}整体搭配在${occText}场合表现出色，这样的设计既保证了舒适性，又展现出独特的时尚魅力。`
   }
   // 备用场景分析逻辑
   private fallbackAnalysis(scenario: string): ScenarioAnalysis {
