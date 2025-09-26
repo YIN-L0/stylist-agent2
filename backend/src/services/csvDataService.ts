@@ -222,31 +222,41 @@ export class CSVDataService {
       const scenarioLower = scenario.toLowerCase()
       const scenarioWords = scenarioLower.split(/[,，\s]+/).filter(word => word.length > 1)
       
-      // 2. 最高权重：专门匹配服装类型和名称
-      const specialMatches = {
-        '连衣裙': outfit.DressName,
-        'dress': outfit.DressName,
-        '裙子': outfit.DressName,
-        '上衣': outfit.UpperName,
-        'top': outfit.UpperName,
-        '衬衫': outfit.UpperName,
-        '毛衫': outfit.UpperName,
-        'T恤': outfit.UpperName,
-        '下装': outfit.LowerName,
-        '裤子': outfit.LowerName,
-        '牛仔裤': outfit.LowerName,
-        '休闲裤': outfit.LowerName,
-        '外套': outfit.JacketName,
-        '夹克': outfit.JacketName,
-        'jacket': outfit.JacketName,
-        '鞋子': outfit.ShoesName,
-        '休闲鞋': outfit.ShoesName,
-        '高跟鞋': outfit.ShoesName
+      // 2. 最高权重：专门匹配服装类型和名称 - 使用类型安全的方式
+      const getMatchedItemName = (word: string): string | undefined => {
+        const wordLower = word.toLowerCase()
+        
+        // 连衣裙相关
+        if (['连衣裙', 'dress', '裙子'].includes(wordLower)) {
+          return outfit.DressName
+        }
+        
+        // 上衣相关
+        if (['上衣', 'top', '衬衫', '毛衫', 't恤'].includes(wordLower)) {
+          return outfit.UpperName
+        }
+        
+        // 下装相关
+        if (['下装', '裤子', '牛仔裤', '休闲裤'].includes(wordLower)) {
+          return outfit.LowerName
+        }
+        
+        // 外套相关
+        if (['外套', '夹克', 'jacket'].includes(wordLower)) {
+          return outfit.JacketName
+        }
+        
+        // 鞋子相关
+        if (['鞋子', '休闲鞋', '高跟鞋'].includes(wordLower)) {
+          return outfit.ShoesName
+        }
+        
+        return undefined
       }
 
       // 检查专门的服装类型匹配
       scenarioWords.forEach(word => {
-        const matchedItemName = specialMatches[word]
+        const matchedItemName = getMatchedItemName(word)
         if (matchedItemName) {
           score += 35 // 服装类型匹配最高分
           console.log(`🎯 Outfit ${outfitName} type match (+35): ${word} -> ${matchedItemName}`)
@@ -254,11 +264,10 @@ export class CSVDataService {
       })
 
       keywords.forEach(keyword => {
-        const keywordLower = keyword.toLowerCase()
-        const matchedItemName = specialMatches[keywordLower]
+        const matchedItemName = getMatchedItemName(keyword)
         if (matchedItemName) {
           score += 30 // 关键词服装类型匹配
-          console.log(`🎯 Outfit ${outfitName} keyword type match (+30): ${keywordLower} -> ${matchedItemName}`)
+          console.log(`🎯 Outfit ${outfitName} keyword type match (+30): ${keyword} -> ${matchedItemName}`)
         }
       })
       
