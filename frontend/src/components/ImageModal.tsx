@@ -24,7 +24,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 cursor-pointer"
+      className="fixed inset-0 bg-gray-200 bg-opacity-80 flex items-center justify-center z-50 cursor-pointer"
       onClick={handleClick}
     >
       {/* 移除所有按钮和标签，只保留放大的图片 */}
