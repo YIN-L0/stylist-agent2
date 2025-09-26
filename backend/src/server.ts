@@ -103,6 +103,55 @@ import recommendRoutes from './routes/recommendRoutes'
 import outfitRoutes from './routes/outfitRoutes'
 import virtualTryOnRoutes from './routes/virtualTryOnRoutes'
 
+// 临时管理端点用于数据导入
+app.post('/api/admin/import-data', async (req, res) => {
+  try {
+    const { gender, force } = req.body
+    
+    if (!gender || !['men', 'women'].includes(gender)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid gender. Must be "men" or "women"' 
+      })
+    }
+    
+    console.log(`🔄 Starting data import for ${gender}...`)
+    
+    // 设置环境变量
+    process.env.IMPORT_GENDER = gender
+    process.env.IMPORT_TARGET_DB = gender
+    
+    if (force) {
+      // 强制重新导入，清空现有数据
+      const targetDb = gender === 'women' ? database : menDatabase
+      await targetDb.clearOutfits()
+      console.log(`🗑️ Cleared existing ${gender} data`)
+    }
+    
+    // 执行导入
+    await importData()
+    
+    // 检查导入结果
+    const stats = gender === 'women' 
+      ? await database.getStats()
+      : await menDatabase.getStats()
+    
+    console.log(`✅ Import completed for ${gender}: ${stats.total} outfits`)
+    
+    res.json({
+      success: true,
+      message: `Successfully imported ${gender} data`,
+      stats: stats
+    })
+  } catch (error) {
+    console.error('Import failed:', error)
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Import failed'
+    })
+  }
+})
+
 // 路由设置
 app.use('/api/recommend', recommendRoutes)
 app.use('/api/outfits', outfitRoutes)
