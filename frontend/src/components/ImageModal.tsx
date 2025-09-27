@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 interface ImageModalProps {
   isOpen: boolean
@@ -15,6 +15,23 @@ const ImageModal: React.FC<ImageModalProps> = ({
   type,
   onClose
 }) => {
+  // ESC键关闭模态框
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   // 点击背景关闭模态框
@@ -28,21 +45,22 @@ const ImageModal: React.FC<ImageModalProps> = ({
   }
 
   return (
-    <div 
-      className="fixed inset-0 bg-gray-400 bg-opacity-50 flex items-center justify-center z-50 cursor-pointer"
+    <div
+      className="fixed inset-0 flex items-center justify-center z-50 cursor-pointer"
+      style={{ backgroundColor: 'rgba(120, 120, 120, 0.35)' }}
       onClick={handleBackgroundClick}
     >
-      {/* 放大9倍的图片 */}
+      {/* 放大3倍的图片，最大不超出视口 */}
       <img
         src={imageUrl}
         alt={`${type} - ${productId}`}
-        className="transform object-contain rounded-lg shadow-2xl cursor-default"
+        className="object-contain rounded-lg shadow-2xl cursor-default"
         style={{
+          transform: 'scale(3)',
+          maxWidth: '33.333%', // 由于放大3倍，原始最大宽度为33.333%
+          maxHeight: '33.333%', // 由于放大3倍，原始最大高度为33.333%
           width: 'auto',
-          height: 'auto',
-          transform: 'scale(9)', // 放大9倍
-          maxWidth: '11.111%', // 由于放大9倍，原始最大宽度为11.111%
-          maxHeight: '11.111%' // 由于放大9倍，原始最大高度为11.111%
+          height: 'auto'
         }}
         onClick={handleImageClick}
       />
