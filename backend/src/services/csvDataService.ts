@@ -136,7 +136,10 @@ export class CSVDataService {
               ShoesPattern: record.ShoesPattern,
               ShoesType: record.ShoesType,
               ShoesMaterial: record.ShoesMaterial,
-              ShoesFAB: record.ShoesFAB
+              ShoesFAB: record.ShoesFAB,
+
+              Style: record.Style,
+              Occasion: record.Occasion
             }
             
             dataMap.set(outfitId, detailData)
