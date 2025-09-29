@@ -398,6 +398,95 @@ export class ExactMatchRecommendationService {
     }
   }
 
+  // 检查是否为手动策划的推荐
+  private async checkManualRecommendation(prompt: string, gender: 'women' | 'men'): Promise<OutfitRecommendation[] | null> {
+    const trimmedPrompt = prompt.trim()
+
+    // 手动策划的女装推荐
+    const womenManualMap: Record<string, string[]> = {
+      '推荐一套精致休闲风格的穿搭，适合和朋友周末早午餐': ['Outfit 22', 'Outfit 23', 'Outfit 27', 'Outfit 37', 'Outfit 45', 'Outfit 48'],
+      '帮我找优雅时尚风格的穿搭，适合浪漫的约会夜晚': ['Outfit 8', 'Outfit 12', 'Outfit 31', 'Outfit 33', 'Outfit 43'],
+      '我需要一套经典典雅风格的穿搭，适合正式的商务晚宴': ['Outfit 1', 'Outfit 4', 'Outfit 9'],
+      '我需要一套搭配白色体恤日常休闲风格的穿搭，适合旅行时穿': ['Outfit 2', 'Outfit 20', 'Outfit 24', 'Outfit 28', 'Outfit 34', 'Outfit 38'],
+      '我下周有一个派对活动，帮我推荐华丽风格的半裙穿搭': ['Outfit 13', 'Outfit 14', 'Outfit 40'],
+      '帮我推荐优雅时尚风格的穿搭，适合日常办公室': ['Outfit 3', 'Outfit 10', 'Outfit 12', 'Outfit 21', 'Outfit 26', 'Outfit 31', 'Outfit 33', 'Outfit 43']
+    }
+
+    // 手动策划的男装推荐
+    const menManualMap: Record<string, string[]> = {
+      '我要参加商务晚宴，帮我找一套商务正装风格的穿搭': ['Outfit 2', 'Outfit 7', 'Outfit 8', 'Outfit 43', 'Outfit 44'],
+      '帮我推荐一些商务休闲风格的穿搭,适合日常办公室': ['Outfit 4', 'Outfit 5'],
+      '帮我推荐一些浅色系日常休闲风的穿搭，适合周末和朋友去早午餐': ['Outfit 1', 'Outfit 12', 'Outfit 17', 'Outfit 23', 'Outfit 24', 'Outfit 28', 'Outfit 34', 'Outfit 39', 'Outfit 46', 'Outfit 47', 'Outfit 49'],
+      '我需要一套精致休闲风格的穿搭，适合晚上去约会': ['Outfit 6', 'Outfit 20', 'Outfit 21', 'Outfit 25', 'Outfit 29', 'Outfit 30', 'Outfit 32', 'Outfit 33', 'Outfit 50'],
+      '我准备去旅行，想要轻松的日常休闲风，最好是圆领T恤搭配': ['Outfit 3', 'Outfit 10', 'Outfit 35', 'Outfit 39', 'Outfit 49'],
+      '帮我找一套精致休闲风格的西服': ['Outfit 13', 'Outfit 25', 'Outfit 29', 'Outfit 42']
+    }
+
+    const manualMap = gender === 'women' ? womenManualMap : menManualMap
+    const outfitIds = manualMap[trimmedPrompt]
+
+    if (!outfitIds) {
+      return null // 不是预定义的手动推荐
+    }
+
+    console.log(`🎯 Found manual recommendation for "${trimmedPrompt}": ${outfitIds.join(', ')}`)
+
+    // 获取数据映射
+    const dataMap = gender === 'women' ? csvDataService['womenOutfitDetails'] : csvDataService['menOutfitDetails']
+    const recommendations: OutfitRecommendation[] = []
+
+    // 为每个指定的outfit生成推荐
+    for (const outfitId of outfitIds) {
+      const outfit = dataMap.get(outfitId)
+
+      if (!outfit) {
+        console.warn(`Manual recommendation outfit not found: ${outfitId}`)
+        continue
+      }
+
+      // 获取产品ID信息
+      const outfitData = this.getOutfitProductIds(outfit)
+
+      // 构建items对象
+      const items: any = {}
+      if (outfitData.jacket_id && outfitData.jacket_id.trim()) {
+        items.jacket = this.createProductItem(outfitData.jacket_id, 'jacket')
+      }
+      if (outfitData.upper_id && outfitData.upper_id.trim()) {
+        items.upper = this.createProductItem(outfitData.upper_id, 'upper')
+      }
+      if (outfitData.lower_id && outfitData.lower_id.trim()) {
+        items.lower = this.createProductItem(outfitData.lower_id, 'lower')
+      }
+      if (outfitData.dress_id && outfitData.dress_id.trim()) {
+        items.dress = this.createProductItem(outfitData.dress_id, 'dress')
+      }
+      if (outfitData.shoes_id && outfitData.shoes_id.trim()) {
+        items.shoes = this.createProductItem(outfitData.shoes_id, 'shoes')
+      }
+
+      // 生成推荐理由
+      const reason = `精心为您挑选的经典搭配，这套${outfit.Style || '时尚'}风格的穿搭完美适应您的场景需求，展现独特的个人魅力与品味。`
+
+      const recommendation: OutfitRecommendation = {
+        outfit: {
+          id: parseInt(outfit.id.replace('Outfit ', '')) || 0,
+          name: outfit.id,
+          style: outfit.Style || '时尚',
+          occasions: outfitData.occasions ? outfitData.occasions.split(',').map((o: string) => o.trim()) : []
+        },
+        reason,
+        items,
+        virtualTryOn: undefined
+      }
+
+      recommendations.push(recommendation)
+    }
+
+    console.log(`✨ Generated ${recommendations.length} manual curated recommendations`)
+    return recommendations
+  }
+
   // 主要的精确匹配推荐方法
   async getExactMatchRecommendations(prompt: string, gender: 'women' | 'men' = 'women'): Promise<OutfitRecommendation[]> {
     try {
@@ -405,6 +494,13 @@ export class ExactMatchRecommendationService {
 
       // 确保CSV数据服务已初始化
       await csvDataService.initialize()
+
+      // 🎯 检查是否为预定义的手动策划推荐
+      const manualRecommendation = await this.checkManualRecommendation(prompt, gender)
+      if (manualRecommendation) {
+        console.log('✨ Using manual curated recommendation')
+        return manualRecommendation
+      }
 
       // 1. 从prompt中提取各种匹配条件
       const targetProducts = this.extractProductNames(prompt)
