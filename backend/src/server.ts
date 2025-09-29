@@ -22,6 +22,7 @@ app.use(cors({
     /^https:\/\/stylist-agent4-.*\.vercel\.app$/, // 所有 stylist-agent4 预览域名
     /^https:\/\/stylist-agent3-.*\.vercel\.app$/, // 所有 stylist-agent3 预览域名
     /^https:\/\/stylist-agent2-.*\.vercel\.app$/, // 兼容旧的 stylist-agent2 域名
+    /^https:\/\/.*\.netlify\.app$/, // 所有 Netlify 域名
   ],
   credentials: true
 }))
