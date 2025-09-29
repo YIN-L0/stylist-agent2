@@ -526,37 +526,24 @@ export class ExactMatchRecommendationService {
           items.shoes = this.createProductItem(outfitData.shoes_id, 'shoes')
         }
 
-        // 构建推荐理由 - 优先使用FAB数据生成
-        let reason: string
-
-        try {
-          const fabReason = await this.buildFabReason(prompt, outfit, items)
-          if (fabReason) {
-            reason = fabReason
-          } else {
-            // 回退到匹配详情推荐理由
-            const reasonParts: string[] = []
-            if (matchDetails.productMatches.length > 0) {
-              reasonParts.push(`产品匹配: ${matchDetails.productMatches.join('、')}`)
-            }
-            if (matchDetails.colorMatches.length > 0) {
-              reasonParts.push(`颜色匹配: ${matchDetails.colorMatches.join('、')}`)
-            }
-            if (matchDetails.styleMatches.length > 0) {
-              reasonParts.push(`风格匹配: ${matchDetails.styleMatches.join('、')}`)
-            }
-            if (matchDetails.occasionMatches.length > 0) {
-              reasonParts.push(`场合匹配: ${matchDetails.occasionMatches.join('、')}`)
-            }
-
-            reason = reasonParts.length > 0
-              ? `这套搭配完美符合您的需求：${reasonParts.join('；')}。精心挑选的每一件单品都与您的要求精确匹配，展现完美的整体效果。`
-              : `这套搭配为您精心挑选，展现优雅时尚的魅力。`
-          }
-        } catch (error) {
-          console.error('Error generating recommendation reason:', error)
-          reason = `这套搭配为您精心挑选，展现优雅时尚的魅力。`
+        // 构建基础推荐理由（不调用FAB数据生成，提升匹配速度）
+        const reasonParts: string[] = []
+        if (matchDetails.productMatches.length > 0) {
+          reasonParts.push(`产品匹配: ${matchDetails.productMatches.join('、')}`)
         }
+        if (matchDetails.colorMatches.length > 0) {
+          reasonParts.push(`颜色匹配: ${matchDetails.colorMatches.join('、')}`)
+        }
+        if (matchDetails.styleMatches.length > 0) {
+          reasonParts.push(`风格匹配: ${matchDetails.styleMatches.join('、')}`)
+        }
+        if (matchDetails.occasionMatches.length > 0) {
+          reasonParts.push(`场合匹配: ${matchDetails.occasionMatches.join('、')}`)
+        }
+
+        const reason = reasonParts.length > 0
+          ? `这套搭配完美符合您的需求：${reasonParts.join('；')}。精心挑选的每一件单品都与您的要求精确匹配，展现完美的整体效果。`
+          : `这套搭配为您精心挑选，展现优雅时尚的魅力。`
 
         recommendations.push({
           outfit: {
@@ -582,6 +569,59 @@ export class ExactMatchRecommendationService {
     } catch (error) {
       console.error('Error in exact match recommendations:', error)
       throw error
+    }
+  }
+
+  // 新增：获取基于FAB数据的详细推荐理由
+  async getFabBasedReason(scenario: string, outfitId: string, gender: 'women' | 'men' = 'women'): Promise<string> {
+    try {
+      console.log(`🎯 Generating FAB-based reason for outfit: ${outfitId}`)
+
+      // 确保CSV数据服务已初始化
+      await csvDataService.initialize()
+
+      // 获取套装数据
+      const dataMap = gender === 'women' ? csvDataService['womenOutfitDetails'] : csvDataService['menOutfitDetails']
+      const outfit = dataMap.get(outfitId)
+
+      if (!outfit) {
+        throw new Error(`Outfit ${outfitId} not found`)
+      }
+
+      // 构建产品项目（用于传递给 buildFabReason）
+      const outfitData = this.getOutfitProductIds(outfit)
+      const items: any = {}
+
+      if (outfitData.jacket_id && outfitData.jacket_id.trim()) {
+        items.jacket = this.createProductItem(outfitData.jacket_id, 'jacket')
+      }
+      if (outfitData.upper_id && outfitData.upper_id.trim()) {
+        items.upper = this.createProductItem(outfitData.upper_id, 'upper')
+      }
+      if (outfitData.lower_id && outfitData.lower_id.trim()) {
+        items.lower = this.createProductItem(outfitData.lower_id, 'lower')
+      }
+      if (outfitData.dress_id && outfitData.dress_id.trim()) {
+        items.dress = this.createProductItem(outfitData.dress_id, 'dress')
+      }
+      if (outfitData.shoes_id && outfitData.shoes_id.trim()) {
+        items.shoes = this.createProductItem(outfitData.shoes_id, 'shoes')
+      }
+
+      // 调用FAB数据生成详细推荐理由
+      const fabReason = await this.buildFabReason(scenario, outfit, items)
+
+      if (fabReason) {
+        console.log(`✅ Generated FAB-based reason for ${outfitId}`)
+        return fabReason
+      } else {
+        console.log(`⚠️ No valid FAB data found for ${outfitId}, using fallback reason`)
+        return `这套搭配为您精心挑选，每一件单品都经过细致考量，整体搭配展现优雅时尚的魅力，适合多种场合穿着。`
+      }
+
+    } catch (error) {
+      console.error(`Error generating FAB reason for ${outfitId}:`, error)
+      throw new Error('无法生成基于FAB数据的推荐理由')
     }
   }
 }
