@@ -1,6 +1,7 @@
 import { csvDataService, OutfitDetailData } from './csvDataService'
 import { database, menDatabase } from '../database/database'
 import { OutfitRecommendation, ProductItem } from '../types'
+import { openaiService, ScenarioAnalysis } from './openaiService'
 
 export interface ExactMatchResult {
   outfit: OutfitDetailData
@@ -14,6 +15,93 @@ export interface ExactMatchResult {
 }
 
 export class ExactMatchRecommendationService {
+  // 辅助方法：将场合转换为中文
+  private toChineseOccasions(occs: string[] | undefined): string[] {
+    if (!occs || occs.length === 0) return []
+    const map: Record<string, string> = {
+      'Office': '办公室',
+      'Business Dinner': '商务晚宴',
+      'Date Night': '约会夜晚',
+      'Cocktail': '鸡尾酒活动',
+      'Party': '派对活动',
+      'Celebration': '庆祝活动',
+      'Everyday Casual': '日常休闲',
+      'Travel': '旅行',
+      'Weekend Brunch': '周末早午餐',
+      'Festival': '节日活动',
+      'Concert': '音乐会',
+      'Interview': '面试'
+    }
+    return occs.map(o => map[o] || o)
+  }
+
+  // 基于FAB数据生成推荐理由（使用ChatGPT）
+  private async buildFabReason(
+    scenario: string,
+    outfit: OutfitDetailData,
+    items: any
+  ): Promise<string | null> {
+    const fabParts: string[] = []
+    if (outfit.DressFAB) fabParts.push(outfit.DressFAB)
+    if (outfit.UpperFAB) fabParts.push(outfit.UpperFAB)
+    if (outfit.LowerFAB) fabParts.push(outfit.LowerFAB)
+    if (outfit.JacketFAB) fabParts.push(outfit.JacketFAB)
+    if (outfit.ShoesFAB) fabParts.push(outfit.ShoesFAB)
+
+    if (fabParts.length === 0) return null
+
+    // 解析场合
+    const occasions = outfit.Occasion ? outfit.Occasion.split(',').map(o => o.trim()) : ['日常']
+    const occText = occasions.join('、')
+
+    // 清理FAB内容
+    const cleanedParts = fabParts.map(part => {
+      return part
+        .replace(/设计FAB：/g, '')
+        .replace(/面料FAB：/g, '')
+        .replace(/工艺FAB：/g, '')
+        .replace(/FAB：/g, '')
+        .replace(/；/g, '，')
+        .trim()
+    })
+
+    const merged = cleanedParts.join('。')
+
+    try {
+      // 构建分析对象
+      const analysis: ScenarioAnalysis = {
+        occasions: occasions,
+        formality: 'Casual', // 默认值，可以根据场合调整
+        keywords: [outfit.Style || '时尚'],
+        context: `精确匹配推荐：${scenario}`,
+        confidence: 0.9
+      }
+
+      // 构建outfit对象
+      const outfitForAI = {
+        id: outfit.id,
+        name: outfit.id,
+        style: outfit.Style,
+        occasions: occasions
+      }
+
+      // 构建详细信息对象
+      const outfitDetails = {
+        dressFAB: outfit.DressFAB,
+        upperFAB: outfit.UpperFAB,
+        lowerFAB: outfit.LowerFAB,
+        jacketFAB: outfit.JacketFAB,
+        shoesFAB: outfit.ShoesFAB
+      }
+
+      const reason = await openaiService.generateRecommendationReason(scenario, outfitForAI, analysis, outfitDetails)
+      return reason || `${merged}整体搭配在${occText}场合表现出色，这样的设计既保证了舒适性，又展现出独特的时尚魅力。`
+    } catch (error) {
+      console.error('Failed to generate FAB reason:', error)
+      // 回退到简单模板
+      return `${merged}整体搭配在${occText}场合表现出色，这样的设计既保证了舒适性，又展现出独特的时尚魅力。`
+    }
+  }
   // 从prompt中提取产品名称
   private extractProductNames(prompt: string): { [key: string]: string[] } {
     const lowerPrompt = prompt.toLowerCase()
@@ -109,20 +197,27 @@ export class ExactMatchRecommendationService {
     return extractedOccasions
   }
 
-  // 精确匹配产品名称
-  private exactMatchProducts(outfit: OutfitDetailData, targetProducts: { [key: string]: string[] }): string[] {
-    const matches: string[] = []
+  // 精确匹配产品名称和颜色的完整组合
+  private exactMatchProductsAndColors(outfit: OutfitDetailData, targetProducts: { [key: string]: string[] }, targetColors: string[]): { productMatches: string[], colorMatches: string[] } {
+    const productMatches: string[] = []
+    const colorMatches: string[] = []
 
     Object.entries(targetProducts).forEach(([category, keywords]) => {
-      let categoryMatched = false
-
       switch (category) {
         case 'dress':
           if (outfit.DressName) {
             keywords.forEach(keyword => {
               if (outfit.DressName?.toLowerCase().includes(keyword.toLowerCase())) {
-                matches.push(`连衣裙: ${outfit.DressName}`)
-                categoryMatched = true
+                productMatches.push(`连衣裙: ${outfit.DressName}`)
+
+                // 检查同一单品的颜色匹配
+                if (outfit.DressColor && targetColors.length > 0) {
+                  targetColors.forEach(targetColor => {
+                    if (outfit.DressColor?.toLowerCase().includes(targetColor.toLowerCase())) {
+                      colorMatches.push(`连衣裙颜色: ${outfit.DressColor}`)
+                    }
+                  })
+                }
               }
             })
           }
@@ -132,8 +227,16 @@ export class ExactMatchRecommendationService {
           if (outfit.UpperName) {
             keywords.forEach(keyword => {
               if (outfit.UpperName?.toLowerCase().includes(keyword.toLowerCase())) {
-                matches.push(`上衣: ${outfit.UpperName}`)
-                categoryMatched = true
+                productMatches.push(`上衣: ${outfit.UpperName}`)
+
+                // 检查同一单品的颜色匹配
+                if (outfit.UpperColor && targetColors.length > 0) {
+                  targetColors.forEach(targetColor => {
+                    if (outfit.UpperColor?.toLowerCase().includes(targetColor.toLowerCase())) {
+                      colorMatches.push(`上衣颜色: ${outfit.UpperColor}`)
+                    }
+                  })
+                }
               }
             })
           }
@@ -143,8 +246,16 @@ export class ExactMatchRecommendationService {
           if (outfit.LowerName) {
             keywords.forEach(keyword => {
               if (outfit.LowerName?.toLowerCase().includes(keyword.toLowerCase())) {
-                matches.push(`下装: ${outfit.LowerName}`)
-                categoryMatched = true
+                productMatches.push(`下装: ${outfit.LowerName}`)
+
+                // 检查同一单品的颜色匹配
+                if (outfit.LowerColor && targetColors.length > 0) {
+                  targetColors.forEach(targetColor => {
+                    if (outfit.LowerColor?.toLowerCase().includes(targetColor.toLowerCase())) {
+                      colorMatches.push(`下装颜色: ${outfit.LowerColor}`)
+                    }
+                  })
+                }
               }
             })
           }
@@ -154,8 +265,16 @@ export class ExactMatchRecommendationService {
           if (outfit.JacketName) {
             keywords.forEach(keyword => {
               if (outfit.JacketName?.toLowerCase().includes(keyword.toLowerCase())) {
-                matches.push(`夹克: ${outfit.JacketName}`)
-                categoryMatched = true
+                productMatches.push(`夹克: ${outfit.JacketName}`)
+
+                // 检查同一单品的颜色匹配
+                if (outfit.JacketColor && targetColors.length > 0) {
+                  targetColors.forEach(targetColor => {
+                    if (outfit.JacketColor?.toLowerCase().includes(targetColor.toLowerCase())) {
+                      colorMatches.push(`夹克颜色: ${outfit.JacketColor}`)
+                    }
+                  })
+                }
               }
             })
           }
@@ -165,8 +284,16 @@ export class ExactMatchRecommendationService {
           if (outfit.ShoesName) {
             keywords.forEach(keyword => {
               if (outfit.ShoesName?.toLowerCase().includes(keyword.toLowerCase())) {
-                matches.push(`鞋子: ${outfit.ShoesName}`)
-                categoryMatched = true
+                productMatches.push(`鞋子: ${outfit.ShoesName}`)
+
+                // 检查同一单品的颜色匹配
+                if (outfit.ShoesColor && targetColors.length > 0) {
+                  targetColors.forEach(targetColor => {
+                    if (outfit.ShoesColor?.toLowerCase().includes(targetColor.toLowerCase())) {
+                      colorMatches.push(`鞋子颜色: ${outfit.ShoesColor}`)
+                    }
+                  })
+                }
               }
             })
           }
@@ -174,31 +301,9 @@ export class ExactMatchRecommendationService {
       }
     })
 
-    return matches
+    return { productMatches, colorMatches }
   }
 
-  // 精确匹配颜色
-  private exactMatchColors(outfit: OutfitDetailData, targetColors: string[]): string[] {
-    const matches: string[] = []
-
-    const outfitColors = [
-      { name: 'UpperColor', value: outfit.UpperColor },
-      { name: 'LowerColor', value: outfit.LowerColor },
-      { name: 'DressColor', value: outfit.DressColor },
-      { name: 'JacketColor', value: outfit.JacketColor },
-      { name: 'ShoesColor', value: outfit.ShoesColor }
-    ].filter(item => item.value)
-
-    targetColors.forEach(targetColor => {
-      outfitColors.forEach(({ name, value }) => {
-        if (value?.toLowerCase().includes(targetColor.toLowerCase())) {
-          matches.push(`${name}: ${value}`)
-        }
-      })
-    })
-
-    return matches
-  }
 
   // 直接从CSV数据获取Style字段进行风格匹配
   private exactMatchStyles(outfit: OutfitDetailData, targetStyles: string[]): string[] {
@@ -310,23 +415,20 @@ export class ExactMatchRecommendationService {
           occasionMatches: [] as string[]
         }
 
-        // 匹配顺序1: 产品名称 (权重最高)
+        // 匹配顺序1+2: 产品名称和颜色的完整组合匹配 (权重最高)
         if (Object.keys(targetProducts).length > 0) {
-          const productMatches = this.exactMatchProducts(outfit, targetProducts)
+          const { productMatches, colorMatches } = this.exactMatchProductsAndColors(outfit, targetProducts, targetColors)
+
           if (productMatches.length > 0) {
             score += productMatches.length * 40 // 每个产品匹配40分
             matchDetails.productMatches = productMatches
             console.log(`✅ ${outfit.id} - Product matches:`, productMatches)
           }
-        }
 
-        // 匹配顺序2: 颜色 (权重第二)
-        if (targetColors.length > 0) {
-          const colorMatches = this.exactMatchColors(outfit, targetColors)
           if (colorMatches.length > 0) {
-            score += colorMatches.length * 30 // 每个颜色匹配30分
+            score += colorMatches.length * 30 // 每个同单品颜色匹配30分
             matchDetails.colorMatches = colorMatches
-            console.log(`🎨 ${outfit.id} - Color matches:`, colorMatches)
+            console.log(`🎨 ${outfit.id} - Same-item color matches:`, colorMatches)
           }
         }
 
@@ -360,8 +462,8 @@ export class ExactMatchRecommendationService {
         }
       }
 
-      // 4. 按分数排序，返回前9个
-      const sortedResults = results.sort((a, b) => b.score - a.score).slice(0, 9)
+      // 4. 按分数排序，返回所有匹配结果
+      const sortedResults = results.sort((a, b) => b.score - a.score)
 
       console.log(`📊 Found ${results.length} matching outfits, returning top ${sortedResults.length}`)
 
@@ -400,24 +502,37 @@ export class ExactMatchRecommendationService {
           items.shoes = this.createProductItem(outfitData.shoes_id, 'shoes')
         }
 
-        // 构建推荐理由
-        const reasonParts: string[] = []
-        if (matchDetails.productMatches.length > 0) {
-          reasonParts.push(`产品匹配: ${matchDetails.productMatches.join('、')}`)
-        }
-        if (matchDetails.colorMatches.length > 0) {
-          reasonParts.push(`颜色匹配: ${matchDetails.colorMatches.join('、')}`)
-        }
-        if (matchDetails.styleMatches.length > 0) {
-          reasonParts.push(`风格匹配: ${matchDetails.styleMatches.join('、')}`)
-        }
-        if (matchDetails.occasionMatches.length > 0) {
-          reasonParts.push(`场合匹配: ${matchDetails.occasionMatches.join('、')}`)
-        }
+        // 构建推荐理由 - 优先使用FAB数据生成
+        let reason: string
 
-        const reason = reasonParts.length > 0
-          ? `这套搭配完美符合您的需求：${reasonParts.join('；')}。精心挑选的每一件单品都与您的要求精确匹配，展现完美的整体效果。`
-          : `这套搭配为您精心挑选，展现优雅时尚的魅力。`
+        try {
+          const fabReason = await this.buildFabReason(prompt, outfit, items)
+          if (fabReason) {
+            reason = fabReason
+          } else {
+            // 回退到匹配详情推荐理由
+            const reasonParts: string[] = []
+            if (matchDetails.productMatches.length > 0) {
+              reasonParts.push(`产品匹配: ${matchDetails.productMatches.join('、')}`)
+            }
+            if (matchDetails.colorMatches.length > 0) {
+              reasonParts.push(`颜色匹配: ${matchDetails.colorMatches.join('、')}`)
+            }
+            if (matchDetails.styleMatches.length > 0) {
+              reasonParts.push(`风格匹配: ${matchDetails.styleMatches.join('、')}`)
+            }
+            if (matchDetails.occasionMatches.length > 0) {
+              reasonParts.push(`场合匹配: ${matchDetails.occasionMatches.join('、')}`)
+            }
+
+            reason = reasonParts.length > 0
+              ? `这套搭配完美符合您的需求：${reasonParts.join('；')}。精心挑选的每一件单品都与您的要求精确匹配，展现完美的整体效果。`
+              : `这套搭配为您精心挑选，展现优雅时尚的魅力。`
+          }
+        } catch (error) {
+          console.error('Error generating recommendation reason:', error)
+          reason = `这套搭配为您精心挑选，展现优雅时尚的魅力。`
+        }
 
         recommendations.push({
           outfit: {
