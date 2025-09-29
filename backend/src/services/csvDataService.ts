@@ -4,34 +4,42 @@ import { parse } from 'csv-parse'
 
 export interface OutfitDetailData {
   id: string
+
+  // Product IDs
+  JacketId?: string
+  UpperId?: string
+  LowerId?: string
+  DressId?: string
+  ShoesId?: string
+
   JacketName?: string
   JacketColor?: string
   JacketPattern?: string
   JacketType?: string
   JacketMaterial?: string
   JacketFAB?: string
-  
+
   UpperName?: string
   UpperColor?: string
   UpperPattern?: string
   UpperType?: string
   UpperMaterial?: string
   UpperFAB?: string
-  
+
   LowerName?: string
   LowerColor?: string
   LowerPattern?: string
   LowerType?: string
   LowerMaterial?: string
   LowerFAB?: string
-  
+
   DressName?: string
   DressColor?: string
   DressPattern?: string
   DressType?: string
   DressMaterial?: string
   DressFAB?: string
-  
+
   ShoesName?: string
   ShoesColor?: string
   ShoesPattern?: string
@@ -103,34 +111,42 @@ export class CSVDataService {
             
             const detailData: OutfitDetailData = {
               id: outfitId,
+
+              // Product IDs from CSV columns
+              JacketId: record.Jacket,
+              UpperId: record.Upper,
+              LowerId: record.Lower,
+              DressId: record.Dress,
+              ShoesId: record.Shoes,
+
               JacketName: record.JacketName,
               JacketColor: record.JacketColor,
               JacketPattern: record.JacketPattern,
               JacketType: record.JacketType,
               JacketMaterial: record.JacketMaterial,
               JacketFAB: record.JacketFAB,
-              
+
               UpperName: record.UpperName,
               UpperColor: record.UpperColor,
               UpperPattern: record.UpperPattern,
               UpperType: record.UpperType,
               UpperMaterial: record.UpperMaterial,
               UpperFAB: record.UpperFAB,
-              
+
               LowerName: record.LowerName,
               LowerColor: record.LowerColor,
               LowerPattern: record.LowerPattern,
               LowerType: record.LowerType,
               LowerMaterial: record.LowerMaterial,
               LowerFAB: record.LowerFAB,
-              
+
               DressName: record.DressName,
               DressColor: record.DressColor,
               DressPattern: record.DressPattern,
               DressType: record.DressType,
               DressMaterial: record.DressMaterial,
               DressFAB: record.DressFAB,
-              
+
               ShoesName: record.ShoesName,
               ShoesColor: record.ShoesColor,
               ShoesPattern: record.ShoesPattern,

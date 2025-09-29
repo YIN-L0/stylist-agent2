@@ -254,16 +254,18 @@ export class ExactMatchRecommendationService {
     }
   }
 
-  // 从数据库获取服装ID映射
-  private async getOutfitProductIds(outfitName: string, gender: 'women' | 'men'): Promise<any> {
-    try {
-      const targetDb = gender === 'men' ? menDatabase : database
-      const dbOutfits = await targetDb.searchOutfits([], [], 10000, gender)
-      const dbOutfit = dbOutfits.find(outfit => outfit.outfit_name === outfitName)
-      return dbOutfit || null
-    } catch (error) {
-      console.error('Error getting outfit product IDs:', error)
-      return null
+  // 从CSV数据获取产品ID (不再需要数据库查询)
+  private getOutfitProductIds(outfit: OutfitDetailData): any {
+    return {
+      id: outfit.id,
+      outfit_name: outfit.id,
+      jacket_id: outfit.JacketId || null,
+      upper_id: outfit.UpperId || null,
+      lower_id: outfit.LowerId || null,
+      dress_id: outfit.DressId || null,
+      shoes_id: outfit.ShoesId || null,
+      style: outfit.Style || null,
+      occasions: outfit.Occasion || null
     }
   }
 
@@ -369,30 +371,33 @@ export class ExactMatchRecommendationService {
       for (const result of sortedResults) {
         const { outfit, matchDetails } = result
 
-        // 获取数据库中的产品ID信息
-        const dbOutfit = await this.getOutfitProductIds(outfit.id, gender)
+        // 直接从CSV数据获取产品ID信息
+        const outfitData = this.getOutfitProductIds(outfit)
 
-        if (!dbOutfit) {
-          console.warn(`No database outfit found for ${outfit.id}`)
-          continue
-        }
+        console.log(`✅ Processing ${outfit.id} with IDs:`, {
+          dress: outfitData.dress_id,
+          upper: outfitData.upper_id,
+          lower: outfitData.lower_id,
+          jacket: outfitData.jacket_id,
+          shoes: outfitData.shoes_id
+        })
 
         // 构建产品项目
         const items: any = {}
-        if (dbOutfit.jacket_id) {
-          items.jacket = this.createProductItem(dbOutfit.jacket_id, 'jacket')
+        if (outfitData.jacket_id && outfitData.jacket_id.trim()) {
+          items.jacket = this.createProductItem(outfitData.jacket_id, 'jacket')
         }
-        if (dbOutfit.upper_id) {
-          items.upper = this.createProductItem(dbOutfit.upper_id, 'upper')
+        if (outfitData.upper_id && outfitData.upper_id.trim()) {
+          items.upper = this.createProductItem(outfitData.upper_id, 'upper')
         }
-        if (dbOutfit.lower_id) {
-          items.lower = this.createProductItem(dbOutfit.lower_id, 'lower')
+        if (outfitData.lower_id && outfitData.lower_id.trim()) {
+          items.lower = this.createProductItem(outfitData.lower_id, 'lower')
         }
-        if (dbOutfit.dress_id) {
-          items.dress = this.createProductItem(dbOutfit.dress_id, 'dress')
+        if (outfitData.dress_id && outfitData.dress_id.trim()) {
+          items.dress = this.createProductItem(outfitData.dress_id, 'dress')
         }
-        if (dbOutfit.shoes_id) {
-          items.shoes = this.createProductItem(dbOutfit.shoes_id, 'shoes')
+        if (outfitData.shoes_id && outfitData.shoes_id.trim()) {
+          items.shoes = this.createProductItem(outfitData.shoes_id, 'shoes')
         }
 
         // 构建推荐理由
@@ -416,15 +421,15 @@ export class ExactMatchRecommendationService {
 
         recommendations.push({
           outfit: {
-            id: dbOutfit.id,
-            name: dbOutfit.outfit_name,
-            jacket: dbOutfit.jacket_id,
-            upper: dbOutfit.upper_id,
-            lower: dbOutfit.lower_id,
-            dress: dbOutfit.dress_id,
-            shoes: dbOutfit.shoes_id,
-            style: dbOutfit.style,
-            occasions: dbOutfit.occasions ? dbOutfit.occasions.split(',').map((o: string) => o.trim()) : []
+            id: outfitData.id,
+            name: outfitData.outfit_name,
+            jacket: outfitData.jacket_id,
+            upper: outfitData.upper_id,
+            lower: outfitData.lower_id,
+            dress: outfitData.dress_id,
+            shoes: outfitData.shoes_id,
+            style: outfitData.style,
+            occasions: outfitData.occasions ? outfitData.occasions.split(',').map((o: string) => o.trim()) : []
           },
           reason,
           items,
