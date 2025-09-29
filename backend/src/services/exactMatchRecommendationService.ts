@@ -200,51 +200,35 @@ export class ExactMatchRecommendationService {
     return matches
   }
 
-  // 通过数据库查询获取Style字段进行风格匹配
-  private async exactMatchStyles(outfitName: string, targetStyles: string[], gender: 'women' | 'men'): Promise<string[]> {
+  // 直接从CSV数据获取Style字段进行风格匹配
+  private exactMatchStyles(outfit: OutfitDetailData, targetStyles: string[]): string[] {
     const matches: string[] = []
 
-    try {
-      const targetDb = gender === 'men' ? menDatabase : database
-      const dbOutfits = await targetDb.searchOutfits([], [], 10000, gender)
-      const dbOutfit = dbOutfits.find(outfit => outfit.outfit_name === outfitName)
-
-      if (dbOutfit && dbOutfit.style) {
-        targetStyles.forEach(targetStyle => {
-          if (dbOutfit.style.toLowerCase().includes(targetStyle.toLowerCase())) {
-            matches.push(`风格: ${dbOutfit.style}`)
-          }
-        })
-      }
-    } catch (error) {
-      console.error('Error matching styles:', error)
+    if (outfit.Style) {
+      targetStyles.forEach(targetStyle => {
+        if (outfit.Style?.toLowerCase().includes(targetStyle.toLowerCase())) {
+          matches.push(`风格: ${outfit.Style}`)
+        }
+      })
     }
 
     return matches
   }
 
-  // 通过数据库查询获取occasions字段进行场合匹配
-  private async exactMatchOccasions(outfitName: string, targetOccasions: string[], gender: 'women' | 'men'): Promise<string[] > {
+  // 直接从CSV数据获取Occasion字段进行场合匹配
+  private exactMatchOccasions(outfit: OutfitDetailData, targetOccasions: string[]): string[] {
     const matches: string[] = []
 
-    try {
-      const targetDb = gender === 'men' ? menDatabase : database
-      const dbOutfits = await targetDb.searchOutfits([], [], 10000, gender)
-      const dbOutfit = dbOutfits.find(outfit => outfit.outfit_name === outfitName)
+    if (outfit.Occasion) {
+      const outfitOccasions = outfit.Occasion.split(',').map((o: string) => o.trim())
 
-      if (dbOutfit && dbOutfit.occasions) {
-        const outfitOccasions = dbOutfit.occasions.split(',').map((o: string) => o.trim())
-
-        targetOccasions.forEach(targetOccasion => {
-          outfitOccasions.forEach((outfitOccasion: string) => {
-            if (outfitOccasion.toLowerCase().includes(targetOccasion.toLowerCase())) {
-              matches.push(`场合: ${outfitOccasion}`)
-            }
-          })
+      targetOccasions.forEach(targetOccasion => {
+        outfitOccasions.forEach((outfitOccasion: string) => {
+          if (outfitOccasion.toLowerCase().includes(targetOccasion.toLowerCase())) {
+            matches.push(`场合: ${outfitOccasion}`)
+          }
         })
-      }
-    } catch (error) {
-      console.error('Error matching occasions:', error)
+      })
     }
 
     return matches
@@ -346,7 +330,7 @@ export class ExactMatchRecommendationService {
 
         // 匹配顺序3: 风格 (权重第三)
         if (targetStyles.length > 0) {
-          const styleMatches = await this.exactMatchStyles(outfit.id, targetStyles, gender)
+          const styleMatches = this.exactMatchStyles(outfit, targetStyles)
           if (styleMatches.length > 0) {
             score += styleMatches.length * 20 // 每个风格匹配20分
             matchDetails.styleMatches = styleMatches
@@ -356,7 +340,7 @@ export class ExactMatchRecommendationService {
 
         // 匹配顺序4: 场合 (权重第四)
         if (targetOccasions.length > 0) {
-          const occasionMatches = await this.exactMatchOccasions(outfit.id, targetOccasions, gender)
+          const occasionMatches = this.exactMatchOccasions(outfit, targetOccasions)
           if (occasionMatches.length > 0) {
             score += occasionMatches.length * 10 // 每个场合匹配10分
             matchDetails.occasionMatches = occasionMatches

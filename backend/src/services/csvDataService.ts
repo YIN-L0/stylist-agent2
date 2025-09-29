@@ -38,6 +38,9 @@ export interface OutfitDetailData {
   ShoesType?: string
   ShoesMaterial?: string
   ShoesFAB?: string
+
+  Style?: string
+  Occasion?: string
 }
 
 export class CSVDataService {
