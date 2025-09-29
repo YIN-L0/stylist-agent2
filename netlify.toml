@@ -1,12 +1,12 @@
 [build]
   # 构建命令
-  command = "npm run build"
+  command = "cd frontend && npm install && npm run build"
 
   # 输出目录
-  publish = "dist"
+  publish = "frontend/dist"
 
   # 基础目录
-  base = "frontend"
+  base = "."
 
 [build.environment]
   # Node.js 版本
