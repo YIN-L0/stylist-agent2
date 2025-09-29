@@ -117,47 +117,37 @@ export class OpenAIService {
 
   async generateRecommendationReason(scenario: string, outfit: any, analysis: ScenarioAnalysis, outfitDetails?: any): Promise<string> {
     try {
-      // 构建详细的搭配信息
+      // 构建详细的搭配信息 - 使用新的FAB数据结构
       let detailsText = '';
       if (outfitDetails) {
         const details = [];
-        
-        // 添加上装信息（优先Material）
-        if (outfitDetails.UpperName) {
-          const materialInfo = outfitDetails.UpperMaterial ? `材质：${outfitDetails.UpperMaterial}。` : '';
-          const fabInfo = outfitDetails.UpperFAB ? `工艺特点：${outfitDetails.UpperFAB}` : '';
-          details.push(`上装：${outfitDetails.UpperName}，${outfitDetails.UpperColor || ''}${outfitDetails.UpperPattern || ''}。${materialInfo}${fabInfo}`);
+
+        // 添加连衣裙信息
+        if (outfitDetails.dressfab) {
+          details.push(`连衣裙：${outfitDetails.dressfab}`);
         }
-        
-        // 添加下装信息（优先Material）
-        if (outfitDetails.LowerName) {
-          const materialInfo = outfitDetails.LowerMaterial ? `材质：${outfitDetails.LowerMaterial}。` : '';
-          const fabInfo = outfitDetails.LowerFAB ? `工艺特点：${outfitDetails.LowerFAB}` : '';
-          details.push(`下装：${outfitDetails.LowerName}，${outfitDetails.LowerColor || ''}${outfitDetails.LowerPattern || ''}。${materialInfo}${fabInfo}`);
+
+        // 添加上装信息
+        if (outfitDetails.upperfab) {
+          details.push(`上装：${outfitDetails.upperfab}`);
         }
-        
-        // 添加外套信息（优先Material）
-        if (outfitDetails.JacketName) {
-          const materialInfo = outfitDetails.JacketMaterial ? `材质：${outfitDetails.JacketMaterial}。` : '';
-          const fabInfo = outfitDetails.JacketFAB ? `工艺特点：${outfitDetails.JacketFAB}` : '';
-          details.push(`外套：${outfitDetails.JacketName}，${outfitDetails.JacketColor || ''}${outfitDetails.JacketPattern || ''}。${materialInfo}${fabInfo}`);
+
+        // 添加下装信息
+        if (outfitDetails.lowerfab) {
+          details.push(`下装：${outfitDetails.lowerfab}`);
         }
-        
-        // 添加连衣裙信息（优先Material）
-        if (outfitDetails.DressName) {
-          const materialInfo = outfitDetails.DressMaterial ? `材质：${outfitDetails.DressMaterial}。` : '';
-          const fabInfo = outfitDetails.DressFAB ? `工艺特点：${outfitDetails.DressFAB}` : '';
-          details.push(`连衣裙：${outfitDetails.DressName}，${outfitDetails.DressColor || ''}${outfitDetails.DressPattern || ''}。${materialInfo}${fabInfo}`);
+
+        // 添加外套信息
+        if (outfitDetails.jacketfab) {
+          details.push(`外套：${outfitDetails.jacketfab}`);
         }
-        
-        // 添加鞋子信息（优先Material）
-        if (outfitDetails.ShoesName) {
-          const materialInfo = outfitDetails.ShoesMaterial ? `材质：${outfitDetails.ShoesMaterial}。` : '';
-          const fabInfo = outfitDetails.ShoesFAB ? `工艺特点：${outfitDetails.ShoesFAB}` : '';
-          details.push(`鞋履：${outfitDetails.ShoesName}，${outfitDetails.ShoesColor || ''}${outfitDetails.ShoesPattern || ''}。${materialInfo}${fabInfo}`);
+
+        // 添加鞋子信息
+        if (outfitDetails.shoesfab) {
+          details.push(`鞋履：${outfitDetails.shoesfab}`);
         }
-        
-        detailsText = details.join('\n');
+
+        detailsText = details.join('\n\n');
       }
 
       const prompt = `

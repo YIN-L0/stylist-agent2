@@ -41,31 +41,53 @@ export class ExactMatchRecommendationService {
     outfit: OutfitDetailData,
     items: any
   ): Promise<string | null> {
-    const fabParts: string[] = []
-    if (outfit.DressFAB) fabParts.push(outfit.DressFAB)
-    if (outfit.UpperFAB) fabParts.push(outfit.UpperFAB)
-    if (outfit.LowerFAB) fabParts.push(outfit.LowerFAB)
-    if (outfit.JacketFAB) fabParts.push(outfit.JacketFAB)
-    if (outfit.ShoesFAB) fabParts.push(outfit.ShoesFAB)
+    // 按优先级选择FAB数据：连衣裙 > 上衣 > 下装 > 夹克 > 鞋子
+    const fabPriority = [
+      { type: 'DressFAB', fab: outfit.DressFAB, name: '连衣裙' },
+      { type: 'UpperFAB', fab: outfit.UpperFAB, name: '上衣' },
+      { type: 'LowerFAB', fab: outfit.LowerFAB, name: '下装' },
+      { type: 'JacketFAB', fab: outfit.JacketFAB, name: '夹克' },
+      { type: 'ShoesFAB', fab: outfit.ShoesFAB, name: '鞋子' }
+    ]
 
-    if (fabParts.length === 0) return null
+    // 找到所有有效的FAB数据（排除无效值）
+    const validFabs = fabPriority.filter(item =>
+      item.fab &&
+      item.fab.trim() &&
+      item.fab !== 'undefined' &&
+      item.fab !== '鞋履' &&
+      item.fab.length > 10  // 确保有实际内容
+    )
+
+    console.log(`📊 ${outfit.id} - 找到有效FAB数据: ${validFabs.length} 个`)
+    validFabs.forEach(fab => {
+      console.log(`   ${fab.name}: "${fab.fab?.substring(0, 50) || ''}..."`)
+    })
+
+    if (validFabs.length === 0) {
+      console.log(`⚠️ ${outfit.id} - 没有有效的FAB数据，跳过ChatGPT生成`)
+      return null
+    }
 
     // 解析场合
     const occasions = outfit.Occasion ? outfit.Occasion.split(',').map(o => o.trim()) : ['日常']
     const occText = occasions.join('、')
 
-    // 清理FAB内容
-    const cleanedParts = fabParts.map(part => {
-      return part
+    // 清理FAB内容并组合
+    const cleanedFabs = validFabs.map(item => {
+      const cleaned = (item.fab || '')
         .replace(/设计FAB：/g, '')
         .replace(/面料FAB：/g, '')
         .replace(/工艺FAB：/g, '')
+        .replace(/纱线FAB：/g, '')
+        .replace(/鞋材FAB：/g, '')
         .replace(/FAB：/g, '')
         .replace(/；/g, '，')
         .trim()
+      return `${item.name}：${cleaned}`
     })
 
-    const merged = cleanedParts.join('。')
+    const merged = cleanedFabs.join('。')
 
     try {
       // 构建分析对象
@@ -85,14 +107,16 @@ export class ExactMatchRecommendationService {
         occasions: occasions
       }
 
-      // 构建详细信息对象
-      const outfitDetails = {
-        dressFAB: outfit.DressFAB,
-        upperFAB: outfit.UpperFAB,
-        lowerFAB: outfit.LowerFAB,
-        jacketFAB: outfit.JacketFAB,
-        shoesFAB: outfit.ShoesFAB
-      }
+      // 构建详细信息对象 - 只传递有效的FAB数据
+      const outfitDetails: any = {}
+
+      validFabs.forEach(fab => {
+        const key = fab.type.replace('FAB', 'FAB').toLowerCase() // dressfab -> dressfab
+        outfitDetails[key] = fab.fab
+      })
+
+      console.log(`🤖 ${outfit.id} - 发送给ChatGPT的FAB数据:`, Object.keys(outfitDetails))
+      console.log(`   示例FAB内容:`, Object.values(outfitDetails).map(fab => typeof fab === 'string' ? fab.substring(0, 80) + '...' : fab))
 
       const reason = await openaiService.generateRecommendationReason(scenario, outfitForAI, analysis, outfitDetails)
       return reason || `${merged}整体搭配在${occText}场合表现出色，这样的设计既保证了舒适性，又展现出独特的时尚魅力。`
