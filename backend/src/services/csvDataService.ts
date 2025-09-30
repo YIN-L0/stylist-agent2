@@ -86,7 +86,7 @@ export class CSVDataService {
       // 加载男装数据
       const menDataPath = path.join(projectRoot, 'data/men_outfits_with_all_attributes2.csv')
       console.log('Loading men data from:', menDataPath)
-      await this.loadCSVData(menDataPath, this.menOutfitDetails)
+      await this.loadMenCSVData(menDataPath, this.menOutfitDetails)
 
       this.initialized = true
       console.log(`📚 CSV data loaded: ${this.womenOutfitDetails.size} women outfits, ${this.menOutfitDetails.size} men outfits`)
@@ -171,6 +171,86 @@ export class CSVDataService {
             dataMap.set(outfitId, detailData)
           })
           
+          resolve()
+        })
+        .on('error', reject)
+    })
+  }
+
+  private async loadMenCSVData(filePath: string, dataMap: Map<string, OutfitDetailData>): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const records: any[] = []
+
+      fs.createReadStream(filePath)
+        .pipe(parse({
+          columns: true,
+          skip_empty_lines: true,
+          trim: true
+        }))
+        .on('data', (record) => {
+          records.push(record)
+        })
+        .on('end', () => {
+          records.forEach((record, index) => {
+            const outfitId = `Outfit ${index + 1}`
+
+            const detailData: OutfitDetailData = {
+              id: outfitId,
+
+              // Product IDs from CSV columns
+              JacketId: record.Jacket,
+              UpperId: record.Upper,
+              LowerId: record.Lower,
+              DressId: record.Dress,
+              ShoesId: record.Shoes,
+
+              JacketName: record.JacketName,
+              JacketColor: record.JacketColor,
+              JacketPattern: record.JacketPattern,
+              JacketType: record.JacketType,
+              JacketMaterial: record.JacketMaterial,
+              JacketFAB: record.JacketFAB,
+
+              UpperName: record.UpperName,
+              UpperColor: record.UpperColor,
+              UpperPattern: record.UpperPattern,
+              UpperType: record.UpperType,
+              UpperMaterial: record.UpperMaterial,
+              UpperFAB: record.UpperFAB,
+
+              LowerName: record.LowerName,
+              LowerColor: record.LowerColor,
+              LowerPattern: record.LowerPattern,
+              LowerType: record.LowerType,
+              LowerMaterial: record.LowerMaterial,
+              LowerFAB: record.LowerFAB,
+
+              DressName: record.DressName,
+              DressColor: record.DressColor,
+              DressPattern: record.DressPattern,
+              DressType: record.DressType,
+              DressMaterial: record.DressMaterial,
+              DressFAB: record.DressFAB,
+
+              ShoesName: record.ShoesName,
+              ShoesColor: record.ShoesColor,
+              ShoesPattern: record.ShoesPattern,
+              ShoesType: record.ShoesType,
+              ShoesMaterial: record.ShoesMaterial,
+              ShoesFAB: record.ShoesFAB,
+
+              Style: record.Style,
+              Occasion: record.Occasion,
+
+              // Try-on images - 男装只有一列TryOnImage，我们把它映射到三个字段
+              TryOnImage1: record.TryOnImage || '',
+              TryOnImage2: record.TryOnImage || '', // 同一张图片
+              TryOnImage3: record.TryOnImage || ''  // 同一张图片
+            }
+
+            dataMap.set(outfitId, detailData)
+          })
+
           resolve()
         })
         .on('error', reject)

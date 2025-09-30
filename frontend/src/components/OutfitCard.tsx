@@ -157,26 +157,35 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
 
   // 获取当前应该显示的TryOn图片URL - 从后端数据获取，如无则使用生成的URL
   const getCurrentTryOnImageUrl = () => {
+    const gender = recommendation.outfit.gender || 'women' // 默认为女装
+
     // 首先尝试从后端数据获取
     if (recommendation.outfit.tryOnImages) {
       let imageUrl = ''
-      switch (tryOnImageIndex) {
-        case 0:
-          imageUrl = recommendation.outfit.tryOnImages.image1 || ''
-          break
-        case 1:
-          imageUrl = recommendation.outfit.tryOnImages.image2 || ''
-          break
-        case 2:
-          imageUrl = recommendation.outfit.tryOnImages.image3 || ''
-          break
-        default:
-          imageUrl = recommendation.outfit.tryOnImages.image1 || ''
+
+      if (gender === 'men') {
+        // 男装只有一张图片，所有索引都显示同一张图片
+        imageUrl = recommendation.outfit.tryOnImages.image1 || ''
+      } else {
+        // 女装有三张不同的图片
+        switch (tryOnImageIndex) {
+          case 0:
+            imageUrl = recommendation.outfit.tryOnImages.image1 || ''
+            break
+          case 1:
+            imageUrl = recommendation.outfit.tryOnImages.image2 || ''
+            break
+          case 2:
+            imageUrl = recommendation.outfit.tryOnImages.image3 || ''
+            break
+          default:
+            imageUrl = recommendation.outfit.tryOnImages.image1 || ''
+        }
       }
 
       // 如果找到有效的URL，返回它
       if (imageUrl && imageUrl.trim()) {
-        console.log(`Using CSV image URL: ${imageUrl}`)
+        console.log(`Using CSV image URL for ${gender}: ${imageUrl}`)
         return imageUrl
       }
     }
@@ -186,7 +195,6 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
     const imageNumber = tryOnImageIndex + 1
 
     // 根据性别确定URL前缀
-    const gender = recommendation.outfit.gender || 'women' // 默认为女装
     const prefix = gender === 'men' ? 'men_outfit' : 'outfit'
 
     const fallbackUrl = `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/${prefix}${outfitIdNumber}_${imageNumber}.jpg`
