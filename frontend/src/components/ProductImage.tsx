@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { ImageOff } from 'lucide-react'
-import ImageModal from './ImageModal'
 
 interface ProductImageProps {
   productId: string
@@ -20,7 +19,6 @@ const ProductImage: React.FC<ProductImageProps> = ({
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [isInView, setIsInView] = useState(false)
-  const [showModal, setShowModal] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -53,10 +51,6 @@ const ProductImage: React.FC<ProductImageProps> = ({
     setIsLoaded(false)
   }
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setShowModal(true)
-  }
 
 
   const getFallbackImage = () => {
@@ -80,8 +74,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`cursor-pointer relative overflow-hidden bg-gray-100 ${className}`}
-      onClick={handleClick}
+      className={`relative overflow-hidden bg-gray-100 ${className}`}
     >
       {/* 加载骨架屏 */}
       {!isInView && (
@@ -118,21 +111,8 @@ const ProductImage: React.FC<ProductImageProps> = ({
             getFallbackImage()
           )}
 
-          {/* 简单的点击提示 - 移除复杂的悬停效果 */}
-          <div className="absolute inset-0 cursor-pointer" title="点击放大查看">
-            {/* 移除所有悬停动画和按钮，避免闪烁 */}
-          </div>
         </>
       )}
-
-      {/* 图片放大模态框 */}
-      <ImageModal
-        isOpen={showModal}
-        imageUrl={imageUrl}
-        productId={productId}
-        type={type}
-        onClose={() => setShowModal(false)}
-      />
     </div>
   )
 }

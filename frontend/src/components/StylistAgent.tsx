@@ -274,24 +274,6 @@ const StylistAgent: React.FC = () => {
                   为你精选的搭配推荐 {visibleCount < recommendations.recommendations.length ? `(显示 ${visibleCount}/${recommendations.recommendations.length} 套)` : `(共 ${recommendations.recommendations.length} 套)`}
                 </p>
                 
-                {/* 刷新推荐按钮 */}
-                <button
-                  onClick={handleRefreshRecommendations}
-                  disabled={isLoading}
-                  className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                >
-                  {isLoading ? (
-                    <>
-                      <LoadingSpinner />
-                      <span>正在刷新...</span>
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="w-5 h-5" />
-                      <span>换一批搭配</span>
-                    </>
-                  )}
-                </button>
               </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
@@ -314,16 +296,6 @@ const StylistAgent: React.FC = () => {
                 </div>
               )}
 
-              {/* 底部操作 */}
-              <div className="text-center mt-12">
-                <button
-                  onClick={handleReset}
-                  className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm hover:bg-white text-gray-700 font-semibold py-4 px-8 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl border border-gray-200"
-                >
-                  <RefreshCw className="w-5 h-5" />
-                  <span>重新开始推荐</span>
-                </button>
-              </div>
             </div>
           </div>
         )}

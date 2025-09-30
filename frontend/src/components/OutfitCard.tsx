@@ -232,9 +232,6 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
             精选搭配
           </h4>
         </div>
-        <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
-          <Star className="w-5 h-5" />
-        </button>
       </div>
 
       {/* 服装单品网格 - 调整为更大的图片尺寸 */}
