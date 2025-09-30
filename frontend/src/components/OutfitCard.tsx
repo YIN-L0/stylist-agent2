@@ -127,22 +127,29 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
 
   // 新增：处理查看生成换装按钮点击
   const handleViewTryOnImage = () => {
+    console.log('TryOn button clicked', { isLoadingTryOn, showTryOnImage, tryOnImageIndex })
+
     // 如果正在加载，不响应点击
     if (isLoadingTryOn) return
 
     if (!showTryOnImage) {
       // 第一次点击：显示加载动画4秒，然后显示第一张图片
+      console.log('First click - showing loading animation')
       setIsLoadingTryOn(true)
       setTimeout(() => {
+        console.log('Loading complete - showing first image')
         setShowTryOnImage(true)
         setTryOnImageIndex(0)
         setIsLoadingTryOn(false)
       }, 4000) // 4秒加载时间
     } else {
       // 后续点击：加载4秒后切换到下一张
+      console.log('Subsequent click - switching to next image')
       setIsLoadingTryOn(true)
       setTimeout(() => {
-        setTryOnImageIndex((prev) => (prev + 1) % 3)
+        const nextIndex = (tryOnImageIndex + 1) % 3
+        console.log(`Switching to image index: ${nextIndex}`)
+        setTryOnImageIndex(nextIndex)
         setIsLoadingTryOn(false)
       }, 4000)
     }
@@ -169,6 +176,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
 
       // 如果找到有效的URL，返回它
       if (imageUrl && imageUrl.trim()) {
+        console.log(`Using CSV image URL: ${imageUrl}`)
         return imageUrl
       }
     }
@@ -176,7 +184,9 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
     // 如果没有后端数据或URL为空，使用生成的URL作为后备
     const outfitIdNumber = recommendation.outfit.name.toLowerCase().replace('outfit ', '')
     const imageNumber = tryOnImageIndex + 1
-    return `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/outfit${outfitIdNumber}_${imageNumber}.jpg`
+    const fallbackUrl = `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/outfit${outfitIdNumber}_${imageNumber}.jpg`
+    console.log(`Using fallback URL: ${fallbackUrl}`)
+    return fallbackUrl
   }
 
   return (
