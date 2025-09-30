@@ -112,8 +112,9 @@ export class CSVDataService {
         })
         .on('end', () => {
           records.forEach((record, index) => {
-            const outfitId = `Outfit ${index + 1}`
-            
+            // 使用CSV第一列的实际值作为outfitId，而不是行索引
+            const outfitId = record['Unnamed: 0'] || `Outfit ${index + 1}`
+
             const detailData: OutfitDetailData = {
               id: outfitId,
 
@@ -192,7 +193,8 @@ export class CSVDataService {
         })
         .on('end', () => {
           records.forEach((record, index) => {
-            const outfitId = `Outfit ${index + 1}`
+            // 使用CSV第一列的实际值作为outfitId，而不是行索引
+            const outfitId = record['Unnamed: 0'] || `Outfit ${index + 1}`
 
             const detailData: OutfitDetailData = {
               id: outfitId,
