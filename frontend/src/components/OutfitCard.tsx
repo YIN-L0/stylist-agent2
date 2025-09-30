@@ -282,11 +282,11 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         {/* 显示TryOn图片 - 不显示加载时 */}
         {showTryOnImage && !isLoadingTryOn && (
           <div className="mt-4">
-            <div className="relative rounded-xl overflow-hidden shadow-lg max-w-xs mx-auto">
+            <div className="relative rounded-xl overflow-hidden shadow-lg max-w-sm mx-auto">
               <img
                 src={getCurrentTryOnImageUrl() || ''}
                 alt="换装效果"
-                className="w-full h-auto max-h-96 object-contain"
+                className="w-full h-auto max-h-[28rem] object-contain"
                 onLoad={() => console.log('Image loaded successfully:', getCurrentTryOnImageUrl())}
                 onError={(e) => {
                   console.error('Image failed to load:', getCurrentTryOnImageUrl())

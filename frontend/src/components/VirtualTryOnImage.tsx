@@ -99,7 +99,7 @@ const VirtualTryOnImage: React.FC<VirtualTryOnImageProps> = ({
         </div>
         
         <div
-          className="relative group cursor-pointer overflow-hidden rounded-xl bg-white shadow-lg max-w-xs mx-auto"
+          className="relative group cursor-pointer overflow-hidden rounded-xl bg-white shadow-lg max-w-sm mx-auto"
           onClick={handleClick}
         >
           {!isLoaded && !hasError && (
@@ -116,7 +116,7 @@ const VirtualTryOnImage: React.FC<VirtualTryOnImageProps> = ({
             alt="虚拟试穿效果"
             onLoad={handleImageLoad}
             onError={handleImageError}
-            className={`w-full h-auto max-h-96 object-contain transition-transform duration-300 ${
+            className={`w-full h-auto max-h-[28rem] object-contain transition-transform duration-300 ${
               isLoaded ? 'group-hover:scale-105' : 'opacity-0'
             }`}
             loading="lazy"
