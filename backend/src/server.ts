@@ -193,6 +193,7 @@ initializeDatabase()
   })
   .then(() => {
     console.log('CSV data service initialization completed')
+    console.log('Outfit summary service initialization completed')
   })
   .catch((error) => {
     console.error('Initialization failed:', error)

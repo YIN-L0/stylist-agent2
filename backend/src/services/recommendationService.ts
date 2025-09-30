@@ -3,6 +3,7 @@ import { openaiService, ScenarioAnalysis } from './openaiService'
 import { OutfitRecommendation, ProductItem, VirtualTryOnResult } from '../types'
 import { virtualTryOnService } from './virtualTryOnService'
 import { csvDataService } from './csvDataService'
+import { outfitSummaryService } from './outfitSummaryService'
 
 export class RecommendationService {
   private toChineseOccasions(occs: string[] | undefined): string[] {
@@ -176,6 +177,12 @@ export class RecommendationService {
   private generateProductUrl(productId: string): string {
     // 可以自定义产品详情页面链接，这里暂时使用占位符
     return `https://example.com/products/${productId}`
+  }
+
+  // 从outfit名称中提取ID，例如 "Outfit 1" -> "1"
+  private extractOutfitId(outfitName: string): string | null {
+    const match = outfitName.match(/Outfit\s+(\d+)/i)
+    return match ? match[1] : null
   }
 
   // 将服装记录转换为产品项目
@@ -573,23 +580,33 @@ export class RecommendationService {
         // 获取详细搭配信息并生成推荐理由
         let reason: string
         try {
-          // 获取搭配的详细信息（CSV服务应该已在服务启动时初始化）
-          const outfitDetails = csvDataService.getOutfitDetails(outfit.outfit_name, gender)
-          
-          if (outfitDetails) {
-            console.log('🎨 Using detailed outfit information for AI reasoning')
-            // 使用详细搭配信息生成AI推荐理由
-            const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis, outfitDetails)
-            reason = aiReason
+          // 首先尝试使用CSV中的搭配介绍词
+          const outfitId = this.extractOutfitId(outfit.outfit_name)
+          const csvSummary = outfitId ? outfitSummaryService.getOutfitSummary(outfitId, gender) : null
+
+          if (csvSummary) {
+            console.log(`✨ Using CSV summary for outfit ${outfitId}`)
+            reason = csvSummary
           } else {
-            console.log('⚠️ No detailed outfit info found, using FAB-based reasoning')
-            // 回退到原有的FAB推理方式
-            const fabReason = this.buildFabReason(scenario, analysis.occasions, items)
-            if (fabReason) {
-              reason = fabReason
-            } else {
-              const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis)
+            console.log('⚠️ No CSV summary found, using existing logic')
+            // 回退到原有的逻辑
+            const outfitDetails = csvDataService.getOutfitDetails(outfit.outfit_name, gender)
+
+            if (outfitDetails) {
+              console.log('🎨 Using detailed outfit information for AI reasoning')
+              // 使用详细搭配信息生成AI推荐理由
+              const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis, outfitDetails)
               reason = aiReason
+            } else {
+              console.log('⚠️ No detailed outfit info found, using FAB-based reasoning')
+              // 回退到原有的FAB推理方式
+              const fabReason = this.buildFabReason(scenario, analysis.occasions, items)
+              if (fabReason) {
+                reason = fabReason
+              } else {
+                const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis)
+                reason = aiReason
+              }
             }
           }
         } catch (reasonError) {
