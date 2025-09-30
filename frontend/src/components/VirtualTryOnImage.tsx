@@ -5,11 +5,13 @@ import { VirtualTryOnResult } from '@shared/types'
 interface VirtualTryOnImageProps {
   virtualTryOn?: VirtualTryOnResult
   className?: string
+  gender?: 'women' | 'men'
 }
 
-const VirtualTryOnImage: React.FC<VirtualTryOnImageProps> = ({ 
-  virtualTryOn, 
-  className = '' 
+const VirtualTryOnImage: React.FC<VirtualTryOnImageProps> = ({
+  virtualTryOn,
+  className = '',
+  gender = 'women'
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
@@ -99,7 +101,11 @@ const VirtualTryOnImage: React.FC<VirtualTryOnImageProps> = ({
         </div>
         
         <div
-          className="relative group cursor-pointer overflow-hidden rounded-xl bg-white shadow-lg max-w-sm mx-auto"
+          className={`relative group cursor-pointer overflow-hidden rounded-xl bg-white shadow-lg mx-auto ${
+            gender === 'women'
+              ? 'max-w-none' // 女装：无宽度限制，显示原始大小
+              : 'max-w-lg'   // 男装：比之前更大
+          }`}
           onClick={handleClick}
         >
           {!isLoaded && !hasError && (
@@ -116,7 +122,11 @@ const VirtualTryOnImage: React.FC<VirtualTryOnImageProps> = ({
             alt="虚拟试穿效果"
             onLoad={handleImageLoad}
             onError={handleImageError}
-            className={`w-full h-auto max-h-[28rem] object-contain transition-transform duration-300 ${
+            className={`w-full h-auto object-contain transition-transform duration-300 ${
+              gender === 'women'
+                ? 'max-h-none' // 女装：无高度限制
+                : 'max-h-[40rem]' // 男装：增加到40rem
+            } ${
               isLoaded ? 'group-hover:scale-105' : 'opacity-0'
             }`}
             loading="lazy"
