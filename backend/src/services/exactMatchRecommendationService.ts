@@ -525,6 +525,7 @@ export class ExactMatchRecommendationService {
           name: outfit.id,
           style: outfit.Style || '时尚',
           occasions: outfitData.occasions ? outfitData.occasions.split(',').map((o: string) => o.trim()) : [],
+          gender: gender,
           tryOnImages: {
             image1: outfit.TryOnImage1,
             image2: outfit.TryOnImage2,
@@ -717,6 +718,7 @@ export class ExactMatchRecommendationService {
             shoes: outfitData.shoes_id,
             style: outfitData.style,
             occasions: outfitData.occasions ? outfitData.occasions.split(',').map((o: string) => o.trim()) : [],
+            gender: gender,
             tryOnImages: {
               image1: outfit.TryOnImage1,
               image2: outfit.TryOnImage2,

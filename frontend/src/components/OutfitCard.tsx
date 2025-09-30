@@ -141,7 +141,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         setShowTryOnImage(true)
         setTryOnImageIndex(0)
         setIsLoadingTryOn(false)
-      }, 1000) // 1秒加载时间（调试用）
+      }, 5000) // 5秒加载时间
     } else {
       // 后续点击：加载4秒后切换到下一张
       console.log('Subsequent click - switching to next image')
@@ -151,7 +151,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         console.log(`Switching to image index: ${nextIndex}`)
         setTryOnImageIndex(nextIndex)
         setIsLoadingTryOn(false)
-      }, 1000)
+      }, 5000)
     }
   }
 
@@ -184,8 +184,13 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
     // 如果没有后端数据或URL为空，使用生成的URL作为后备
     const outfitIdNumber = recommendation.outfit.name.toLowerCase().replace('outfit ', '')
     const imageNumber = tryOnImageIndex + 1
-    const fallbackUrl = `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/outfit${outfitIdNumber}_${imageNumber}.jpg`
-    console.log(`Using fallback URL: ${fallbackUrl}`)
+
+    // 根据性别确定URL前缀
+    const gender = recommendation.outfit.gender || 'women' // 默认为女装
+    const prefix = gender === 'men' ? 'men_outfit' : 'outfit'
+
+    const fallbackUrl = `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/${prefix}${outfitIdNumber}_${imageNumber}.jpg`
+    console.log(`Using fallback URL for ${gender}: ${fallbackUrl}`)
     return fallbackUrl
   }
 
@@ -260,7 +265,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
             <div className="bg-gray-100 rounded-xl p-8 flex flex-col items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-black mb-4"></div>
               <p className="text-gray-600 text-sm">正在生成换装效果，请稍候...</p>
-              <p className="text-gray-400 text-xs mt-1">约需1秒</p>
+              <p className="text-gray-400 text-xs mt-1">约需5秒</p>
             </div>
           </div>
         )}
