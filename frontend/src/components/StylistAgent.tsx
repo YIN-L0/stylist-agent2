@@ -103,7 +103,7 @@ const StylistAgent: React.FC = () => {
     }
   }
 
-  const exampleScenarios = [
+  const womenExampleScenarios = [
     '推荐一套精致休闲风格的穿搭，适合和朋友周末早午餐',
     '帮我找优雅时尚风格的穿搭，适合浪漫的约会夜晚',
     '我需要一套经典典雅风格的穿搭，适合正式的商务晚宴',
@@ -111,6 +111,17 @@ const StylistAgent: React.FC = () => {
     '我下周有一个派对活动，帮我推荐华丽风格的半裙穿搭',
     '帮我推荐优雅时尚风格的穿搭，适合日常办公室'
   ]
+
+  const menExampleScenarios = [
+    '我要参加商务晚宴，帮我找一套商务正装风格的穿搭',
+    '帮我推荐一些商务休闲风格的穿搭,适合日常办公室',
+    '帮我推荐一些浅色系日常休闲风的穿搭，适合周末和朋友去早午餐',
+    '我需要一套精致休闲风格的穿搭，适合晚上去约会',
+    '我准备去旅行，想要轻松的日常休闲风，最好是圆领T恤搭配',
+    '帮我找一套精致休闲风格的西服'
+  ]
+
+  const exampleScenarios = gender === 'women' ? womenExampleScenarios : menExampleScenarios
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
