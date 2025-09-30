@@ -49,6 +49,11 @@ export interface OutfitDetailData {
 
   Style?: string
   Occasion?: string
+
+  // Try-on images (generated virtual try-on images)
+  TryOnImage1?: string
+  TryOnImage2?: string
+  TryOnImage3?: string
 }
 
 export class CSVDataService {
@@ -155,7 +160,12 @@ export class CSVDataService {
               ShoesFAB: record.ShoesFAB,
 
               Style: record.Style,
-              Occasion: record.Occasion
+              Occasion: record.Occasion,
+
+              // Try-on images - either from CSV or generated placeholder URLs
+              TryOnImage1: record.TryOnImage1 || `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/${outfitId.toLowerCase().replace(' ', '')}_1.jpg`,
+              TryOnImage2: record.TryOnImage2 || `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/${outfitId.toLowerCase().replace(' ', '')}_2.jpg`,
+              TryOnImage3: record.TryOnImage3 || `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/${outfitId.toLowerCase().replace(' ', '')}_3.jpg`
             }
             
             dataMap.set(outfitId, detailData)

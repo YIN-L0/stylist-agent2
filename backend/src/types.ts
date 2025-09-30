@@ -16,6 +16,11 @@ export interface Outfit {
   shoes?: string;
   style: string;
   occasions: string[];
+  tryOnImages?: {
+    image1?: string;
+    image2?: string;
+    image3?: string;
+  };
 }
 
 // 推荐请求接口

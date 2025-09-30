@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Download, Share2, Star, Sparkles } from 'lucide-react'
+import { Download, Share2, Star, Sparkles, Eye, RefreshCw } from 'lucide-react'
 import { OutfitRecommendation, VirtualTryOnResult } from '@shared/types'
 import ProductImage from './ProductImage'
 import VirtualTryOnImage from './VirtualTryOnImage'
@@ -16,6 +16,10 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
   const [virtualTryOn, setVirtualTryOn] = useState<VirtualTryOnResult | undefined>(recommendation.virtualTryOn)
   const [isGeneratingTryOn, setIsGeneratingTryOn] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
+
+  // 新增：跟踪当前显示的TryOn图片索引
+  const [tryOnImageIndex, setTryOnImageIndex] = useState<number>(0)
+  const [showTryOnImage, setShowTryOnImage] = useState<boolean>(false)
 
   const handleGenerateTryOn = async () => {
     if (isGeneratingTryOn || virtualTryOn) return
@@ -120,6 +124,33 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
     }
   }
 
+  // 新增：处理查看生成换装按钮点击
+  const handleViewTryOnImage = () => {
+    if (!showTryOnImage) {
+      setShowTryOnImage(true)
+      setTryOnImageIndex(0) // 第一次点击显示第一张
+    } else {
+      // 循环切换图片: 0 -> 1 -> 2 -> 0
+      setTryOnImageIndex((prev) => (prev + 1) % 3)
+    }
+  }
+
+  // 获取当前应该显示的TryOn图片URL
+  const getCurrentTryOnImageUrl = () => {
+    if (!recommendation.outfit.tryOnImages) return null
+
+    switch(tryOnImageIndex) {
+      case 0:
+        return recommendation.outfit.tryOnImages.image1
+      case 1:
+        return recommendation.outfit.tryOnImages.image2
+      case 2:
+        return recommendation.outfit.tryOnImages.image3
+      default:
+        return recommendation.outfit.tryOnImages.image1
+    }
+  }
+
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
       {/* 卡片头部 */}
@@ -173,6 +204,48 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
             </span>
           ))}
         </div>
+
+        {/* 查看生成换装按钮 */}
+        {recommendation.outfit.tryOnImages && (
+          <div className="mt-4">
+            <button
+              onClick={handleViewTryOnImage}
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              {showTryOnImage ? (
+                <>
+                  <RefreshCw className="w-5 h-5" />
+                  切换换装效果 ({tryOnImageIndex + 1}/3)
+                </>
+              ) : (
+                <>
+                  <Eye className="w-5 h-5" />
+                  查看生成换装
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* 显示TryOn图片 */}
+        {showTryOnImage && getCurrentTryOnImageUrl() && (
+          <div className="mt-4">
+            <div className="relative rounded-xl overflow-hidden shadow-lg">
+              <img
+                src={getCurrentTryOnImageUrl() || ''}
+                alt={`换装效果 ${tryOnImageIndex + 1}`}
+                className="w-full h-auto"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement
+                  target.src = 'https://via.placeholder.com/400x600/f3f4f6/9ca3af?text=换装效果暂不可用'
+                }}
+              />
+              <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded-lg text-sm">
+                换装效果 {tryOnImageIndex + 1}/3
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 暂时隐藏虚拟试穿功能 */}
