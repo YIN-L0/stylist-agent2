@@ -286,7 +286,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
               <img
                 src={getCurrentTryOnImageUrl() || ''}
                 alt="换装效果"
-                className="w-full h-auto max-h-96 object-cover"
+                className="w-full h-auto max-h-96 object-contain"
                 onLoad={() => console.log('Image loaded successfully:', getCurrentTryOnImageUrl())}
                 onError={(e) => {
                   console.error('Image failed to load:', getCurrentTryOnImageUrl())
