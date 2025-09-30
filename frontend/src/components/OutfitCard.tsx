@@ -135,20 +135,12 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
     }
   }
 
-  // 获取当前应该显示的TryOn图片URL
+  // 获取当前应该显示的TryOn图片URL - 直接基于outfit ID生成
   const getCurrentTryOnImageUrl = () => {
-    if (!recommendation.outfit.tryOnImages) return null
-
-    switch(tryOnImageIndex) {
-      case 0:
-        return recommendation.outfit.tryOnImages.image1
-      case 1:
-        return recommendation.outfit.tryOnImages.image2
-      case 2:
-        return recommendation.outfit.tryOnImages.image3
-      default:
-        return recommendation.outfit.tryOnImages.image1
-    }
+    // 格式: outfit1_1.jpg, outfit1_2.jpg, outfit1_3.jpg
+    const outfitIdNumber = recommendation.outfit.name.toLowerCase().replace('outfit ', '')
+    const imageNumber = tryOnImageIndex + 1
+    return `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/outfit${outfitIdNumber}_${imageNumber}.jpg`
   }
 
   return (
@@ -205,30 +197,28 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
           ))}
         </div>
 
-        {/* 查看生成换装按钮 */}
-        {recommendation.outfit.tryOnImages && (
-          <div className="mt-4">
-            <button
-              onClick={handleViewTryOnImage}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
-            >
-              {showTryOnImage ? (
-                <>
-                  <RefreshCw className="w-5 h-5" />
-                  切换换装效果 ({tryOnImageIndex + 1}/3)
-                </>
-              ) : (
-                <>
-                  <Eye className="w-5 h-5" />
-                  查看生成换装
-                </>
-              )}
-            </button>
-          </div>
-        )}
+        {/* 查看生成换装按钮 - 始终显示 */}
+        <div className="mt-4">
+          <button
+            onClick={handleViewTryOnImage}
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+          >
+            {showTryOnImage ? (
+              <>
+                <RefreshCw className="w-5 h-5" />
+                切换换装效果 ({tryOnImageIndex + 1}/3)
+              </>
+            ) : (
+              <>
+                <Eye className="w-5 h-5" />
+                查看生成换装
+              </>
+            )}
+          </button>
+        </div>
 
         {/* 显示TryOn图片 */}
-        {showTryOnImage && getCurrentTryOnImageUrl() && (
+        {showTryOnImage && (
           <div className="mt-4">
             <div className="relative rounded-xl overflow-hidden shadow-lg">
               <img
