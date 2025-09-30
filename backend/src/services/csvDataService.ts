@@ -89,7 +89,7 @@ export class CSVDataService {
       await this.loadMenCSVData(menDataPath, this.menOutfitDetails)
 
       this.initialized = true
-      console.log(`📚 CSV data loaded: ${this.womenOutfitDetails.size} women outfits, ${this.menOutfitDetails.size} men outfits`)
+      console.log(`📚 CSV data loaded: ${this.womenOutfitDetails.size} women outfits, ${this.menOutfitDetails.size} men outfits with TryOnImage URLs`)
     } catch (error) {
       console.error('Failed to initialize CSV data service:', error)
       this.initializationPromise = null // 重置以允许重试
