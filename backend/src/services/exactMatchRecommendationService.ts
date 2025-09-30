@@ -453,14 +453,14 @@ export class ExactMatchRecommendationService {
   private async checkManualRecommendation(prompt: string, gender: 'women' | 'men'): Promise<OutfitRecommendation[] | null> {
     const trimmedPrompt = prompt.trim()
 
-    // 手动策划的女装推荐
+    // 手动策划的女装推荐 (严格按照用户指定的outfit number)
     const womenManualMap: Record<string, string[]> = {
-      '推荐一套精致休闲风格的穿搭，适合和朋友周末早午餐': ['Outfit 22', 'Outfit 23', 'Outfit 27', 'Outfit 37', 'Outfit 45', 'Outfit 48'],
-      '帮我找优雅时尚风格的穿搭，适合浪漫的约会夜晚': ['Outfit 8', 'Outfit 12', 'Outfit 31', 'Outfit 33', 'Outfit 43'],
+      '推荐一套精致休闲风格的穿搭，适合和朋友周末早午餐': ['Outfit 22', 'Outfit 27', 'Outfit 43', 'Outfit 45'],
+      '帮我找优雅时尚风格的穿搭，适合浪漫的约会夜晚': ['Outfit 8', 'Outfit 12', 'Outfit 33', 'Outfit 40'],
       '我需要一套经典典雅风格的穿搭，适合正式的商务晚宴': ['Outfit 1', 'Outfit 4', 'Outfit 9'],
-      '我需要一套搭配白色体恤日常休闲风格的穿搭，适合旅行时穿': ['Outfit 2', 'Outfit 20', 'Outfit 24', 'Outfit 28', 'Outfit 34', 'Outfit 38'],
+      '我需要一套搭配白色体恤日常休闲风格的穿搭，适合旅行时穿': ['Outfit 20', 'Outfit 24', 'Outfit 28', 'Outfit 34', 'Outfit 38'],
       '我下周有一个派对活动，帮我推荐华丽风格的半裙穿搭': ['Outfit 13', 'Outfit 14', 'Outfit 40'],
-      '帮我推荐优雅时尚风格的穿搭，适合日常办公室': ['Outfit 3', 'Outfit 10', 'Outfit 12', 'Outfit 21', 'Outfit 26', 'Outfit 31', 'Outfit 33', 'Outfit 43']
+      '帮我推荐优雅时尚风格的穿搭，适合日常办公室': ['Outfit 3', 'Outfit 10', 'Outfit 12', 'Outfit 21', 'Outfit 26', 'Outfit 33', 'Outfit 43']
     }
 
     // 手动策划的男装推荐 (严格按照用户指定的outfit number)
