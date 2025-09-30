@@ -524,7 +524,12 @@ export class ExactMatchRecommendationService {
           id: parseInt(outfit.id.replace('Outfit ', '')) || 0,
           name: outfit.id,
           style: outfit.Style || '时尚',
-          occasions: outfitData.occasions ? outfitData.occasions.split(',').map((o: string) => o.trim()) : []
+          occasions: outfitData.occasions ? outfitData.occasions.split(',').map((o: string) => o.trim()) : [],
+          tryOnImages: {
+            image1: outfit.TryOnImage1,
+            image2: outfit.TryOnImage2,
+            image3: outfit.TryOnImage3
+          }
         },
         reason,
         items,

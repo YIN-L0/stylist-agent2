@@ -162,10 +162,10 @@ export class CSVDataService {
               Style: record.Style,
               Occasion: record.Occasion,
 
-              // Try-on images - either from CSV or generated placeholder URLs
-              TryOnImage1: record.TryOnImage1 || `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/${outfitId.toLowerCase().replace(' ', '')}_1.jpg`,
-              TryOnImage2: record.TryOnImage2 || `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/${outfitId.toLowerCase().replace(' ', '')}_2.jpg`,
-              TryOnImage3: record.TryOnImage3 || `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/${outfitId.toLowerCase().replace(' ', '')}_3.jpg`
+              // Try-on images - 直接从CSV读取TryOnTryOnImage1, Image2, TryOnImage3列
+              TryOnImage1: record.TryOnTryOnImage1 || '',
+              TryOnImage2: record.Image2 || '',
+              TryOnImage3: record.TryOnImage3 || ''
             }
             
             dataMap.set(outfitId, detailData)
