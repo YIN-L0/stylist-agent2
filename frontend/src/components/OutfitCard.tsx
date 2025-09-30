@@ -278,30 +278,20 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
           </div>
         )}
 
-        {/* 显示图片URL - 用于调试 */}
-        {(showTryOnImage || isLoadingTryOn) && (
-          <div className="mt-4">
-            <div className="bg-gray-100 p-3 rounded-lg mb-3">
-              <p className="text-xs text-gray-600 font-mono break-all">
-                图片URL: {getCurrentTryOnImageUrl()}
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* 显示TryOn图片 - 不显示加载时 */}
         {showTryOnImage && !isLoadingTryOn && (
           <div className="mt-4">
-            <div className="relative rounded-xl overflow-hidden shadow-lg">
+            <div className="relative rounded-xl overflow-hidden shadow-lg max-w-xs mx-auto">
               <img
                 src={getCurrentTryOnImageUrl() || ''}
                 alt="换装效果"
-                className="w-full h-auto"
+                className="w-full h-auto max-h-96 object-cover"
                 onLoad={() => console.log('Image loaded successfully:', getCurrentTryOnImageUrl())}
                 onError={(e) => {
                   console.error('Image failed to load:', getCurrentTryOnImageUrl())
                   const target = e.target as HTMLImageElement
-                  target.src = 'https://via.placeholder.com/400x600/f3f4f6/9ca3af?text=换装效果暂不可用'
+                  target.src = 'https://via.placeholder.com/300x400/f3f4f6/9ca3af?text=换装效果暂不可用'
                 }}
               />
             </div>
