@@ -20,6 +20,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
   // 新增：跟踪当前显示的TryOn图片索引
   const [tryOnImageIndex, setTryOnImageIndex] = useState<number>(0)
   const [showTryOnImage, setShowTryOnImage] = useState<boolean>(false)
+  const [isLoadingTryOn, setIsLoadingTryOn] = useState<boolean>(false)
 
   const handleGenerateTryOn = async () => {
     if (isGeneratingTryOn || virtualTryOn) return
@@ -126,12 +127,24 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
 
   // 新增：处理查看生成换装按钮点击
   const handleViewTryOnImage = () => {
+    // 如果正在加载，不响应点击
+    if (isLoadingTryOn) return
+
     if (!showTryOnImage) {
-      setShowTryOnImage(true)
-      setTryOnImageIndex(0) // 第一次点击显示第一张
+      // 第一次点击：显示加载动画4秒，然后显示第一张图片
+      setIsLoadingTryOn(true)
+      setTimeout(() => {
+        setShowTryOnImage(true)
+        setTryOnImageIndex(0)
+        setIsLoadingTryOn(false)
+      }, 4000) // 4秒加载时间
     } else {
-      // 循环切换图片: 0 -> 1 -> 2 -> 0
-      setTryOnImageIndex((prev) => (prev + 1) % 3)
+      // 后续点击：加载4秒后切换到下一张
+      setIsLoadingTryOn(true)
+      setTimeout(() => {
+        setTryOnImageIndex((prev) => (prev + 1) % 3)
+        setIsLoadingTryOn(false)
+      }, 4000)
     }
   }
 
@@ -201,37 +214,37 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         <div className="mt-4">
           <button
             onClick={handleViewTryOnImage}
-            className="w-full bg-black hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+            disabled={isLoadingTryOn}
+            className="w-full bg-black hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {showTryOnImage ? (
-              <>
-                <RefreshCw className="w-5 h-5" />
-                切换换装效果 ({tryOnImageIndex + 1}/3)
-              </>
-            ) : (
-              <>
-                生成换装
-              </>
-            )}
+            {showTryOnImage ? '切换换装效果' : '生成换装'}
           </button>
         </div>
 
-        {/* 显示TryOn图片 */}
-        {showTryOnImage && (
+        {/* 加载动画 */}
+        {isLoadingTryOn && (
+          <div className="mt-4">
+            <div className="bg-gray-100 rounded-xl p-8 flex flex-col items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-black mb-4"></div>
+              <p className="text-gray-600 text-sm">正在生成换装效果，请稍候...</p>
+              <p className="text-gray-400 text-xs mt-1">约需4秒</p>
+            </div>
+          </div>
+        )}
+
+        {/* 显示TryOn图片 - 不显示加载时 */}
+        {showTryOnImage && !isLoadingTryOn && (
           <div className="mt-4">
             <div className="relative rounded-xl overflow-hidden shadow-lg">
               <img
                 src={getCurrentTryOnImageUrl() || ''}
-                alt={`换装效果 ${tryOnImageIndex + 1}`}
+                alt="换装效果"
                 className="w-full h-auto"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
                   target.src = 'https://via.placeholder.com/400x600/f3f4f6/9ca3af?text=换装效果暂不可用'
                 }}
               />
-              <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded-lg text-sm">
-                换装效果 {tryOnImageIndex + 1}/3
-              </div>
             </div>
           </div>
         )}
