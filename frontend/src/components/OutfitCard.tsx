@@ -197,11 +197,11 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
           ))}
         </div>
 
-        {/* 查看生成换装按钮 - 始终显示 */}
+        {/* 生成换装按钮 - 黑色，始终显示 */}
         <div className="mt-4">
           <button
             onClick={handleViewTryOnImage}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+            className="w-full bg-black hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
           >
             {showTryOnImage ? (
               <>
@@ -210,8 +210,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
               </>
             ) : (
               <>
-                <Eye className="w-5 h-5" />
-                查看生成换装
+                生成换装
               </>
             )}
           </button>
