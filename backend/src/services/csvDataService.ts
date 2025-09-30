@@ -162,9 +162,9 @@ export class CSVDataService {
               Style: record.Style,
               Occasion: record.Occasion,
 
-              // Try-on images - 直接从CSV读取TryOnTryOnImage1, Image2, TryOnImage3列
-              TryOnImage1: record.TryOnTryOnImage1 || '',
-              TryOnImage2: record.Image2 || '',
+              // Try-on images - 从CSV读取TryOnImage1, TryOnImage2, TryOnImage3列
+              TryOnImage1: record.TryOnImage1 || '',
+              TryOnImage2: record.TryOnImage2 || '',
               TryOnImage3: record.TryOnImage3 || ''
             }
             
