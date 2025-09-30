@@ -467,8 +467,8 @@ export class ExactMatchRecommendationService {
     const menManualMap: Record<string, string[]> = {
       '我要参加商务晚宴，帮我找一套商务正装风格的穿搭': ['Outfit 2', 'Outfit 7', 'Outfit 8', 'Outfit 43', 'Outfit 44'],
       '帮我推荐一些商务休闲风格的穿搭,适合日常办公室': ['Outfit 4', 'Outfit 5'],
-      '帮我推荐一些浅色系日常休闲风的穿搭，适合周末和朋友去早午餐': ['Outfit 1', 'Outfit 12', 'Outfit 17', 'Outfit 23', 'Outfit 24', 'Outfit 28', 'Outfit 34', 'Outfit 39', 'Outfit 46', 'Outfit 47', 'Outfit 49'],
-      '我需要一套精致休闲风格的穿搭，适合晚上去约会': ['Outfit 6', 'Outfit 20', 'Outfit 21', 'Outfit 25', 'Outfit 29', 'Outfit 30', 'Outfit 32', 'Outfit 33', 'Outfit 50'],
+      '帮我推荐一些浅色系日常休闲风的穿搭，适合周末和朋友去早午餐': ['Outfit 1', 'Outfit 12', 'Outfit 23', 'Outfit 24', 'Outfit 28', 'Outfit 34', 'Outfit 39', 'Outfit 47', 'Outfit 49'],
+      '我需要一套精致休闲风格的穿搭，适合晚上去约会': ['Outfit 6', 'Outfit 20', 'Outfit 21', 'Outfit 25', 'Outfit 29', 'Outfit 30', 'Outfit 32', 'Outfit 33'],
       '我准备去旅行，想要轻松的日常休闲风，最好是圆领T恤搭配': ['Outfit 3', 'Outfit 10', 'Outfit 35', 'Outfit 39', 'Outfit 49'],
       '帮我找一套精致休闲风格的西服': ['Outfit 13', 'Outfit 25', 'Outfit 29', 'Outfit 42']
     }
@@ -833,11 +833,11 @@ export const PREDEFINED_PROMPTS = {
     },
     {
       prompt: "帮我推荐一些浅色系日常休闲风的穿搭，适合周末和朋友去早午餐",
-      expectedOutfits: ["Outfit 1", "Outfit 12", "Outfit 17", "Outfit 23", "Outfit 24", "Outfit 28", "Outfit 34", "Outfit 39", "Outfit 46", "Outfit 47", "Outfit 49"]
+      expectedOutfits: ["Outfit 1", "Outfit 12", "Outfit 23", "Outfit 24", "Outfit 28", "Outfit 34", "Outfit 39", "Outfit 47", "Outfit 49"]
     },
     {
       prompt: "我需要一套精致休闲风格的穿搭，适合晚上去约会",
-      expectedOutfits: ["Outfit 6", "Outfit 20", "Outfit 21", "Outfit 25", "Outfit 29", "Outfit 30", "Outfit 32", "Outfit 33", "Outfit 50"]
+      expectedOutfits: ["Outfit 6", "Outfit 20", "Outfit 21", "Outfit 25", "Outfit 29", "Outfit 30", "Outfit 32", "Outfit 33"]
     },
     {
       prompt: "我准备去旅行，想要轻松的日常休闲风，最好是圆领T恤搭配",
