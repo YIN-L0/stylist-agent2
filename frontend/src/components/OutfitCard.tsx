@@ -125,6 +125,26 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
     }
   }
 
+  // 获取可用的试穿图片数量
+  const getAvailableTryOnImageCount = () => {
+    const gender = recommendation.outfit.gender || 'women'
+
+    if (gender === 'men') {
+      return 1 // 男装只有一张图片
+    }
+
+    // 女装：检查实际有多少张可用图片
+    if (recommendation.outfit.tryOnImages) {
+      let count = 0
+      if (recommendation.outfit.tryOnImages.image1?.trim()) count++
+      if (recommendation.outfit.tryOnImages.image2?.trim()) count++
+      if (recommendation.outfit.tryOnImages.image3?.trim()) count++
+      return Math.max(count, 1) // 至少返回1
+    }
+
+    return 3 // 默认3张（后备方案）
+  }
+
   // 新增：处理查看生成换装按钮点击
   const handleViewTryOnImage = () => {
     console.log('TryOn button clicked', { isLoadingTryOn, showTryOnImage, tryOnImageIndex })
@@ -147,8 +167,9 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
       console.log('Subsequent click - switching to next image')
       setIsLoadingTryOn(true)
       setTimeout(() => {
-        const nextIndex = (tryOnImageIndex + 1) % 3
-        console.log(`Switching to image index: ${nextIndex}`)
+        const availableImageCount = getAvailableTryOnImageCount()
+        const nextIndex = (tryOnImageIndex + 1) % availableImageCount
+        console.log(`Switching to image index: ${nextIndex} (out of ${availableImageCount} available images)`)
         setTryOnImageIndex(nextIndex)
         setIsLoadingTryOn(false)
       }, 5000)
