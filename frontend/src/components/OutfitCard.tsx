@@ -141,7 +141,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         setShowTryOnImage(true)
         setTryOnImageIndex(0)
         setIsLoadingTryOn(false)
-      }, 4000) // 4秒加载时间
+      }, 1000) // 1秒加载时间（调试用）
     } else {
       // 后续点击：加载4秒后切换到下一张
       console.log('Subsequent click - switching to next image')
@@ -151,7 +151,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         console.log(`Switching to image index: ${nextIndex}`)
         setTryOnImageIndex(nextIndex)
         setIsLoadingTryOn(false)
-      }, 4000)
+      }, 1000)
     }
   }
 
@@ -260,7 +260,18 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
             <div className="bg-gray-100 rounded-xl p-8 flex flex-col items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-black mb-4"></div>
               <p className="text-gray-600 text-sm">正在生成换装效果，请稍候...</p>
-              <p className="text-gray-400 text-xs mt-1">约需4秒</p>
+              <p className="text-gray-400 text-xs mt-1">约需1秒</p>
+            </div>
+          </div>
+        )}
+
+        {/* 显示图片URL - 用于调试 */}
+        {(showTryOnImage || isLoadingTryOn) && (
+          <div className="mt-4">
+            <div className="bg-gray-100 p-3 rounded-lg mb-3">
+              <p className="text-xs text-gray-600 font-mono break-all">
+                图片URL: {getCurrentTryOnImageUrl()}
+              </p>
             </div>
           </div>
         )}
@@ -273,7 +284,9 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
                 src={getCurrentTryOnImageUrl() || ''}
                 alt="换装效果"
                 className="w-full h-auto"
+                onLoad={() => console.log('Image loaded successfully:', getCurrentTryOnImageUrl())}
                 onError={(e) => {
+                  console.error('Image failed to load:', getCurrentTryOnImageUrl())
                   const target = e.target as HTMLImageElement
                   target.src = 'https://via.placeholder.com/400x600/f3f4f6/9ca3af?text=换装效果暂不可用'
                 }}
