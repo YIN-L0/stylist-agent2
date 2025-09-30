@@ -148,9 +148,32 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
     }
   }
 
-  // 获取当前应该显示的TryOn图片URL - 直接基于outfit ID生成
+  // 获取当前应该显示的TryOn图片URL - 从后端数据获取，如无则使用生成的URL
   const getCurrentTryOnImageUrl = () => {
-    // 格式: outfit1_1.jpg, outfit1_2.jpg, outfit1_3.jpg
+    // 首先尝试从后端数据获取
+    if (recommendation.outfit.tryOnImages) {
+      let imageUrl = ''
+      switch (tryOnImageIndex) {
+        case 0:
+          imageUrl = recommendation.outfit.tryOnImages.image1 || ''
+          break
+        case 1:
+          imageUrl = recommendation.outfit.tryOnImages.image2 || ''
+          break
+        case 2:
+          imageUrl = recommendation.outfit.tryOnImages.image3 || ''
+          break
+        default:
+          imageUrl = recommendation.outfit.tryOnImages.image1 || ''
+      }
+
+      // 如果找到有效的URL，返回它
+      if (imageUrl && imageUrl.trim()) {
+        return imageUrl
+      }
+    }
+
+    // 如果没有后端数据或URL为空，使用生成的URL作为后备
     const outfitIdNumber = recommendation.outfit.name.toLowerCase().replace('outfit ', '')
     const imageNumber = tryOnImageIndex + 1
     return `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/outfit${outfitIdNumber}_${imageNumber}.jpg`
