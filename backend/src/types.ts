@@ -16,6 +16,7 @@ export interface Outfit {
   shoes?: string;
   style: string;
   occasions: string[];
+  gender?: 'women' | 'men';
   tryOnImages?: {
     image1?: string;
     image2?: string;
