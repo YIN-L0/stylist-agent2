@@ -470,7 +470,7 @@ export class ExactMatchRecommendationService {
       '帮我推荐一些浅色系日常休闲风的穿搭，适合周末和朋友去早午餐': ['Outfit 1', 'Outfit 12', 'Outfit 16', 'Outfit 19', 'Outfit 22', 'Outfit 26'],
       '我需要一套精致休闲风格的穿搭，适合晚上去约会': ['Outfit 6', 'Outfit 9', 'Outfit 17', 'Outfit 20', 'Outfit 24', 'Outfit 27'],
       '我准备去旅行，想要轻松的日常休闲风，最好是圆领T恤搭配': ['Outfit 3', 'Outfit 10', 'Outfit 13', 'Outfit 21', 'Outfit 25'],
-      '帮我找一套精致休闲风格的西服': ['Outfit 23', 'Outfit 28']
+      '帮我找一套精致休闲风格的西服': ['Outfit 13', 'Outfit 25', 'Outfit 29', 'Outfit 42']
     }
 
     const manualMap = gender === 'women' ? womenManualMap : menManualMap
