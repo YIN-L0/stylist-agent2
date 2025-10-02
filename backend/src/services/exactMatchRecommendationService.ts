@@ -2,6 +2,7 @@ import { csvDataService, OutfitDetailData } from './csvDataService'
 import { database, menDatabase } from '../database/database'
 import { OutfitRecommendation, ProductItem } from '../types'
 import { openaiService, ScenarioAnalysis } from './openaiService'
+import { outfitSummaryService } from './outfitSummaryService'
 
 export interface ExactMatchResult {
   outfit: OutfitDetailData
@@ -516,8 +517,11 @@ export class ExactMatchRecommendationService {
         items.shoes = this.createProductItem(outfitData.shoes_id, 'shoes')
       }
 
-      // 生成推荐理由
-      const reason = `精心为您挑选的经典搭配，这套${outfit.Style || '时尚'}风格的穿搭完美适应您的场景需求，展现独特的个人魅力与品味。`
+      // 生成推荐理由 - 首先尝试从CSV获取介绍词
+      const outfitNumber = outfitId.match(/\d+/)?.[0] // 提取数字，如 "Outfit 22" -> "22"
+      const csvSummary = outfitNumber ? outfitSummaryService.getOutfitSummary(outfitNumber, gender) : null
+
+      const reason = csvSummary || `精心为您挑选的经典搭配，这套${outfit.Style || '时尚'}风格的穿搭完美适应您的场景需求，展现独特的个人魅力与品味。`
 
       const recommendation: OutfitRecommendation = {
         outfit: {
