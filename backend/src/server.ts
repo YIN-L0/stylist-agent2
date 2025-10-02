@@ -5,6 +5,7 @@ import path from 'path'
 import { database, menDatabase } from './database/database'
 import { importData } from './scripts/importData'
 import { csvDataService } from './services/csvDataService'
+import { outfitSummaryService } from './services/outfitSummaryService'
 
 // 配置环境变量
 dotenv.config()
@@ -193,7 +194,8 @@ initializeDatabase()
   })
   .then(() => {
     console.log('CSV data service initialization completed')
-    console.log('Outfit summary service initialization completed')
+    // 确保outfit summary service已初始化
+    console.log('Outfit summary service stats:', outfitSummaryService.getStats())
   })
   .catch((error) => {
     console.error('Initialization failed:', error)

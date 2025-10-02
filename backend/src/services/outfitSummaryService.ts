@@ -17,23 +17,34 @@ export class OutfitSummaryService {
 
   private initialize() {
     try {
+      console.log('🔄 Initializing outfit summary service...')
+
       // 读取女装CSV文件
-      const womenCsvPath = path.join(process.cwd(), 'data', 'women_outfit_summaries_no_colon.csv')
+      const womenCsvPath = path.join(process.cwd(), '..', 'data', 'women_outfit_summaries_no_colon.csv')
+      console.log(`📁 Checking women CSV at: ${womenCsvPath}`)
       if (fs.existsSync(womenCsvPath)) {
         const womenCsvContent = fs.readFileSync(womenCsvPath, 'utf-8')
         this.parseCSV(womenCsvContent, this.womenSummaries)
         console.log(`✅ Loaded ${this.womenSummaries.size} women outfit summaries`)
+        console.log(`🔍 Sample women data:`, Array.from(this.womenSummaries.entries()).slice(0, 3))
+      } else {
+        console.log(`❌ Women CSV file not found at: ${womenCsvPath}`)
       }
 
       // 读取男装CSV文件
-      const menCsvPath = path.join(process.cwd(), 'data', 'men_outfit_summaries_no_colon.csv')
+      const menCsvPath = path.join(process.cwd(), '..', 'data', 'men_outfit_summaries_no_colon.csv')
+      console.log(`📁 Checking men CSV at: ${menCsvPath}`)
       if (fs.existsSync(menCsvPath)) {
         const menCsvContent = fs.readFileSync(menCsvPath, 'utf-8')
         this.parseCSV(menCsvContent, this.menSummaries)
         console.log(`✅ Loaded ${this.menSummaries.size} men outfit summaries`)
+        console.log(`🔍 Sample men data:`, Array.from(this.menSummaries.entries()).slice(0, 3))
+      } else {
+        console.log(`❌ Men CSV file not found at: ${menCsvPath}`)
       }
 
       this.initialized = true
+      console.log(`✅ Outfit summary service initialized successfully`)
     } catch (error) {
       console.error('❌ Error loading outfit summaries:', error)
     }
@@ -67,6 +78,8 @@ export class OutfitSummaryService {
    * 根据outfit ID和性别获取搭配介绍词
    */
   getOutfitSummary(outfitId: string | number, gender: 'women' | 'men'): string | null {
+    console.log(`🔍 Getting outfit summary for ID: ${outfitId}, gender: ${gender}`)
+
     if (!this.initialized) {
       console.warn('⚠️ OutfitSummaryService not initialized')
       return null
@@ -75,7 +88,17 @@ export class OutfitSummaryService {
     const id = String(outfitId)
     const summariesMap = gender === 'women' ? this.womenSummaries : this.menSummaries
 
-    return summariesMap.get(id) || null
+    console.log(`📊 Searching in ${gender} summaries (${summariesMap.size} entries) for ID: ${id}`)
+    const result = summariesMap.get(id)
+
+    if (result) {
+      console.log(`✅ Found CSV summary for ${gender} outfit ${id}: ${result.substring(0, 100)}...`)
+    } else {
+      console.log(`❌ No CSV summary found for ${gender} outfit ${id}`)
+      console.log(`📋 Available IDs: ${Array.from(summariesMap.keys()).slice(0, 10).join(', ')}`)
+    }
+
+    return result || null
   }
 
   /**
