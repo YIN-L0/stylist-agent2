@@ -218,16 +218,10 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
       }
     }
 
-    // 如果没有后端数据或URL为空，使用生成的URL作为后备
-    const outfitIdNumber = recommendation.outfit.name.toLowerCase().replace('outfit ', '')
-    const imageNumber = tryOnImageIndex + 1
-
-    // 根据性别确定URL前缀
-    const prefix = gender === 'men' ? 'men_outfit' : 'outfit'
-
-    const fallbackUrl = `https://maistyle01.oss-cn-shanghai.aliyuncs.com/tryon/${prefix}${outfitIdNumber}_${imageNumber}.jpg`
-    console.log(`Using fallback URL for ${gender}: ${fallbackUrl}`)
-    return fallbackUrl
+    // CSV 中没有 URL 数据，返回空字符串
+    // 不再使用 fallback URL，因为格式可能不对
+    console.log(`No try-on image URL found for ${gender} outfit ${recommendation.outfit.name}, index ${tryOnImageIndex}`)
+    return ''
   }
 
   return (
