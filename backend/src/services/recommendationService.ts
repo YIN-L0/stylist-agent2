@@ -625,6 +625,9 @@ export class RecommendationService {
         console.log('Generating virtual try-on for outfit:', outfit.id, 'skipVirtualTryOn:', skipVirtualTryOn)
         const virtualTryOn = skipVirtualTryOn ? undefined : await this.generateVirtualTryOn(items)
 
+        // 获取试穿图片 URL
+        const outfitDetails = csvDataService.getOutfitDetails(outfit.outfit_name, gender)
+
         recommendations.push({
           outfit: {
             id: outfit.id,
@@ -635,7 +638,13 @@ export class RecommendationService {
             dress: outfit.dress_id,
             shoes: outfit.shoes_id,
             style: outfit.style,
-            occasions: outfit.occasions ? this.toChineseOccasions(outfit.occasions.split(',').map((o: string) => o.trim())) : []
+            occasions: outfit.occasions ? this.toChineseOccasions(outfit.occasions.split(',').map((o: string) => o.trim())) : [],
+            gender: gender,
+            tryOnImages: outfitDetails ? {
+              image1: outfitDetails.TryOnImage1,
+              image2: outfitDetails.TryOnImage2,
+              image3: outfitDetails.TryOnImage3
+            } : undefined
           },
           // 内部排序依据为匹配度，但不对外暴露
           reason,
