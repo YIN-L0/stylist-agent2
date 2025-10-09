@@ -12,7 +12,14 @@ interface OutfitCardProps {
 }
 
 const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
-  // 已移除调试日志以避免泄露outfit信息
+  // 调试：检查 tryOnImages 数据
+  console.log('OutfitCard recommendation:', {
+    outfitId: recommendation.outfit.id,
+    gender: recommendation.outfit.gender,
+    hasTryOnImages: !!recommendation.outfit.tryOnImages,
+    tryOnImages: recommendation.outfit.tryOnImages
+  })
+
   const [virtualTryOn, setVirtualTryOn] = useState<VirtualTryOnResult | undefined>(recommendation.virtualTryOn)
   const [isGeneratingTryOn, setIsGeneratingTryOn] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
