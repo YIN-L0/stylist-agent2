@@ -441,7 +441,13 @@ export class ExactMatchRecommendationService {
             dress: dbOutfit.dress_id,
             shoes: dbOutfit.shoes_id,
             style: dbOutfit.style,
-            occasions: dbOutfit.occasions ? dbOutfit.occasions.split(',').map((o: string) => o.trim()) : []
+            occasions: dbOutfit.occasions ? dbOutfit.occasions.split(',').map((o: string) => o.trim()) : [],
+            gender: gender,
+            tryOnImages: {
+              image1: outfit.TryOnImage1,
+              image2: outfit.TryOnImage2,
+              image3: outfit.TryOnImage3
+            }
           },
           reason,
           items,
