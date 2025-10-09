@@ -63,46 +63,10 @@ router.post('/', async (req: express.Request, res: express.Response) => {
   }
 })
 
-// POST /api/recommend/fab-reason - 获取基于FAB数据的详细推荐理由
-router.post('/fab-reason', async (req: express.Request, res: express.Response) => {
-  try {
-    const { scenario, outfitId, gender } = req.body
-
-    if (!scenario || typeof scenario !== 'string') {
-      return res.status(400).json({
-        success: false,
-        error: '请提供有效的场景描述'
-      })
-    }
-
-    if (!outfitId || typeof outfitId !== 'string') {
-      return res.status(400).json({
-        success: false,
-        error: '请提供有效的套装ID'
-      })
-    }
-
-    console.log(`🎯 Generating FAB-based reason for: ${outfitId} in scenario: ${scenario}`)
-
-    const fabReason = await exactMatchRecommendationService.getFabBasedReason(scenario, outfitId, gender)
-
-    res.json({
-      success: true,
-      data: {
-        outfitId,
-        reason: fabReason
-      }
-    })
-
-  } catch (error) {
-    console.error('FAB reason generation error:', error)
-
-    return res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : '推荐理由生成失败，请稍后重试'
-    })
-  }
-})
+// POST /api/recommend/fab-reason - 已废弃，不再使用基于FAB数据的推荐理由
+// router.post('/fab-reason', async (req: express.Request, res: express.Response) => {
+//   ...
+// })
 
 export default router
 
