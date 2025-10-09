@@ -300,11 +300,15 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         {/* 显示TryOn图片 - 不显示加载时 */}
         {showTryOnImage && !isLoadingTryOn && (
           <div className="mt-4">
-            <div className="relative rounded-xl overflow-hidden shadow-lg mx-auto max-w-md" style={{ aspectRatio: '3/4' }}>
+            <div className="relative mx-auto max-w-md" style={{ aspectRatio: '3/4' }}>
               <img
                 src={getCurrentTryOnImageUrl() || ''}
                 alt="换装效果"
-                className="w-full h-full object-cover"
+                className={`w-full h-full ${
+                  (recommendation.outfit.gender || 'women') === 'women'
+                    ? 'object-cover'  // 女装：裁剪填充，去掉多余边框
+                    : 'object-contain bg-gray-50'  // 男装：完整显示，避免裁剪，添加浅色背景
+                }`}
                 onLoad={() => console.log('Image loaded successfully:', getCurrentTryOnImageUrl())}
                 onError={(e) => {
                   console.error('Image failed to load:', getCurrentTryOnImageUrl())
