@@ -627,6 +627,11 @@ export class RecommendationService {
 
         // 获取试穿图片 URL
         const outfitDetails = csvDataService.getOutfitDetails(outfit.outfit_name, gender)
+        console.log(`📸 Outfit ${outfit.outfit_name} tryOnImages:`, outfitDetails ? {
+          image1: outfitDetails.TryOnImage1,
+          image2: outfitDetails.TryOnImage2,
+          image3: outfitDetails.TryOnImage3
+        } : 'No outfit details found')
 
         recommendations.push({
           outfit: {
