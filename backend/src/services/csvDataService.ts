@@ -47,6 +47,14 @@ export interface OutfitDetailData {
   ShoesMaterial?: string
   ShoesFAB?: string
 
+  BagId?: string
+  BagName?: string
+  BagColor?: string
+  BagPattern?: string
+  BagType?: string
+  BagMaterial?: string
+  BagFAB?: string
+
   Style?: string
   Occasion?: string
 
@@ -160,6 +168,14 @@ export class CSVDataService {
               ShoesMaterial: record.ShoesMaterial,
               ShoesFAB: record.ShoesFAB,
 
+              BagId: record.Bag,
+              BagName: record.BagName,
+              BagColor: record.BagColor,
+              BagPattern: record.BagPattern,
+              BagType: record.BagType,
+              BagMaterial: record.BagMaterial,
+              BagFAB: record.BagFAB,
+
               Style: record.Style,
               Occasion: record.Occasion,
 
@@ -240,6 +256,14 @@ export class CSVDataService {
               ShoesType: record.ShoesType,
               ShoesMaterial: record.ShoesMaterial,
               ShoesFAB: record.ShoesFAB,
+
+              BagId: record.Bag,
+              BagName: record.BagName,
+              BagColor: record.BagColor,
+              BagPattern: record.BagPattern,
+              BagType: record.BagType,
+              BagMaterial: record.BagMaterial,
+              BagFAB: record.BagFAB,
 
               Style: record.Style,
               Occasion: record.Occasion,

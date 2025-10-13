@@ -411,6 +411,9 @@ export class ExactMatchRecommendationService {
         if (dbOutfit.shoes_id) {
           items.shoes = this.createProductItem(dbOutfit.shoes_id, 'shoes')
         }
+        if (dbOutfit.bag_id) {
+          items.bag = this.createProductItem(dbOutfit.bag_id, 'bag')
+        }
 
         // 构建推荐理由
         const reasonParts: string[] = []
@@ -440,6 +443,7 @@ export class ExactMatchRecommendationService {
             lower: dbOutfit.lower_id,
             dress: dbOutfit.dress_id,
             shoes: dbOutfit.shoes_id,
+            bag: dbOutfit.bag_id,
             style: dbOutfit.style,
             occasions: dbOutfit.occasions ? dbOutfit.occasions.split(',').map((o: string) => o.trim()) : [],
             gender: gender,

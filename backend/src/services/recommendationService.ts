@@ -576,6 +576,9 @@ export class RecommendationService {
         if (outfit.shoes_id) {
           items.shoes = this.createProductItem(outfit.shoes_id, 'shoes')
         }
+        if (outfit.bag_id) {
+          items.bag = this.createProductItem(outfit.bag_id, 'bag')
+        }
 
         // 获取详细搭配信息并生成推荐理由
         let reason: string
@@ -642,6 +645,7 @@ export class RecommendationService {
             lower: outfit.lower_id,
             dress: outfit.dress_id,
             shoes: outfit.shoes_id,
+            bag: outfit.bag_id,
             style: outfit.style,
             occasions: outfit.occasions ? this.toChineseOccasions(outfit.occasions.split(',').map((o: string) => o.trim())) : [],
             gender: gender,

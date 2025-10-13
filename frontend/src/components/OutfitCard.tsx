@@ -239,6 +239,11 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         {Object.entries(recommendation.items)
           .filter(([type, item]) => item) // 确保item存在
+          .sort(([typeA], [typeB]) => {
+            // 定义显示顺序：jacket, upper, lower, dress, shoes, bag
+            const order = ['jacket', 'upper', 'lower', 'dress', 'shoes', 'bag']
+            return order.indexOf(typeA) - order.indexOf(typeB)
+          })
           .map(([type, item]) => (
             <ProductImage
               key={type}
