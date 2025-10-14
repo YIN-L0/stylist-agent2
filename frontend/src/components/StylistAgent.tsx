@@ -1,11 +1,13 @@
 import React, { useState, useRef } from 'react'
-import { Sparkles, RefreshCw, AlertCircle, Wand2, Zap } from 'lucide-react'
+import { Sparkles, RefreshCw, AlertCircle, Wand2, Zap, Languages } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { apiService } from '../services/apiService'
 import { RecommendationResponse } from '@shared/types'
 import OutfitCard from './OutfitCard'
 import LoadingSpinner from './LoadingSpinner'
 
 const StylistAgent: React.FC = () => {
+  const { t, i18n } = useTranslation()
   const [scenario, setScenario] = useState('')
   const [currentScenario, setCurrentScenario] = useState('') // 保存当前推荐使用的场景
   const [isLoading, setIsLoading] = useState(false)
@@ -16,12 +18,17 @@ const StylistAgent: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'zh' : 'en'
+    i18n.changeLanguage(newLang)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!scenario.trim() || isLoading) return
 
     setIsLoading(true)
-    setLoadingMessage('正在分析场景并生成推荐...')
+    setLoadingMessage(t('analyzing'))
     setError(null)
     
     try {
@@ -44,7 +51,7 @@ const StylistAgent: React.FC = () => {
       }
     } catch (error) {
       console.error('Error getting recommendations:', error)
-      setError(error instanceof Error ? error.message : '获取推荐失败，请稍后重试')
+      setError(error instanceof Error ? error.message : t('errorTitle'))
     } finally {
       setIsLoading(false)
       setLoadingMessage('')
@@ -88,7 +95,7 @@ const StylistAgent: React.FC = () => {
       setVisibleCount(9) // 重置显示数量
     } catch (error) {
       console.error('Error refreshing recommendations:', error)
-      setError(error instanceof Error ? error.message : '刷新推荐失败，请稍后重试')
+      setError(error instanceof Error ? error.message : t('errorTitle'))
     } finally {
       setIsLoading(false)
     }
@@ -103,44 +110,37 @@ const StylistAgent: React.FC = () => {
     }
   }
 
-  const womenExampleScenarios = [
-    '推荐一套精致休闲风格的穿搭，适合和朋友周末早午餐',
-    '帮我找优雅时尚风格的穿搭，适合浪漫的约会夜晚',
-    '我需要一套经典典雅风格的穿搭，适合正式的商务晚宴',
-    '我需要一套搭配白色体恤日常休闲风格的穿搭，适合旅行时穿',
-    '我下周有一个派对活动，帮我推荐华丽风格的半裙穿搭',
-    '帮我推荐优雅时尚风格的穿搭，适合日常办公室'
-  ]
-
-  const menExampleScenarios = [
-    '我要参加商务晚宴，帮我找一套商务正装风格的穿搭',
-    '帮我推荐一些商务休闲风格的穿搭,适合日常办公室',
-    '帮我推荐一些浅色系日常休闲风的穿搭，适合周末和朋友去早午餐',
-    '我需要一套精致休闲风格的穿搭，适合晚上去约会',
-    '我准备去旅行，想要轻松的日常休闲风，最好是圆领T恤搭配',
-    '帮我找一套精致休闲风格的西服'
-  ]
-
-  const exampleScenarios = gender === 'women' ? womenExampleScenarios : menExampleScenarios
+  const exampleScenarios = gender === 'women' ? t('womenExamples', { returnObjects: true }) as string[] : t('menExamples', { returnObjects: true }) as string[]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        
+
+        {/* 语言切换按钮 */}
+        <div className="max-w-4xl mx-auto mb-4 flex justify-end">
+          <button
+            onClick={toggleLanguage}
+            className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm hover:bg-white text-gray-700 font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl border border-gray-200"
+          >
+            <Languages className="w-5 h-5" />
+            <span>{i18n.language === 'en' ? '中文' : 'English'}</span>
+          </button>
+        </div>
+
         {/* 主输入区域 */}
         <div className="max-w-4xl mx-auto mb-12">
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12">
-            
+
             {/* 头部标题 */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 rounded-full mb-6 shadow-lg">
                 <Wand2 className="w-10 h-10 text-white" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent mb-4">
-                AI时尚造型师
+                {t('appTitle')}
               </h1>
               <p className="text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
-                告诉我你的场景需求，我为你量身定制最合适的服装搭配方案
+                {t('appSubtitle')}
               </p>
             </div>
 
@@ -148,8 +148,8 @@ const StylistAgent: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* 性别切换 */}
               <div className="flex items-center justify-center gap-3">
-                <button type="button" onClick={() => setGender('women')} className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender==='women'?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>女装</button>
-                <button type="button" onClick={() => setGender('men')} className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender==='men'?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>男装</button>
+                <button type="button" onClick={() => setGender('women')} className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender==='women'?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>{t('women')}</button>
+                <button type="button" onClick={() => setGender('men')} className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${gender==='men'?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>{t('men')}</button>
               </div>
               <div className="relative">
                 <div className="absolute top-4 left-4 text-gray-400">
@@ -160,7 +160,7 @@ const StylistAgent: React.FC = () => {
                   id="scenario"
                   value={scenario}
                   onChange={handleTextareaChange}
-                  placeholder="例如：参加公司年会，需要正式但不过于隆重的着装，希望看起来专业又有亲和力..."
+                  placeholder={t('scenarioPlaceholder')}
                   className="w-full pl-12 pr-12 py-4 border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 resize-none min-h-[120px] text-gray-900 placeholder-gray-400 text-lg leading-relaxed"
                   disabled={isLoading}
                   rows={3}
@@ -182,7 +182,7 @@ const StylistAgent: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-gray-500" />
-                  <p className="text-sm font-medium text-gray-700">快速开始 - 点击下方示例：</p>
+                  <p className="text-sm font-medium text-gray-700">{t('quickStart')}</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {exampleScenarios.map((example, index) => (
@@ -208,12 +208,12 @@ const StylistAgent: React.FC = () => {
                 {isLoading ? (
                   <>
                     <LoadingSpinner />
-                    <span>{loadingMessage || 'AI正在为您精心挑选...'}</span>
+                    <span>{loadingMessage || t('aiThinking')}</span>
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-6 h-6" />
-                    <span>获取专属时尚推荐</span>
+                    <span>{t('submitButton')}</span>
                   </>
                 )}
               </button>
@@ -228,13 +228,13 @@ const StylistAgent: React.FC = () => {
               <div className="flex items-start">
                 <AlertCircle className="w-6 h-6 text-red-400 mt-1 mr-4 flex-shrink-0" />
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-red-800 mb-2">获取推荐失败</h3>
+                  <h3 className="text-lg font-semibold text-red-800 mb-2">{t('errorTitle')}</h3>
                   <p className="text-red-700 mb-4">{error}</p>
                   <button
                     onClick={() => setError(null)}
                     className="text-red-600 hover:text-red-500 font-medium underline"
                   >
-                    关闭错误信息
+                    {t('closeError')}
                   </button>
                 </div>
               </div>
@@ -256,7 +256,7 @@ const StylistAgent: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">您的场景需求</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('yourScenario')}</h3>
                       <p className="text-gray-700 text-base leading-relaxed">"{currentScenario}"</p>
                     </div>
                   </div>
@@ -268,10 +268,10 @@ const StylistAgent: React.FC = () => {
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-10">
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                  ✨ 专属搭配推荐
+                  {t('recommendationsTitle')}
                 </h2>
                 <p className="text-xl text-gray-600 mb-6">
-                  为你精选的搭配推荐 {visibleCount < recommendations.recommendations.length ? `(显示 ${visibleCount}/${recommendations.recommendations.length} 套)` : `(共 ${recommendations.recommendations.length} 套)`}
+                  {t('recommendationsSubtitle')} {visibleCount < recommendations.recommendations.length ? `(${t('showing')} ${visibleCount}/${recommendations.recommendations.length} ${t('outfits')})` : `(${t('total')} ${recommendations.recommendations.length} ${t('outfits')})`}
                 </p>
                 
               </div>
@@ -292,7 +292,7 @@ const StylistAgent: React.FC = () => {
                   <button
                     onClick={() => setVisibleCount(v => v + 9)}
                     className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm hover:bg-white text-gray-700 font-semibold py-4 px-8 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl border border-gray-200"
-                  >加载更多</button>
+                  >{t('loadMore')}</button>
                 </div>
               )}
 

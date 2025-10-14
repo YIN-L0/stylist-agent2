@@ -1,7 +1,10 @@
 import StylistAgent from './components/StylistAgent'
 import ErrorBoundary from './components/ErrorBoundary'
+import { useTranslation } from 'react-i18next'
 
 function App() {
+  const { t } = useTranslation()
+
   return (
     <div className="min-h-screen">
       <main>
@@ -9,7 +12,7 @@ function App() {
           <StylistAgent />
         </ErrorBoundary>
       </main>
-      
+
       <footer className="bg-gray-900 text-white py-8">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -19,7 +22,7 @@ function App() {
             <span className="text-xl font-bold">Stylist Agent</span>
           </div>
           <p className="text-gray-400">
-            AI时尚造型师. 由人工智能驱动，为您提供个性化时尚建议
+            {t('footerText')}
           </p>
         </div>
       </footer>
