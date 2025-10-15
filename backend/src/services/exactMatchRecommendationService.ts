@@ -35,6 +35,40 @@ export class ExactMatchRecommendationService {
     return occs.map(o => map[o] || o)
   }
 
+  // 辅助方法：根据语言翻译场合
+  private translateOccasions(occs: string[] | undefined, language: 'en' | 'zh'): string[] {
+    if (!occs || occs.length === 0) return []
+    if (language === 'zh') {
+      return this.toChineseOccasions(occs)
+    }
+    // 英文保持原样（数据库中已经是英文）
+    return occs
+  }
+
+  // 辅助方法：根据语言翻译风格
+  private translateStyle(style: string, language: 'en' | 'zh'): string {
+    if (language === 'en') {
+      // 英文保持原样
+      return style
+    }
+    // 中文翻译映射
+    const styleMap: Record<string, string> = {
+      'Classic': '经典',
+      'Chic': '时尚',
+      'Glam': '华丽',
+      'Smart Casual': '商务休闲',
+      'Casual': '休闲',
+      'Elegant': '优雅',
+      'Trendy': '潮流',
+      'Minimalist': '极简',
+      'Sophisticated': '精致',
+      'Bohemian': '波西米亚',
+      'Edgy': '前卫',
+      'Romantic': '浪漫'
+    }
+    return styleMap[style] || style
+  }
+
   // 基于FAB数据生成推荐理由（使用ChatGPT）
   private async buildFabReason(
     scenario: string,
@@ -457,7 +491,7 @@ export class ExactMatchRecommendationService {
   }
 
   // 检查是否为手动策划的推荐
-  private async checkManualRecommendation(prompt: string, gender: 'women' | 'men'): Promise<OutfitRecommendation[] | null> {
+  private async checkManualRecommendation(prompt: string, gender: 'women' | 'men', language: 'en' | 'zh' = 'en'): Promise<OutfitRecommendation[] | null> {
     const trimmedPrompt = prompt.trim()
 
     // 手动策划的女装推荐 (严格按照用户指定的outfit number)
@@ -524,14 +558,19 @@ export class ExactMatchRecommendationService {
       }
 
       // 生成推荐理由
-      const reason = `精心为您挑选的经典搭配，这套${outfit.Style || '时尚'}风格的穿搭完美适应您的场景需求，展现独特的个人魅力与品味。`
+      const translatedStyle = this.translateStyle(outfit.Style || '时尚', language)
+      const reason = language === 'en'
+        ? `Carefully selected classic combination for you, this ${translatedStyle} style outfit perfectly suits your scenario needs and showcases your unique personal charm and taste.`
+        : `精心为您挑选的经典搭配，这套${translatedStyle}风格的穿搭完美适应您的场景需求，展现独特的个人魅力与品味。`
+
+      const rawOccasions = outfitData.occasions ? outfitData.occasions.split(',').map((o: string) => o.trim()) : []
 
       const recommendation: OutfitRecommendation = {
         outfit: {
           id: parseInt(outfit.id.replace('Outfit ', '')) || 0,
           name: outfit.id,
-          style: outfit.Style || '时尚',
-          occasions: outfitData.occasions ? outfitData.occasions.split(',').map((o: string) => o.trim()) : [],
+          style: translatedStyle,
+          occasions: this.translateOccasions(rawOccasions, language),
           gender: gender,
           tryOnImages: {
             image1: outfit.TryOnImage1,
@@ -560,7 +599,7 @@ export class ExactMatchRecommendationService {
       await csvDataService.initialize()
 
       // 🎯 检查是否为预定义的手动策划推荐
-      const manualRecommendation = await this.checkManualRecommendation(prompt, gender)
+      const manualRecommendation = await this.checkManualRecommendation(prompt, gender, language)
       if (manualRecommendation) {
         console.log('✨ Using manual curated recommendation')
         return manualRecommendation
@@ -733,6 +772,8 @@ export class ExactMatchRecommendationService {
             ? `这套搭配完美符合您的需求：${reasonParts.join('；')}。精心挑选的每一件单品都与您的要求精确匹配，展现完美的整体效果。`
             : `这套搭配为您精心挑选，展现优雅时尚的魅力。`)
 
+        const rawOccasions = outfitData.occasions ? outfitData.occasions.split(',').map((o: string) => o.trim()) : []
+
         recommendations.push({
           outfit: {
             id: outfitData.id,
@@ -742,8 +783,8 @@ export class ExactMatchRecommendationService {
             lower: outfitData.lower_id,
             dress: outfitData.dress_id,
             shoes: outfitData.shoes_id,
-            style: outfitData.style,
-            occasions: outfitData.occasions ? outfitData.occasions.split(',').map((o: string) => o.trim()) : [],
+            style: this.translateStyle(outfitData.style, language),
+            occasions: this.translateOccasions(rawOccasions, language),
             gender: gender,
             tryOnImages: {
               image1: outfit.TryOnImage1,

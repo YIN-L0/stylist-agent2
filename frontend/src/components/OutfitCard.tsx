@@ -264,14 +264,14 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         {/* 详细信息 */}
         <div className="flex flex-wrap gap-2">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-            🎨 {recommendation.outfit.style}
+            {recommendation.outfit.style}
           </span>
           {recommendation.outfit.occasions.map((occasion, idx) => (
             <span
               key={idx}
               className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
             >
-              📍 {occasion}
+              {occasion}
             </span>
           ))}
         </div>

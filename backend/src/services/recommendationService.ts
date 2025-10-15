@@ -24,6 +24,35 @@ export class RecommendationService {
     return occs.map(o => map[o] || o)
   }
 
+  private translateOccasions(occs: string[] | undefined, language: 'en' | 'zh'): string[] {
+    if (!occs || occs.length === 0) return []
+    if (language === 'zh') {
+      return this.toChineseOccasions(occs)
+    }
+    return occs
+  }
+
+  private translateStyle(style: string, language: 'en' | 'zh'): string {
+    if (language === 'en') {
+      return style
+    }
+    const styleMap: Record<string, string> = {
+      'Classic': '经典',
+      'Chic': '时尚',
+      'Glam': '华丽',
+      'Smart Casual': '商务休闲',
+      'Casual': '休闲',
+      'Elegant': '优雅',
+      'Trendy': '潮流',
+      'Minimalist': '极简',
+      'Sophisticated': '精致',
+      'Bohemian': '波西米亚',
+      'Edgy': '前卫',
+      'Romantic': '浪漫'
+    }
+    return styleMap[style] || style
+  }
+
   private buildFabReason(
     scenario: string,
     analysisOccs: string[] | undefined,
@@ -659,8 +688,8 @@ export class RecommendationService {
             lower: outfit.lower_id,
             dress: outfit.dress_id,
             shoes: outfit.shoes_id,
-            style: outfit.style,
-            occasions: outfit.occasions ? this.toChineseOccasions(outfit.occasions.split(',').map((o: string) => o.trim())) : []
+            style: this.translateStyle(outfit.style, language),
+            occasions: outfit.occasions ? this.translateOccasions(outfit.occasions.split(',').map((o: string) => o.trim()), language) : []
           },
           // 内部排序依据为匹配度，但不对外暴露
           reason,
