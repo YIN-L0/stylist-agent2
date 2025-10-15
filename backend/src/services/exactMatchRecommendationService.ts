@@ -548,8 +548,8 @@ export class ExactMatchRecommendationService {
   private async checkManualRecommendation(prompt: string, gender: 'women' | 'men', language: 'en' | 'zh' = 'en'): Promise<OutfitRecommendation[] | null> {
     const trimmedPrompt = prompt.trim()
 
-    // 手动策划的女装推荐 (严格按照用户指定的outfit number)
-    const womenManualMap: Record<string, string[]> = {
+    // 手动策划的女装推荐 (严格按照用户指定的outfit number) - 中文版
+    const womenManualMapZh: Record<string, string[]> = {
       '推荐一套精致休闲风格的穿搭，适合和朋友周末早午餐': ['Outfit 22', 'Outfit 27', 'Outfit 43', 'Outfit 45'],
       '帮我找优雅时尚风格的穿搭，适合浪漫的约会夜晚': ['Outfit 8', 'Outfit 12', 'Outfit 33', 'Outfit 40'],
       '我需要一套经典典雅风格的穿搭，适合正式的商务晚宴': ['Outfit 1', 'Outfit 4', 'Outfit 9'],
@@ -558,8 +558,18 @@ export class ExactMatchRecommendationService {
       '帮我推荐优雅时尚风格的穿搭，适合日常办公室': ['Outfit 3', 'Outfit 10', 'Outfit 12', 'Outfit 21', 'Outfit 26', 'Outfit 33', 'Outfit 43']
     }
 
-    // 手动策划的男装推荐 (严格按照用户指定的outfit number)
-    const menManualMap: Record<string, string[]> = {
+    // 手动策划的女装推荐 - 英文版（与中文版对应相同的outfit）
+    const womenManualMapEn: Record<string, string[]> = {
+      'Recommend an exquisite casual style outfit for weekend brunch with friends': ['Outfit 22', 'Outfit 27', 'Outfit 43', 'Outfit 45'],
+      'Help me find an elegant and fashionable outfit for a romantic date night': ['Outfit 8', 'Outfit 12', 'Outfit 33', 'Outfit 40'],
+      'I need a classic and elegant outfit for a formal business dinner': ['Outfit 1', 'Outfit 4', 'Outfit 9'],
+      'I need a casual style outfit with a white t-shirt for traveling': ['Outfit 20', 'Outfit 24', 'Outfit 28', 'Outfit 34', 'Outfit 38'],
+      'I have a party next week, please recommend a gorgeous half-skirt outfit': ['Outfit 13', 'Outfit 14', 'Outfit 40'],
+      'Please recommend an elegant and fashionable outfit for daily office wear': ['Outfit 3', 'Outfit 10', 'Outfit 12', 'Outfit 21', 'Outfit 26', 'Outfit 33', 'Outfit 43']
+    }
+
+    // 手动策划的男装推荐 - 中文版
+    const menManualMapZh: Record<string, string[]> = {
       '我要参加商务晚宴，帮我找一套商务正装风格的穿搭': ['Outfit 2', 'Outfit 7', 'Outfit 8', 'Outfit 43', 'Outfit 44'],
       '帮我推荐一些商务休闲风格的穿搭,适合日常办公室': ['Outfit 4', 'Outfit 5'],
       '帮我推荐一些浅色系日常休闲风的穿搭，适合周末和朋友去早午餐': ['Outfit 1', 'Outfit 12', 'Outfit 23', 'Outfit 24', 'Outfit 28', 'Outfit 34', 'Outfit 39', 'Outfit 47', 'Outfit 49'],
@@ -568,7 +578,24 @@ export class ExactMatchRecommendationService {
       '帮我找一套精致休闲风格的西服': ['Outfit 13', 'Outfit 25', 'Outfit 29', 'Outfit 42']
     }
 
-    const manualMap = gender === 'women' ? womenManualMap : menManualMap
+    // 手动策划的男装推荐 - 英文版（与中文版对应相同的outfit）
+    const menManualMapEn: Record<string, string[]> = {
+      "I'm attending a business dinner, help me find a business formal outfit": ['Outfit 2', 'Outfit 7', 'Outfit 8', 'Outfit 43', 'Outfit 44'],
+      'Please recommend some business casual outfits for daily office wear': ['Outfit 4', 'Outfit 5'],
+      'Please recommend some light-colored casual outfits for weekend brunch with friends': ['Outfit 1', 'Outfit 12', 'Outfit 23', 'Outfit 24', 'Outfit 28', 'Outfit 34', 'Outfit 39', 'Outfit 47', 'Outfit 49'],
+      'I need an exquisite casual outfit for a date night': ['Outfit 6', 'Outfit 20', 'Outfit 21', 'Outfit 25', 'Outfit 29', 'Outfit 30', 'Outfit 32', 'Outfit 33'],
+      "I'm going on a trip, want a relaxed casual style, preferably with a crew neck t-shirt": ['Outfit 3', 'Outfit 10', 'Outfit 35', 'Outfit 39', 'Outfit 49'],
+      'Help me find an exquisite casual style suit': ['Outfit 13', 'Outfit 25', 'Outfit 29', 'Outfit 42']
+    }
+
+    // 根据性别和语言选择正确的映射
+    let manualMap: Record<string, string[]>
+    if (gender === 'women') {
+      manualMap = language === 'en' ? womenManualMapEn : womenManualMapZh
+    } else {
+      manualMap = language === 'en' ? menManualMapEn : menManualMapZh
+    }
+
     const outfitIds = manualMap[trimmedPrompt]
 
     if (!outfitIds) {
