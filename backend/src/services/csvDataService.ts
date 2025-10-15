@@ -11,6 +11,7 @@ export interface OutfitDetailData {
   LowerId?: string
   DressId?: string
   ShoesId?: string
+  BagsId?: string
 
   JacketName?: string
   JacketColor?: string
@@ -46,6 +47,13 @@ export interface OutfitDetailData {
   ShoesType?: string
   ShoesMaterial?: string
   ShoesFAB?: string
+
+  BagsName?: string
+  BagsColor?: string
+  BagsPattern?: string
+  BagsType?: string
+  BagsMaterial?: string
+  BagsFAB?: string
 
   Style?: string
   Occasion?: string
@@ -128,6 +136,7 @@ export class CSVDataService {
               LowerId: record.Lower,
               DressId: record.Dress,
               ShoesId: record.Shoes,
+              BagsId: record.Bags,
 
               JacketName: record.JacketName,
               JacketColor: record.JacketColor,
@@ -163,6 +172,13 @@ export class CSVDataService {
               ShoesType: record.ShoesType,
               ShoesMaterial: record.ShoesMaterial,
               ShoesFAB: record.ShoesFAB,
+
+              BagsName: record.BagsName,
+              BagsColor: record.BagsColor,
+              BagsPattern: record.BagsPattern,
+              BagsType: record.BagsType,
+              BagsMaterial: record.BagsMaterial,
+              BagsFAB: record.BagsFAB,
 
               Style: record.Style,
               Occasion: record.Occasion,
@@ -213,6 +229,7 @@ export class CSVDataService {
               LowerId: record.Lower,
               DressId: record.Dress,
               ShoesId: record.Shoes,
+              BagsId: record.Bags,
 
               JacketName: record.JacketName,
               JacketColor: record.JacketColor,
@@ -248,6 +265,13 @@ export class CSVDataService {
               ShoesType: record.ShoesType,
               ShoesMaterial: record.ShoesMaterial,
               ShoesFAB: record.ShoesFAB,
+
+              BagsName: record.BagsName,
+              BagsColor: record.BagsColor,
+              BagsPattern: record.BagsPattern,
+              BagsType: record.BagsType,
+              BagsMaterial: record.BagsMaterial,
+              BagsFAB: record.BagsFAB,
 
               Style: record.Style,
               Occasion: record.Occasion,

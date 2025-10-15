@@ -691,6 +691,9 @@ export class RecommendationService {
         if (outfit.shoes_id) {
           items.shoes = this.createProductItem(outfit.shoes_id, 'shoes')
         }
+        if (outfit.bags_id) {
+          items.bags = this.createProductItem(outfit.bags_id, 'bags')
+        }
 
         // 获取详细搭配信息并生成推荐理由
         let reason: string

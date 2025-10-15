@@ -29,6 +29,7 @@ export class Database {
           lower_id TEXT,
           dress_id TEXT,
           shoes_id TEXT,
+          bags_id TEXT,
           style TEXT NOT NULL,
           occasions TEXT NOT NULL,
           gender TEXT,
@@ -117,6 +118,7 @@ export class Database {
     lower_id?: string
     dress_id?: string
     shoes_id?: string
+    bags_id?: string
     style: string
     occasions: string
     gender?: 'women' | 'men'
@@ -126,9 +128,9 @@ export class Database {
   }): Promise<number> {
     return new Promise((resolve, reject) => {
       const sql = `
-        INSERT OR REPLACE INTO outfits 
-        (outfit_name, jacket_id, upper_id, lower_id, dress_id, shoes_id, style, occasions, gender, upper_fab, lower_fab, dress_fab)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT OR REPLACE INTO outfits
+        (outfit_name, jacket_id, upper_id, lower_id, dress_id, shoes_id, bags_id, style, occasions, gender, upper_fab, lower_fab, dress_fab)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `
       
       const params = [
@@ -138,6 +140,7 @@ export class Database {
         outfit.lower_id || null,
         outfit.dress_id || null,
         outfit.shoes_id || null,
+        outfit.bags_id || null,
         outfit.style,
         outfit.occasions,
         outfit.gender || null,
@@ -324,13 +327,14 @@ export class Database {
       const sql = `
         SELECT * FROM outfits 
         WHERE jacket_id = ? 
-           OR upper_id = ? 
-           OR lower_id = ? 
-           OR dress_id = ? 
+           OR upper_id = ?
+           OR lower_id = ?
+           OR dress_id = ?
            OR shoes_id = ?
+           OR bags_id = ?
       `
-      
-      const params = Array(5).fill(productId)
+
+      const params = Array(6).fill(productId)
 
       this.db.all(sql, params, (err, rows) => {
         if (err) {

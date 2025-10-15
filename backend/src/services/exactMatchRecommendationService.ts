@@ -539,6 +539,7 @@ export class ExactMatchRecommendationService {
       lower_id: outfit.LowerId || null,
       dress_id: outfit.DressId || null,
       shoes_id: outfit.ShoesId || null,
+      bags_id: outfit.BagsId || null,
       style: outfit.Style || null,
       occasions: outfit.Occasion || null
     }
@@ -636,6 +637,9 @@ export class ExactMatchRecommendationService {
       }
       if (outfitData.shoes_id && outfitData.shoes_id.trim()) {
         items.shoes = this.createProductItem(outfitData.shoes_id, 'shoes')
+      }
+      if (outfitData.bags_id && outfitData.bags_id.trim()) {
+        items.bags = this.createProductItem(outfitData.bags_id, 'bags')
       }
 
       // 使用CSV中的推荐理由，如果没有则使用默认理由

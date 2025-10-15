@@ -1,7 +1,7 @@
 // 服装单品接口
 export interface OutfitItem {
   id: string;
-  type: 'jacket' | 'upper' | 'lower' | 'dress' | 'shoes';
+  type: 'jacket' | 'upper' | 'lower' | 'dress' | 'shoes' | 'bags';
   productId: string;
 }
 
@@ -14,6 +14,7 @@ export interface Outfit {
   lower?: string;
   dress?: string;
   shoes?: string;
+  bags?: string;
   style: string;
   occasions: string[];
   gender?: 'women' | 'men';
@@ -48,6 +49,7 @@ export interface OutfitRecommendation {
     lower?: ProductItem;
     dress?: ProductItem;
     shoes?: ProductItem;
+    bags?: ProductItem;
   };
   virtualTryOn?: VirtualTryOnResult;
 }
