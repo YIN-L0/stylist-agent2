@@ -84,16 +84,19 @@ export class ExactMatchRecommendationService {
     // 中英文双向映射
     const zhToEn: Record<string, string> = {
       '经典': 'Classic',
+      '经典典雅': 'Classic Elegant',
       '时尚': 'Chic',
       '华丽': 'Glam',
+      '华丽风格': 'Glamorous',
       '商务休闲': 'Smart Casual',
       '休闲': 'Casual',
+      '日常休闲': 'Casual',
       '优雅': 'Elegant',
-      '优雅时尚': 'Elegant',
+      '优雅时尚': 'Elegant Chic',
       '潮流': 'Trendy',
       '极简': 'Minimalist',
       '精致': 'Sophisticated',
-      '精致休闲': 'Sophisticated',
+      '精致休闲': 'Sophisticated Casual',
       '波西米亚': 'Bohemian',
       '前卫': 'Edgy',
       '浪漫': 'Romantic'
@@ -101,14 +104,18 @@ export class ExactMatchRecommendationService {
 
     const enToZh: Record<string, string> = {
       'Classic': '经典',
+      'Classic Elegant': '经典典雅',
       'Chic': '时尚',
       'Glam': '华丽',
+      'Glamorous': '华丽风格',
       'Smart Casual': '商务休闲',
-      'Casual': '休闲',
+      'Casual': '日常休闲',
       'Elegant': '优雅',
+      'Elegant Chic': '优雅时尚',
       'Trendy': '潮流',
       'Minimalist': '极简',
       'Sophisticated': '精致',
+      'Sophisticated Casual': '精致休闲',
       'Bohemian': '波西米亚',
       'Edgy': '前卫',
       'Romantic': '浪漫'

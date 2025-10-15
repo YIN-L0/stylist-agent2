@@ -303,18 +303,18 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         {showTryOnImage && !isLoadingTryOn && (
           <div className="mt-4">
             <div
-              className={`relative rounded-xl overflow-hidden shadow-lg mx-auto bg-gray-100 ${
+              className={`relative rounded-xl shadow-lg bg-gray-100 ${
                 (recommendation.outfit.gender || 'women') === 'women'
-                  ? 'max-w-none' // 女装：无宽度限制，显示原始大小
-                  : 'max-w-lg'   // 男装：比之前更大（从max-w-sm增加到max-w-lg，约40%增加）
+                  ? 'max-w-none overflow-hidden mx-auto' // 女装：无宽度限制，overflow-hidden用于5:7裁剪
+                  : ''   // 男装：无任何限制
               }`}
-              style={{ aspectRatio: '5 / 7' }}
+              style={(recommendation.outfit.gender || 'women') === 'women' ? { aspectRatio: '5 / 7' } : undefined}
             >
               <img
                 src={getCurrentTryOnImageUrl() || ''}
                 alt={t('tryOnNotAvailable')}
-                className="w-full h-full object-cover"
-                style={{ objectPosition: 'center' }}
+                className={`${(recommendation.outfit.gender || 'women') === 'women' ? 'w-full h-full object-cover' : ''} rounded-xl`}
+                style={(recommendation.outfit.gender || 'women') === 'women' ? { objectPosition: 'center' } : undefined}
                 onLoad={() => console.log('Image loaded successfully:', getCurrentTryOnImageUrl())}
                 onError={(e) => {
                   console.error('Image failed to load:', getCurrentTryOnImageUrl())

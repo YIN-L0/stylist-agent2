@@ -101,12 +101,12 @@ const VirtualTryOnImage: React.FC<VirtualTryOnImageProps> = ({
         </div>
         
         <div
-          className={`relative group cursor-pointer overflow-hidden rounded-xl bg-gray-100 shadow-lg mx-auto ${
+          className={`relative group cursor-pointer rounded-xl bg-gray-100 shadow-lg ${
             gender === 'women'
-              ? 'max-w-none' // 女装：无宽度限制，显示原始大小
-              : 'max-w-lg'   // 男装：比之前更大
+              ? 'max-w-none overflow-hidden' // 女装：无宽度限制，overflow-hidden用于5:7裁剪
+              : ''   // 男装：无任何限制
           }`}
-          style={{ aspectRatio: '5 / 7' }}
+          style={gender === 'women' ? { aspectRatio: '5 / 7' } : undefined}
           onClick={handleClick}
         >
           {!isLoaded && !hasError && (
@@ -123,10 +123,10 @@ const VirtualTryOnImage: React.FC<VirtualTryOnImageProps> = ({
             alt="虚拟试穿效果"
             onLoad={handleImageLoad}
             onError={handleImageError}
-            className={`w-full h-full object-cover transition-transform duration-300 ${
-              isLoaded ? 'group-hover:scale-105' : 'opacity-0'
-            }`}
-            style={{ objectPosition: 'center' }}
+            className={`${gender === 'women' ? 'w-full h-full object-cover transition-transform duration-300 group-hover:scale-105' : ''} ${
+              isLoaded ? '' : 'opacity-0'
+            } rounded-xl`}
+            style={gender === 'women' ? { objectPosition: 'center' } : undefined}
             loading="lazy"
           />
 
