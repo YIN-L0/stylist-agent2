@@ -38,21 +38,68 @@ export class ExactMatchRecommendationService {
   // 辅助方法：根据语言翻译场合
   private translateOccasions(occs: string[] | undefined, language: 'en' | 'zh'): string[] {
     if (!occs || occs.length === 0) return []
-    if (language === 'zh') {
-      return this.toChineseOccasions(occs)
+
+    // 中英文双向映射
+    const zhToEn: Record<string, string> = {
+      '办公室': 'Office',
+      '商务晚宴': 'Business Dinner',
+      '约会夜晚': 'Date Night',
+      '鸡尾酒活动': 'Cocktail',
+      '派对活动': 'Party',
+      '庆祝活动': 'Celebration',
+      '日常休闲': 'Everyday Casual',
+      '旅行': 'Travel',
+      '周末早午餐': 'Weekend Brunch',
+      '节日活动': 'Festival',
+      '音乐会': 'Concert',
+      '面试': 'Interview'
     }
-    // 英文保持原样（数据库中已经是英文）
-    return occs
+
+    const enToZh: Record<string, string> = {
+      'Office': '办公室',
+      'Business Dinner': '商务晚宴',
+      'Date Night': '约会夜晚',
+      'Cocktail': '鸡尾酒活动',
+      'Party': '派对活动',
+      'Celebration': '庆祝活动',
+      'Everyday Casual': '日常休闲',
+      'Travel': '旅行',
+      'Weekend Brunch': '周末早午餐',
+      'Festival': '节日活动',
+      'Concert': '音乐会',
+      'Interview': '面试'
+    }
+
+    if (language === 'en') {
+      // 翻译成英文
+      return occs.map(o => zhToEn[o] || o)
+    } else {
+      // 翻译成中文（如果已经是中文就保持）
+      return occs.map(o => enToZh[o] || o)
+    }
   }
 
   // 辅助方法：根据语言翻译风格
   private translateStyle(style: string, language: 'en' | 'zh'): string {
-    if (language === 'en') {
-      // 英文保持原样
-      return style
+    // 中英文双向映射
+    const zhToEn: Record<string, string> = {
+      '经典': 'Classic',
+      '时尚': 'Chic',
+      '华丽': 'Glam',
+      '商务休闲': 'Smart Casual',
+      '休闲': 'Casual',
+      '优雅': 'Elegant',
+      '优雅时尚': 'Elegant',
+      '潮流': 'Trendy',
+      '极简': 'Minimalist',
+      '精致': 'Sophisticated',
+      '精致休闲': 'Sophisticated',
+      '波西米亚': 'Bohemian',
+      '前卫': 'Edgy',
+      '浪漫': 'Romantic'
     }
-    // 中文翻译映射
-    const styleMap: Record<string, string> = {
+
+    const enToZh: Record<string, string> = {
       'Classic': '经典',
       'Chic': '时尚',
       'Glam': '华丽',
@@ -66,7 +113,14 @@ export class ExactMatchRecommendationService {
       'Edgy': '前卫',
       'Romantic': '浪漫'
     }
-    return styleMap[style] || style
+
+    if (language === 'en') {
+      // 翻译成英文
+      return zhToEn[style] || style
+    } else {
+      // 翻译成中文（如果已经是中文就保持）
+      return enToZh[style] || style
+    }
   }
 
   // 基于FAB数据生成推荐理由（使用ChatGPT）
