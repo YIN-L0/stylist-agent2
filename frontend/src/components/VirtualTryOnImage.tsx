@@ -101,7 +101,7 @@ const VirtualTryOnImage: React.FC<VirtualTryOnImageProps> = ({
         </div>
         
         <div
-          className={`relative group cursor-pointer overflow-hidden rounded-xl bg-white shadow-lg mx-auto ${
+          className={`relative group cursor-pointer overflow-hidden rounded-xl bg-gray-100 shadow-lg mx-auto ${
             gender === 'women'
               ? 'max-w-none' // 女装：无宽度限制，显示原始大小
               : 'max-w-lg'   // 男装：比之前更大
@@ -123,7 +123,7 @@ const VirtualTryOnImage: React.FC<VirtualTryOnImageProps> = ({
             alt="虚拟试穿效果"
             onLoad={handleImageLoad}
             onError={handleImageError}
-            className={`w-full h-full object-cover transition-transform duration-300 ${
+            className={`w-full h-full object-contain transition-transform duration-300 ${
               isLoaded ? 'group-hover:scale-105' : 'opacity-0'
             }`}
             style={{ objectPosition: 'center' }}
