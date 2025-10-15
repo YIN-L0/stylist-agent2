@@ -106,6 +106,7 @@ const VirtualTryOnImage: React.FC<VirtualTryOnImageProps> = ({
               ? 'max-w-none' // 女装：无宽度限制，显示原始大小
               : 'max-w-lg'   // 男装：比之前更大
           }`}
+          style={{ aspectRatio: '5 / 7' }}
           onClick={handleClick}
         >
           {!isLoaded && !hasError && (
@@ -122,13 +123,10 @@ const VirtualTryOnImage: React.FC<VirtualTryOnImageProps> = ({
             alt="虚拟试穿效果"
             onLoad={handleImageLoad}
             onError={handleImageError}
-            className={`w-full h-auto object-contain transition-transform duration-300 ${
-              gender === 'women'
-                ? 'max-h-none' // 女装：无高度限制
-                : 'max-h-[40rem]' // 男装：增加到40rem
-            } ${
+            className={`w-full h-full object-cover transition-transform duration-300 ${
               isLoaded ? 'group-hover:scale-105' : 'opacity-0'
             }`}
+            style={{ objectPosition: 'center' }}
             loading="lazy"
           />
 
