@@ -611,11 +611,11 @@ export class ExactMatchRecommendationService {
         items.shoes = this.createProductItem(outfitData.shoes_id, 'shoes')
       }
 
-      // 生成推荐理由
+      // 使用CSV中的推荐理由，如果没有则使用默认理由
       const translatedStyle = this.translateStyle(outfit.Style || '时尚', language)
       const reason = language === 'en'
-        ? `Carefully selected classic combination for you, this ${translatedStyle} style outfit perfectly suits your scenario needs and showcases your unique personal charm and taste.`
-        : `精心为您挑选的经典搭配，这套${translatedStyle}风格的穿搭完美适应您的场景需求，展现独特的个人魅力与品味。`
+        ? (outfit.ReasonsEn || `Carefully selected classic combination for you, this ${translatedStyle} style outfit perfectly suits your scenario needs and showcases your unique personal charm and taste.`)
+        : (outfit.ReasonsCh || `精心为您挑选的经典搭配，这套${translatedStyle}风格的穿搭完美适应您的场景需求，展现独特的个人魅力与品味。`)
 
       const rawOccasions = outfitData.occasions ? outfitData.occasions.split(',').map((o: string) => o.trim()) : []
 
@@ -788,43 +788,51 @@ export class ExactMatchRecommendationService {
           items.shoes = this.createProductItem(outfitData.shoes_id, 'shoes')
         }
 
-        // 构建基础推荐理由（不调用FAB数据生成，提升匹配速度）
-        const reasonParts: string[] = []
-        if (language === 'en') {
-          if (matchDetails.productMatches.length > 0) {
-            reasonParts.push(`Product match: ${matchDetails.productMatches.join(', ')}`)
-          }
-          if (matchDetails.colorMatches.length > 0) {
-            reasonParts.push(`Color match: ${matchDetails.colorMatches.join(', ')}`)
-          }
-          if (matchDetails.styleMatches.length > 0) {
-            reasonParts.push(`Style match: ${matchDetails.styleMatches.join(', ')}`)
-          }
-          if (matchDetails.occasionMatches.length > 0) {
-            reasonParts.push(`Occasion match: ${matchDetails.occasionMatches.join(', ')}`)
-          }
+        // 使用CSV中的推荐理由，如果没有则构建基础推荐理由
+        let reason: string
+        if (language === 'en' && outfit.ReasonsEn) {
+          reason = outfit.ReasonsEn
+        } else if (language === 'zh' && outfit.ReasonsCh) {
+          reason = outfit.ReasonsCh
         } else {
-          if (matchDetails.productMatches.length > 0) {
-            reasonParts.push(`产品匹配: ${matchDetails.productMatches.join('、')}`)
+          // 如果CSV中没有推荐理由，则使用原有的逻辑生成
+          const reasonParts: string[] = []
+          if (language === 'en') {
+            if (matchDetails.productMatches.length > 0) {
+              reasonParts.push(`Product match: ${matchDetails.productMatches.join(', ')}`)
+            }
+            if (matchDetails.colorMatches.length > 0) {
+              reasonParts.push(`Color match: ${matchDetails.colorMatches.join(', ')}`)
+            }
+            if (matchDetails.styleMatches.length > 0) {
+              reasonParts.push(`Style match: ${matchDetails.styleMatches.join(', ')}`)
+            }
+            if (matchDetails.occasionMatches.length > 0) {
+              reasonParts.push(`Occasion match: ${matchDetails.occasionMatches.join(', ')}`)
+            }
+          } else {
+            if (matchDetails.productMatches.length > 0) {
+              reasonParts.push(`产品匹配: ${matchDetails.productMatches.join('、')}`)
+            }
+            if (matchDetails.colorMatches.length > 0) {
+              reasonParts.push(`颜色匹配: ${matchDetails.colorMatches.join('、')}`)
+            }
+            if (matchDetails.styleMatches.length > 0) {
+              reasonParts.push(`风格匹配: ${matchDetails.styleMatches.join('、')}`)
+            }
+            if (matchDetails.occasionMatches.length > 0) {
+              reasonParts.push(`场合匹配: ${matchDetails.occasionMatches.join('、')}`)
+            }
           }
-          if (matchDetails.colorMatches.length > 0) {
-            reasonParts.push(`颜色匹配: ${matchDetails.colorMatches.join('、')}`)
-          }
-          if (matchDetails.styleMatches.length > 0) {
-            reasonParts.push(`风格匹配: ${matchDetails.styleMatches.join('、')}`)
-          }
-          if (matchDetails.occasionMatches.length > 0) {
-            reasonParts.push(`场合匹配: ${matchDetails.occasionMatches.join('、')}`)
-          }
-        }
 
-        const reason = language === 'en'
-          ? (reasonParts.length > 0
-            ? `This outfit perfectly matches your needs: ${reasonParts.join('; ')}. Each carefully selected item precisely matches your requirements, showcasing a perfect overall effect.`
-            : `This outfit has been carefully selected for you, showcasing elegant and fashionable charm.`)
-          : (reasonParts.length > 0
-            ? `这套搭配完美符合您的需求：${reasonParts.join('；')}。精心挑选的每一件单品都与您的要求精确匹配，展现完美的整体效果。`
-            : `这套搭配为您精心挑选，展现优雅时尚的魅力。`)
+          reason = language === 'en'
+            ? (reasonParts.length > 0
+              ? `This outfit perfectly matches your needs: ${reasonParts.join('; ')}. Each carefully selected item precisely matches your requirements, showcasing a perfect overall effect.`
+              : `This outfit has been carefully selected for you, showcasing elegant and fashionable charm.`)
+            : (reasonParts.length > 0
+              ? `这套搭配完美符合您的需求：${reasonParts.join('；')}。精心挑选的每一件单品都与您的要求精确匹配，展现完美的整体效果。`
+              : `这套搭配为您精心挑选，展现优雅时尚的魅力。`)
+        }
 
         const rawOccasions = outfitData.occasions ? outfitData.occasions.split(',').map((o: string) => o.trim()) : []
 

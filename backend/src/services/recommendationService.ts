@@ -697,8 +697,15 @@ export class RecommendationService {
         try {
           // 获取搭配的详细信息（CSV服务应该已在服务启动时初始化）
           const outfitDetails = csvDataService.getOutfitDetails(outfit.outfit_name, gender)
-          
-          if (outfitDetails) {
+
+          // 优先使用CSV中的推荐理由
+          if (outfitDetails && language === 'en' && outfitDetails.ReasonsEn) {
+            console.log('📝 Using pre-written English reason from CSV')
+            reason = outfitDetails.ReasonsEn
+          } else if (outfitDetails && language === 'zh' && outfitDetails.ReasonsCh) {
+            console.log('📝 Using pre-written Chinese reason from CSV')
+            reason = outfitDetails.ReasonsCh
+          } else if (outfitDetails) {
             console.log('🎨 Using detailed outfit information for AI reasoning')
             // 使用详细搭配信息生成AI推荐理由
             const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis, outfitDetails, language)

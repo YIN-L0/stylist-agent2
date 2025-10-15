@@ -54,6 +54,10 @@ export interface OutfitDetailData {
   TryOnImage1?: string
   TryOnImage2?: string
   TryOnImage3?: string
+
+  // Bilingual recommendation reasons
+  ReasonsCh?: string
+  ReasonsEn?: string
 }
 
 export class CSVDataService {
@@ -166,7 +170,11 @@ export class CSVDataService {
               // Try-on images - 从CSV读取TryOnImage1, TryOnImage2, TryOnImage3列
               TryOnImage1: record.TryOnImage1 || '',
               TryOnImage2: record.TryOnImage2 || '',
-              TryOnImage3: record.TryOnImage3 || ''
+              TryOnImage3: record.TryOnImage3 || '',
+
+              // Bilingual recommendation reasons
+              ReasonsCh: record.ReasonsCh || '',
+              ReasonsEn: record.ReasonsEn || ''
             }
             
             dataMap.set(outfitId, detailData)
@@ -247,7 +255,11 @@ export class CSVDataService {
               // Try-on images - 男装只有一列TryOnImage，我们把它映射到三个字段
               TryOnImage1: record.TryOnImage || '',
               TryOnImage2: record.TryOnImage || '', // 同一张图片
-              TryOnImage3: record.TryOnImage || ''  // 同一张图片
+              TryOnImage3: record.TryOnImage || '',  // 同一张图片
+
+              // Bilingual recommendation reasons
+              ReasonsCh: record.ReasonsCh || '',
+              ReasonsEn: record.ReasonsEn || ''
             }
 
             dataMap.set(outfitId, detailData)
