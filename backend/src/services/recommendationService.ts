@@ -27,7 +27,8 @@ export class RecommendationService {
   private buildFabReason(
     scenario: string,
     analysisOccs: string[] | undefined,
-    items: any
+    items: any,
+    language: 'en' | 'zh' = 'en'
   ): string | null {
     const fabParts: string[] = []
     if (items?.dress?.fab) fabParts.push(items.dress.fab)
@@ -37,8 +38,10 @@ export class RecommendationService {
     if (fabParts.length === 0) return null
 
     const cnOccs = this.toChineseOccasions(analysisOccs)
-    const occText = cnOccs.length ? cnOccs.join('、') : '日常'
-    
+    const occText = language === 'en'
+      ? (analysisOccs && analysisOccs.length ? analysisOccs.join(', ') : 'casual')
+      : (cnOccs.length ? cnOccs.join('、') : '日常')
+
     // 清理FAB内容：移除"设计FAB:"、"面料FAB:"、"工艺FAB:"等标题
     const cleanedParts = fabParts.map(part => {
       return part
@@ -49,9 +52,11 @@ export class RecommendationService {
         .replace(/；/g, '，')
         .trim()
     })
-    
-    const merged = cleanedParts.join('。')
-    return `${merged}整体搭配在${occText}场合表现出色，这样的设计既保证了舒适性，又展现出独特的时尚魅力。`
+
+    const merged = cleanedParts.join(language === 'en' ? '. ' : '。')
+    return language === 'en'
+      ? `${merged} This overall combination performs excellently for ${occText} occasions. The design ensures both comfort and showcases unique fashion charm.`
+      : `${merged}整体搭配在${occText}场合表现出色，这样的设计既保证了舒适性，又展现出独特的时尚魅力。`
   }
   // 备用场景分析逻辑
   private fallbackAnalysis(scenario: string): ScenarioAnalysis {
@@ -107,25 +112,48 @@ export class RecommendationService {
   }
 
   // 备用推荐理由生成
-  private fallbackReason(scenario: string, outfit: any, score: number): string {
+  private fallbackReason(scenario: string, outfit: any, score: number, language: 'en' | 'zh' = 'en'): string {
     const reasons = []
-    
+
     // 分析场景特点，使用时尚术语
     const lowerScenario = scenario.toLowerCase()
-    if (lowerScenario.includes('商务') || lowerScenario.includes('正式')) {
-      reasons.push('这套look完美诠释了现代职场女性的power dressing')
-    } else if (lowerScenario.includes('约会') || lowerScenario.includes('浪漫')) {
-      reasons.push('这个搭配展现了effortless chic的约会美学')
-    } else if (lowerScenario.includes('休闲') || lowerScenario.includes('度假')) {
-      reasons.push('轻松随性的casual elegance，舒适度满分')
-    } else if (lowerScenario.includes('聚会') || lowerScenario.includes('派对')) {
-      reasons.push('party ready的造型，让你成为全场焦点')
+    if (language === 'en') {
+      if (lowerScenario.includes('business') || lowerScenario.includes('formal') || lowerScenario.includes('office')) {
+        reasons.push('This look perfectly embodies modern professional power dressing')
+      } else if (lowerScenario.includes('date') || lowerScenario.includes('romantic')) {
+        reasons.push('This outfit showcases effortless chic date aesthetics')
+      } else if (lowerScenario.includes('casual') || lowerScenario.includes('vacation') || lowerScenario.includes('weekend')) {
+        reasons.push('Relaxed and casual elegance with maximum comfort')
+      } else if (lowerScenario.includes('party') || lowerScenario.includes('celebration')) {
+        reasons.push('Party-ready styling that makes you the center of attention')
+      } else {
+        reasons.push('This outfit perfectly matches your occasion needs')
+      }
     } else {
-      reasons.push('这个搭配完美契合你的场合需求')
+      if (lowerScenario.includes('商务') || lowerScenario.includes('正式')) {
+        reasons.push('这套look完美诠释了现代职场女性的power dressing')
+      } else if (lowerScenario.includes('约会') || lowerScenario.includes('浪漫')) {
+        reasons.push('这个搭配展现了effortless chic的约会美学')
+      } else if (lowerScenario.includes('休闲') || lowerScenario.includes('度假')) {
+        reasons.push('轻松随性的casual elegance，舒适度满分')
+      } else if (lowerScenario.includes('聚会') || lowerScenario.includes('派对')) {
+        reasons.push('party ready的造型，让你成为全场焦点')
+      } else {
+        reasons.push('这个搭配完美契合你的场合需求')
+      }
     }
     
     // 分析服装风格，使用时尚术语
-    const styleMap: { [key: string]: string } = {
+    const styleMap = language === 'en' ? {
+      'Classic': 'classic timeless style that never goes out of fashion',
+      'Chic': 'French chic with effortless elegance',
+      'Glam': 'glamorous and radiant with powerful presence',
+      'Smart Casual': 'smart casual with intellectual charm',
+      'Casual': 'casual chic with relaxed fashion',
+      'Elegant': 'elegant and graceful temperament',
+      'Trendy': 'trendy and fashion-forward',
+      'Minimalist': 'minimalist aesthetic beauty'
+    } : {
       'Classic': '经典永不过时的timeless style',
       'Chic': '法式chic的effortless elegance',
       'Glam': 'glamorous的华丽感，气场全开',
@@ -135,14 +163,23 @@ export class RecommendationService {
       'Trendy': 'trendy的时尚前沿感',
       'Minimalist': 'minimalist的极简美学'
     }
-    
-    const styleDescription = styleMap[outfit.style] || `${outfit.style}风格的独特魅力`
+
+    const styleDescription = styleMap[outfit.style as keyof typeof styleMap] ||
+      (language === 'en' ? `unique charm of ${outfit.style} style` : `${outfit.style}风格的独特魅力`)
     reasons.push(styleDescription)
-    
+
     // 分析场合匹配，使用时尚术语
     const occasions = outfit.occasions ? outfit.occasions.split(',').map((o: string) => o.trim()) : []
     if (occasions.length > 0) {
-      const occasionMap: { [key: string]: string } = {
+      const occasionMap = language === 'en' ? {
+        'Business Dinner': 'sophisticated look for business dinners',
+        'Date Night': 'romantic vibe for date nights',
+        'Everyday Casual': 'comfortable chic for everyday casual',
+        'Office': 'professional style for office',
+        'Cocktail': 'glamorous appeal for cocktail parties',
+        'Party': 'dramatic flair for party nights',
+        'Weekend Brunch': 'relaxed elegance for weekend brunch'
+      } : {
         'Business Dinner': '商务晚宴的sophisticated look',
         'Date Night': '约会夜的romantic vibe',
         'Everyday Casual': '日常casual的comfortable chic',
@@ -151,19 +188,24 @@ export class RecommendationService {
         'Party': 'party night的dramatic flair',
         'Weekend Brunch': 'weekend brunch的relaxed elegance'
       }
-      
-      const occasionText = occasions.slice(0, 2).map((occ: string) => occasionMap[occ] || occ).join('、')
-      reasons.push(`专为${occasionText}而设计`)
+
+      const separator = language === 'en' ? ', ' : '、'
+      const occasionText = occasions.slice(0, 2).map((occ: string) => occasionMap[occ as keyof typeof occasionMap] || occ).join(separator)
+      reasons.push(language === 'en' ? `designed specifically for ${occasionText}` : `专为${occasionText}而设计`)
     }
-    
+
     // 强调形象效果，使用时尚术语
     if (score >= 85) {
-      reasons.push('整体造型散发着confident and stylish的气场')
+      reasons.push(language === 'en'
+        ? 'the overall look radiates a confident and stylish aura'
+        : '整体造型散发着confident and stylish的气场')
     } else {
-      reasons.push('这个搭配让你展现出独特的fashion sense')
+      reasons.push(language === 'en'
+        ? 'this outfit lets you showcase your unique fashion sense'
+        : '这个搭配让你展现出独特的fashion sense')
     }
-    
-    return reasons.join('，') + '。'
+
+    return language === 'en' ? reasons.join(', ') + '.' : reasons.join('，') + '。'
   }
 
   // 生成产品图片URL
@@ -422,7 +464,7 @@ export class RecommendationService {
     return selected
   }
 
-  async getRecommendations(scenario: string, skipVirtualTryOn: boolean = true, gender: 'women' | 'men' = 'women'): Promise<{
+  async getRecommendations(scenario: string, skipVirtualTryOn: boolean = true, gender: 'women' | 'men' = 'women', language: 'en' | 'zh' = 'en'): Promise<{
     recommendations: OutfitRecommendation[]
     analysis: ScenarioAnalysis
   }> {
@@ -579,23 +621,23 @@ export class RecommendationService {
           if (outfitDetails) {
             console.log('🎨 Using detailed outfit information for AI reasoning')
             // 使用详细搭配信息生成AI推荐理由
-            const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis, outfitDetails)
+            const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis, outfitDetails, language)
             reason = aiReason
           } else {
             console.log('⚠️ No detailed outfit info found, using FAB-based reasoning')
             // 回退到原有的FAB推理方式
-            const fabReason = this.buildFabReason(scenario, analysis.occasions, items)
+            const fabReason = this.buildFabReason(scenario, analysis.occasions, items, language)
             if (fabReason) {
               reason = fabReason
             } else {
-              const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis)
+              const aiReason = await openaiService.generateRecommendationReason(scenario, outfit, analysis, undefined, language)
               reason = aiReason
             }
           }
         } catch (reasonError) {
           console.warn('AI reason generation failed, using fallback:', reasonError)
-          const fallbackReason = this.fallbackReason(scenario, outfit, Math.round(score * 100))
-          const fabReason = this.buildFabReason(scenario, analysis.occasions, items)
+          const fallbackReason = this.fallbackReason(scenario, outfit, Math.round(score * 100), language)
+          const fabReason = this.buildFabReason(scenario, analysis.occasions, items, language)
           if (fabReason) {
             reason = fabReason
           } else {

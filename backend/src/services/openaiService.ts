@@ -115,7 +115,7 @@ export class OpenAIService {
     }
   }
 
-  async generateRecommendationReason(scenario: string, outfit: any, analysis: ScenarioAnalysis, outfitDetails?: any): Promise<string> {
+  async generateRecommendationReason(scenario: string, outfit: any, analysis: ScenarioAnalysis, outfitDetails?: any, language: 'en' | 'zh' = 'en'): Promise<string> {
     try {
       // 构建详细的搭配信息 - 使用新的FAB数据结构
       let detailsText = '';
@@ -150,7 +150,24 @@ export class OpenAIService {
         detailsText = details.join('\n\n');
       }
 
-      const prompt = `
+      const prompt = language === 'en'
+        ? `
+Based on the actual outfit information provided, write a recommendation reason within 200 characters:
+
+【Outfit Details】
+${detailsText || 'Basic outfit information'}
+
+Important requirements:
+1) Must strictly base the writing on the real information provided in the 【Outfit Details】 above, do not add any unmentioned clothing items (such as suits, shirts, etc.)
+2) The first sentence should not mention user needs or scenarios, start directly from describing the outfit features
+3) Focus on describing fabrics, craftsmanship, and design features in the FAB information
+4) If outfit details are empty or invalid, please respond "Missing valid outfit information"
+5) Strictly prohibit words like "match rate/score/percentage/Outfit/number/ranking/user/needs"
+6) Control within 200 characters and ensure complete sentences
+
+Only return the complete recommendation text, do not explain or add other content.
+        `.trim()
+        : `
 基于提供的实际搭配信息，写一段推荐理由，要求严格控制在200字以内：
 
 【搭配详情】
@@ -165,14 +182,18 @@ ${detailsText || '基础搭配信息'}
 6) 控制在200字以内，确保语句完整
 
 只返回完整的推荐理由文字，不要解释或添加其他内容。
-      `.trim();
+        `.trim();
+
+      const systemMessage = language === 'en'
+        ? "You are a professional fashion consultant who must strictly base your writing on the real outfit information provided. Do not add any unmentioned clothing items. Use concise language, express completely within 200 characters, and do not mention user needs in the first sentence."
+        : "你是专业时尚顾问，必须严格基于提供的真实搭配信息写作。禁止添加任何未提及的服装单品。语言精练，200字以内完整表达，第一句不提用户需求。"
 
       const completion = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: [
           {
             role: "system",
-            content: "你是专业时尚顾问，必须严格基于提供的真实搭配信息写作。禁止添加任何未提及的服装单品。语言精练，200字以内完整表达，第一句不提用户需求。"
+            content: systemMessage
           },
           {
             role: "user",
@@ -184,14 +205,16 @@ ${detailsText || '基础搭配信息'}
       });
 
       let text = completion.choices[0].message.content || ''
-      
+
       // 智能截断：如果超过200字，寻找最近的句号或逗号截断，保持完整性
       if (text.length > 200) {
         const truncated = text.slice(0, 200)
-        const lastPeriod = truncated.lastIndexOf('。')
-        const lastComma = truncated.lastIndexOf('，')
-        const lastCutPoint = Math.max(lastPeriod, lastComma)
-        
+        const chinesePeriod = truncated.lastIndexOf('。')
+        const chineseComma = truncated.lastIndexOf('，')
+        const englishPeriod = truncated.lastIndexOf('.')
+        const englishComma = truncated.lastIndexOf(',')
+        const lastCutPoint = Math.max(chinesePeriod, chineseComma, englishPeriod, englishComma)
+
         if (lastCutPoint > 150) {
           // 如果在150字后找到了合适的断点，就在那里截断
           text = text.slice(0, lastCutPoint + 1)
@@ -200,7 +223,10 @@ ${detailsText || '基础搭配信息'}
           text = text.slice(0, 200)
         }
       }
-      return text || '这套搭配经过精心甄选，版型与场合契合度出色。';
+      const defaultText = language === 'en'
+        ? 'This outfit has been carefully selected, with excellent fit and occasion compatibility.'
+        : '这套搭配经过精心甄选，版型与场合契合度出色。'
+      return text || defaultText;
     } catch (error) {
       console.error('Error generating recommendation reason:', error);
       throw error; // 抛出错误，让推荐服务使用fallback逻辑

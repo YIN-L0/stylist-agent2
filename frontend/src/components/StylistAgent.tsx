@@ -33,10 +33,11 @@ const StylistAgent: React.FC = () => {
     
     try {
       console.log('Getting recommendations for:', scenario)
-      const result = await apiService.getRecommendations({ 
+      const result = await apiService.getRecommendations({
         scenario,
         skipVirtualTryOn: true,
-        gender
+        gender,
+        language: i18n.language as 'en' | 'zh'
       })
       console.log('Received recommendations:', result)
       console.log('Number of recommendations:', result?.recommendations?.length || 0)
@@ -86,10 +87,11 @@ const StylistAgent: React.FC = () => {
     
     try {
       console.log('Refreshing recommendations for:', currentScenario)
-      const result = await apiService.getRecommendations({ 
+      const result = await apiService.getRecommendations({
         scenario: currentScenario,
         skipVirtualTryOn: true,
-        gender
+        gender,
+        language: i18n.language as 'en' | 'zh'
       })
       setRecommendations(result)
       setVisibleCount(9) // 重置显示数量

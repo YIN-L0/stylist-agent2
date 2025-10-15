@@ -39,7 +39,8 @@ export class ExactMatchRecommendationService {
   private async buildFabReason(
     scenario: string,
     outfit: OutfitDetailData,
-    items: any
+    items: any,
+    language: 'en' | 'zh' = 'en'
   ): Promise<string | null> {
     // 按优先级选择FAB数据：连衣裙 > 上衣 > 下装 > 夹克 > 鞋子
     const fabPriority = [
@@ -118,12 +119,18 @@ export class ExactMatchRecommendationService {
       console.log(`🤖 ${outfit.id} - 发送给ChatGPT的FAB数据:`, Object.keys(outfitDetails))
       console.log(`   示例FAB内容:`, Object.values(outfitDetails).map(fab => typeof fab === 'string' ? fab.substring(0, 80) + '...' : fab))
 
-      const reason = await openaiService.generateRecommendationReason(scenario, outfitForAI, analysis, outfitDetails)
-      return reason || `${merged}整体搭配在${occText}场合表现出色，这样的设计既保证了舒适性，又展现出独特的时尚魅力。`
+      const reason = await openaiService.generateRecommendationReason(scenario, outfitForAI, analysis, outfitDetails, language)
+      const fallbackText = language === 'en'
+        ? `${merged}This overall combination performs excellently for ${occText} occasions. The design ensures both comfort and showcases unique fashion charm.`
+        : `${merged}整体搭配在${occText}场合表现出色，这样的设计既保证了舒适性，又展现出独特的时尚魅力。`
+      return reason || fallbackText
     } catch (error) {
       console.error('Failed to generate FAB reason:', error)
       // 回退到简单模板
-      return `${merged}整体搭配在${occText}场合表现出色，这样的设计既保证了舒适性，又展现出独特的时尚魅力。`
+      const fallbackText = language === 'en'
+        ? `This overall combination performs excellently for ${occText} occasions. The design ensures both comfort and showcases unique fashion charm.`
+        : `整体搭配在${occText}场合表现出色，这样的设计既保证了舒适性，又展现出独特的时尚魅力。`
+      return fallbackText
     }
   }
   // 从prompt中提取产品名称
@@ -545,7 +552,7 @@ export class ExactMatchRecommendationService {
   }
 
   // 主要的精确匹配推荐方法
-  async getExactMatchRecommendations(prompt: string, gender: 'women' | 'men' = 'women'): Promise<OutfitRecommendation[]> {
+  async getExactMatchRecommendations(prompt: string, gender: 'women' | 'men' = 'women', language: 'en' | 'zh' = 'en'): Promise<OutfitRecommendation[]> {
     try {
       console.log('🔍 Starting exact match recommendation for:', prompt)
 
@@ -690,22 +697,41 @@ export class ExactMatchRecommendationService {
 
         // 构建基础推荐理由（不调用FAB数据生成，提升匹配速度）
         const reasonParts: string[] = []
-        if (matchDetails.productMatches.length > 0) {
-          reasonParts.push(`产品匹配: ${matchDetails.productMatches.join('、')}`)
-        }
-        if (matchDetails.colorMatches.length > 0) {
-          reasonParts.push(`颜色匹配: ${matchDetails.colorMatches.join('、')}`)
-        }
-        if (matchDetails.styleMatches.length > 0) {
-          reasonParts.push(`风格匹配: ${matchDetails.styleMatches.join('、')}`)
-        }
-        if (matchDetails.occasionMatches.length > 0) {
-          reasonParts.push(`场合匹配: ${matchDetails.occasionMatches.join('、')}`)
+        if (language === 'en') {
+          if (matchDetails.productMatches.length > 0) {
+            reasonParts.push(`Product match: ${matchDetails.productMatches.join(', ')}`)
+          }
+          if (matchDetails.colorMatches.length > 0) {
+            reasonParts.push(`Color match: ${matchDetails.colorMatches.join(', ')}`)
+          }
+          if (matchDetails.styleMatches.length > 0) {
+            reasonParts.push(`Style match: ${matchDetails.styleMatches.join(', ')}`)
+          }
+          if (matchDetails.occasionMatches.length > 0) {
+            reasonParts.push(`Occasion match: ${matchDetails.occasionMatches.join(', ')}`)
+          }
+        } else {
+          if (matchDetails.productMatches.length > 0) {
+            reasonParts.push(`产品匹配: ${matchDetails.productMatches.join('、')}`)
+          }
+          if (matchDetails.colorMatches.length > 0) {
+            reasonParts.push(`颜色匹配: ${matchDetails.colorMatches.join('、')}`)
+          }
+          if (matchDetails.styleMatches.length > 0) {
+            reasonParts.push(`风格匹配: ${matchDetails.styleMatches.join('、')}`)
+          }
+          if (matchDetails.occasionMatches.length > 0) {
+            reasonParts.push(`场合匹配: ${matchDetails.occasionMatches.join('、')}`)
+          }
         }
 
-        const reason = reasonParts.length > 0
-          ? `这套搭配完美符合您的需求：${reasonParts.join('；')}。精心挑选的每一件单品都与您的要求精确匹配，展现完美的整体效果。`
-          : `这套搭配为您精心挑选，展现优雅时尚的魅力。`
+        const reason = language === 'en'
+          ? (reasonParts.length > 0
+            ? `This outfit perfectly matches your needs: ${reasonParts.join('; ')}. Each carefully selected item precisely matches your requirements, showcasing a perfect overall effect.`
+            : `This outfit has been carefully selected for you, showcasing elegant and fashionable charm.`)
+          : (reasonParts.length > 0
+            ? `这套搭配完美符合您的需求：${reasonParts.join('；')}。精心挑选的每一件单品都与您的要求精确匹配，展现完美的整体效果。`
+            : `这套搭配为您精心挑选，展现优雅时尚的魅力。`)
 
         recommendations.push({
           outfit: {
@@ -741,7 +767,7 @@ export class ExactMatchRecommendationService {
   }
 
   // 新增：获取基于FAB数据的详细推荐理由
-  async getFabBasedReason(scenario: string, outfitId: string, gender: 'women' | 'men' = 'women'): Promise<string> {
+  async getFabBasedReason(scenario: string, outfitId: string, gender: 'women' | 'men' = 'women', language: 'en' | 'zh' = 'en'): Promise<string> {
     try {
       console.log(`🎯 Generating FAB-based reason for outfit: ${outfitId}`)
 
@@ -777,19 +803,25 @@ export class ExactMatchRecommendationService {
       }
 
       // 调用FAB数据生成详细推荐理由
-      const fabReason = await this.buildFabReason(scenario, outfit, items)
+      const fabReason = await this.buildFabReason(scenario, outfit, items, language)
 
       if (fabReason) {
         console.log(`✅ Generated FAB-based reason for ${outfitId}`)
         return fabReason
       } else {
         console.log(`⚠️ No valid FAB data found for ${outfitId}, using fallback reason`)
-        return `这套搭配为您精心挑选，每一件单品都经过细致考量，整体搭配展现优雅时尚的魅力，适合多种场合穿着。`
+        const fallbackMsg = language === 'en'
+          ? `This outfit has been carefully selected for you. Each piece has been thoughtfully considered, and the overall combination showcases elegant and fashionable charm, suitable for various occasions.`
+          : `这套搭配为您精心挑选，每一件单品都经过细致考量，整体搭配展现优雅时尚的魅力，适合多种场合穿着。`
+        return fallbackMsg
       }
 
     } catch (error) {
       console.error(`Error generating FAB reason for ${outfitId}:`, error)
-      throw new Error('无法生成基于FAB数据的推荐理由')
+      const errorMsg = language === 'en'
+        ? 'Unable to generate FAB-based recommendation reason'
+        : '无法生成基于FAB数据的推荐理由'
+      throw new Error(errorMsg)
     }
   }
 }

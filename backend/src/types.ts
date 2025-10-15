@@ -29,6 +29,7 @@ export interface RecommendationRequest {
   scenario: string;
   skipVirtualTryOn?: boolean; // 可选：跳过虚拟试穿以加快响应
   gender?: 'women' | 'men';
+  language?: 'en' | 'zh'; // 语言选项：英文或中文
 }
 
 // 推荐响应接口
