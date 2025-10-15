@@ -123,7 +123,7 @@ const VirtualTryOnImage: React.FC<VirtualTryOnImageProps> = ({
             alt="虚拟试穿效果"
             onLoad={handleImageLoad}
             onError={handleImageError}
-            className={`w-full h-full object-contain transition-transform duration-300 ${
+            className={`w-full h-full object-cover transition-transform duration-300 ${
               isLoaded ? 'group-hover:scale-105' : 'opacity-0'
             }`}
             style={{ objectPosition: 'center' }}
