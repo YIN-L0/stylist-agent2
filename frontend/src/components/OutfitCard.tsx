@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Download, Share2, Star, Sparkles, Eye, RefreshCw } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { OutfitRecommendation, VirtualTryOnResult } from '@shared/types'
 import ProductImage from './ProductImage'
 import VirtualTryOnImage from './VirtualTryOnImage'
@@ -12,6 +13,7 @@ interface OutfitCardProps {
 }
 
 const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
+  const { t } = useTranslation()
   // 已移除调试日志以避免泄露outfit信息
   const [virtualTryOn, setVirtualTryOn] = useState<VirtualTryOnResult | undefined>(recommendation.virtualTryOn)
   const [isGeneratingTryOn, setIsGeneratingTryOn] = useState(false)
@@ -229,7 +231,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h4 className="text-xl font-semibold text-gray-900">
-            精选搭配
+            {t('selectedOutfit')}
           </h4>
         </div>
       </div>
@@ -281,7 +283,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
             disabled={isLoadingTryOn}
             className="w-full bg-black hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {showTryOnImage ? '切换换装效果' : '生成换装'}
+            {showTryOnImage ? t('switchTryOn') : t('generateTryOn')}
           </button>
         </div>
 
@@ -290,8 +292,8 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
           <div className="mt-4">
             <div className="bg-gray-100 rounded-xl p-8 flex flex-col items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-black mb-4"></div>
-              <p className="text-gray-600 text-sm">正在生成换装效果，请稍候...</p>
-              <p className="text-gray-400 text-xs mt-1">约需5秒</p>
+              <p className="text-gray-600 text-sm">{t('generatingTryOn')}</p>
+              <p className="text-gray-400 text-xs mt-1">{t('about5Seconds')}</p>
             </div>
           </div>
         )}
@@ -307,7 +309,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
             }`}>
               <img
                 src={getCurrentTryOnImageUrl() || ''}
-                alt="换装效果"
+                alt={t('tryOnNotAvailable')}
                 className={`w-full h-auto object-contain ${
                   (recommendation.outfit.gender || 'women') === 'women'
                     ? 'max-h-none' // 女装：无高度限制，显示原始大小
@@ -317,7 +319,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
                 onError={(e) => {
                   console.error('Image failed to load:', getCurrentTryOnImageUrl())
                   const target = e.target as HTMLImageElement
-                  target.src = 'https://via.placeholder.com/300x400/f3f4f6/9ca3af?text=换装效果暂不可用'
+                  target.src = `https://via.placeholder.com/300x400/f3f4f6/9ca3af?text=${encodeURIComponent(t('tryOnNotAvailable'))}`
                 }}
               />
             </div>

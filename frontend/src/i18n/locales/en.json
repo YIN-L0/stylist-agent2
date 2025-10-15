@@ -47,5 +47,11 @@
   "close": "Close",
   "loading": "Loading...",
   "error": "Error",
-  "tryAgain": "Try Again"
+  "tryAgain": "Try Again",
+  "selectedOutfit": "Selected Outfit",
+  "generateTryOn": "Generate Try-On",
+  "switchTryOn": "Switch Try-On Effect",
+  "generatingTryOn": "Generating try-on effect, please wait...",
+  "about5Seconds": "About 5 seconds",
+  "tryOnNotAvailable": "Try-on effect not available"
 }
