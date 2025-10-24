@@ -12,19 +12,22 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 3001
 
-// 中间件
+// 中间件 - CORS配置
 app.use(cors({
   origin: [
     process.env.CORS_ORIGIN || 'http://localhost:3000',
     'http://localhost:3002', // 添加3002端口支持
     'https://stylist-agent4.vercel.app', // 当前主域名
     'https://stylist-agent3.vercel.app', // 备用域名
+    'https://stylist-agent-testing.netlify.app', // Netlify测试域名
     /^https:\/\/stylist-agent4-.*\.vercel\.app$/, // 所有 stylist-agent4 预览域名
     /^https:\/\/stylist-agent3-.*\.vercel\.app$/, // 所有 stylist-agent3 预览域名
     /^https:\/\/stylist-agent2-.*\.vercel\.app$/, // 兼容旧的 stylist-agent2 域名
     /^https:\/\/.*\.netlify\.app$/, // 所有 Netlify 域名
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
