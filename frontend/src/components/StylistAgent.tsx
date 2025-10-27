@@ -12,6 +12,7 @@ const StylistAgent: React.FC = () => {
   const [currentScenario, setCurrentScenario] = useState('') // 保存当前推荐使用的场景
   const [isLoading, setIsLoading] = useState(false)
   const [gender, setGender] = useState<'women' | 'men'>('women')
+  const [brand, setBrand] = useState<'Rare' | 'Reblue'>('Rare')
   const [visibleCount, setVisibleCount] = useState(9)
   const [loadingMessage, setLoadingMessage] = useState('')
   const [recommendations, setRecommendations] = useState<RecommendationResponse | null>(null)
@@ -112,6 +113,14 @@ const StylistAgent: React.FC = () => {
     }
   }
 
+  const handleBrandChange = (newBrand: 'Rare' | 'Reblue') => {
+    if (newBrand === 'Reblue') {
+      window.location.href = 'https://rebluestylist.netlify.app/'
+    } else {
+      setBrand(newBrand)
+    }
+  }
+
   const exampleScenarios = gender === 'women' ? t('womenExamples', { returnObjects: true }) as string[] : t('menExamples', { returnObjects: true }) as string[]
 
   return (
@@ -141,9 +150,25 @@ const StylistAgent: React.FC = () => {
               <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent mb-4">
                 {t('appTitle')}
               </h1>
-              <p className="text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
+              <p className="text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto mb-6">
                 {t('appSubtitle')}
               </p>
+
+              {/* 品牌选择下拉菜单 */}
+              <div className="flex items-center justify-center gap-3">
+                <label htmlFor="brand-select" className="text-sm font-medium text-gray-700">
+                  {t('selectBrand', '选择品牌')}:
+                </label>
+                <select
+                  id="brand-select"
+                  value={brand}
+                  onChange={(e) => handleBrandChange(e.target.value as 'Rare' | 'Reblue')}
+                  className="px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all bg-white text-gray-700 font-medium cursor-pointer hover:border-gray-300"
+                >
+                  <option value="Rare">Rare</option>
+                  <option value="Reblue">Reblue</option>
+                </select>
+              </div>
             </div>
 
             {/* 输入表单 */}
