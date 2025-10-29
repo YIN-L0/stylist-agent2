@@ -1,6 +1,7 @@
 {
   "appTitle": "AI Fashion Stylist",
   "appSubtitle": "Tell me your scenario, and I'll create the perfect outfit for you",
+  "selectBrand": "Select Brand",
   "women": "Women",
   "men": "Men",
   "scenarioPlaceholder": "e.g., Attending a company annual party, need formal but not too grand attire, want to look professional yet approachable...",

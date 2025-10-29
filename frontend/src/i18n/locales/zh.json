@@ -1,6 +1,7 @@
 {
   "appTitle": "AI时尚造型师",
   "appSubtitle": "告诉我你的场景需求，我为你量身定制最合适的服装搭配方案",
+  "selectBrand": "选择品牌",
   "women": "女装",
   "men": "男装",
   "scenarioPlaceholder": "例如：参加公司年会，需要正式但不过于隆重的着装，希望看起来专业又有亲和力...",

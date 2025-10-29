@@ -157,7 +157,7 @@ const StylistAgent: React.FC = () => {
               {/* 品牌选择下拉菜单 */}
               <div className="flex items-center justify-center gap-3">
                 <label htmlFor="brand-select" className="text-sm font-medium text-gray-700">
-                  {t('selectBrand', '选择品牌')}:
+                  {t('selectBrand')}:
                 </label>
                 <select
                   id="brand-select"
