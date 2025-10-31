@@ -165,7 +165,7 @@ const StylistAgent: React.FC = () => {
                   onClick={() => handleBrandChange('Rare')}
                 >
                   <img
-                    src="/racer-logo.svg"
+                    src="/rare-logo.png"
                     alt="Racer Brand"
                     className="h-16 w-auto object-contain"
                     onError={(e) => {
@@ -189,7 +189,7 @@ const StylistAgent: React.FC = () => {
                   onClick={() => handleBrandChange('Reblue')}
                 >
                   <img
-                    src="/reblue-logo.svg"
+                    src="/reblue-logo.png"
                     alt="Re-BLUE Brand"
                     className="h-16 w-auto object-contain"
                     onError={(e) => {
