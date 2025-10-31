@@ -154,20 +154,58 @@ const StylistAgent: React.FC = () => {
                 {t('appSubtitle')}
               </p>
 
-              {/* 品牌选择下拉菜单 */}
-              <div className="flex items-center justify-center gap-3">
-                <label htmlFor="brand-select" className="text-sm font-medium text-gray-700">
-                  {t('selectBrand')}:
-                </label>
-                <select
-                  id="brand-select"
-                  value={brand}
-                  onChange={(e) => handleBrandChange(e.target.value as 'Rare' | 'Reblue')}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all bg-white text-gray-700 font-medium cursor-pointer hover:border-gray-300"
+              {/* 品牌选择 Logo */}
+              <div className="flex items-center justify-center gap-6 mb-2">
+                <div className="text-sm font-medium text-gray-600 mb-1">{t('selectBrand')}:</div>
+              </div>
+              <div className="flex items-center justify-center gap-8">
+                {/* Racer Logo */}
+                <div
+                  className={`cursor-pointer transition-all duration-200 hover:scale-105 ${brand === 'Rare' ? 'opacity-100' : 'opacity-60 hover:opacity-80'}`}
+                  onClick={() => handleBrandChange('Rare')}
                 >
-                  <option value="Rare">Rare</option>
-                  <option value="Reblue">Reblue</option>
-                </select>
+                  <img
+                    src="/racer-logo.svg"
+                    alt="Racer Brand"
+                    className="h-16 w-auto object-contain"
+                    onError={(e) => {
+                      // Fallback to text if image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent && !parent.querySelector('.brand-text')) {
+                        const text = document.createElement('div');
+                        text.className = 'brand-text px-6 py-3 bg-white border-2 border-gray-300 rounded-xl font-bold text-xl';
+                        text.textContent = 'RACER';
+                        parent.appendChild(text);
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* Re-BLUE Logo */}
+                <div
+                  className={`cursor-pointer transition-all duration-200 hover:scale-105 ${brand === 'Reblue' ? 'opacity-100' : 'opacity-60 hover:opacity-80'}`}
+                  onClick={() => handleBrandChange('Reblue')}
+                >
+                  <img
+                    src="/reblue-logo.svg"
+                    alt="Re-BLUE Brand"
+                    className="h-16 w-auto object-contain"
+                    onError={(e) => {
+                      // Fallback to text if image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent && !parent.querySelector('.brand-text')) {
+                        const text = document.createElement('div');
+                        text.className = 'brand-text px-6 py-3 bg-teal-50 border-2 border-teal-300 rounded-xl font-bold text-xl text-teal-700';
+                        text.textContent = 'Re-BLUE';
+                        parent.appendChild(text);
+                      }
+                    }}
+                  />
+                </div>
               </div>
             </div>
 
