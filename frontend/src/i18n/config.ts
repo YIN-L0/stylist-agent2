@@ -3,9 +3,9 @@ import { initReactI18next } from 'react-i18next'
 import en from './locales/en.json'
 import zh from './locales/zh.json'
 
-// 如果 localStorage 中没有语言设置，强制设置为英语
+// 如果 localStorage 中没有语言设置，强制设置为中文
 if (!localStorage.getItem('i18nextLng')) {
-  localStorage.setItem('i18nextLng', 'en')
+  localStorage.setItem('i18nextLng', 'zh')
 }
 
 i18n
@@ -15,8 +15,8 @@ i18n
       en: { translation: en },
       zh: { translation: zh }
     },
-    lng: localStorage.getItem('i18nextLng') || 'en', // 从 localStorage 读取，默认英语
-    fallbackLng: 'en',
+    lng: localStorage.getItem('i18nextLng') || 'zh', // 从 localStorage 读取，默认中文
+    fallbackLng: 'zh',
     interpolation: {
       escapeValue: false
     }
