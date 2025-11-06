@@ -13,11 +13,63 @@ interface OutfitCardProps {
 }
 
 const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   // 已移除调试日志以避免泄露outfit信息
   const [virtualTryOn, setVirtualTryOn] = useState<VirtualTryOnResult | undefined>(recommendation.virtualTryOn)
   const [isGeneratingTryOn, setIsGeneratingTryOn] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
+
+  // 场合标签翻译映射
+  const translateOccasion = (occasion: string): string => {
+    if (i18n.language !== 'en') return occasion // 中文时直接返回
+
+    const translations: Record<string, string> = {
+      '婚礼嘉宾': 'Wedding Guest',
+      '商务晚宴': 'Business Dinner',
+      '日常办公室': 'Daily Office',
+      '周末早午餐': 'Weekend Brunch',
+      '约会夜晚': 'Date Night',
+      '派对': 'Party',
+      '休闲日常': 'Casual Daily',
+      '旅行': 'Travel',
+      '正式场合': 'Formal Occasion',
+      '商务正装': 'Business Formal',
+      '商务休闲': 'Business Casual',
+      '日常休闲': 'Everyday Casual',
+      '精致休闲': 'Smart Casual',
+      '运动休闲': 'Athleisure',
+      '度假': 'Vacation',
+      '聚会': 'Gathering',
+      '晚宴': 'Dinner',
+      '约会': 'Date',
+      '办公': 'Office',
+      '早午餐': 'Brunch'
+    }
+
+    return translations[occasion] || occasion
+  }
+
+  // 风格标签翻译映射
+  const translateStyle = (style: string): string => {
+    if (i18n.language !== 'en') return style // 中文时直接返回
+
+    const translations: Record<string, string> = {
+      '经典': 'Classic',
+      '优雅时尚': 'Chic',
+      '精致休闲': 'Smart Casual',
+      '休闲': 'Casual',
+      '华丽': 'Glam',
+      '商务正装': 'Business Formal',
+      '商务休闲': 'Business Casual',
+      '运动休闲': 'Athleisure',
+      '街头': 'Street Style',
+      '波西米亚': 'Bohemian',
+      '复古': 'Vintage',
+      '极简': 'Minimalist'
+    }
+
+    return translations[style] || style
+  }
 
   // 新增：跟踪当前显示的TryOn图片索引
   const [tryOnImageIndex, setTryOnImageIndex] = useState<number>(0)
@@ -264,14 +316,14 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
         {/* 详细信息 */}
         <div className="flex flex-wrap gap-2">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-            {recommendation.outfit.style}
+            {translateStyle(recommendation.outfit.style)}
           </span>
           {recommendation.outfit.occasions.map((occasion, idx) => (
             <span
               key={idx}
               className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
             >
-              {occasion}
+              {translateOccasion(occasion)}
             </span>
           ))}
         </div>
