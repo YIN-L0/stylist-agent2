@@ -57,5 +57,6 @@
   "tryOnNotAvailable": "换装效果暂不可用",
   "generateVideo": "生成视频",
   "videoPreview": "视频预览",
-  "pressEscToClose": "按 ESC 键或点击外部关闭"
+  "pressEscToClose": "按 ESC 键或点击外部关闭",
+  "regenerateVideo": "重新生成视频"
 }

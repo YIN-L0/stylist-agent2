@@ -80,6 +80,26 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
   // 视频相关状态
   const [showVideoModal, setShowVideoModal] = useState<boolean>(false)
   const [videoUrl, setVideoUrl] = useState<string>('')
+  const [currentVideoIndex, setCurrentVideoIndex] = useState<number>(0)
+
+  // 为特定outfit设置多个视频URL映射
+  const getVideoUrls = (outfitId: string, gender: string): string[] => {
+    const multiVideoMapping: Record<string, string[]> = {
+      '8': [
+        'https://maistyle01.oss-cn-shanghai.aliyuncs.com/demo/video/pink_dress_1.mp4',
+        'https://maistyle01.oss-cn-shanghai.aliyuncs.com/demo/video/pink_dress_2.mp4',
+      ],
+      '40': [
+        'https://maistyle01.oss-cn-shanghai.aliyuncs.com/demo/video/grey_dress.mp4',
+      ],
+      // 你可以在这里添加更多的映射
+    }
+
+    // 如果有特定映射则使用，否则使用默认URL格式
+    return multiVideoMapping[outfitId] || [
+      `https://maistyle01.oss-cn-shanghai.aliyuncs.com/videos/${gender}_outfit${outfitId}.mp4`
+    ]
+  }
 
   // 处理生成视频按钮点击
   const handleGenerateVideo = () => {
@@ -87,20 +107,22 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
     const outfitIdNumber = recommendation.outfit.name.toLowerCase().replace('outfit ', '')
     const gender = recommendation.outfit.gender || 'women'
 
-    // 为特定outfit设置视频URL映射
-    const videoMapping: Record<string, string> = {
-      '8': 'https://maistyle01.oss-cn-shanghai.aliyuncs.com/demo/video/pink_dress_1.mp4',
-      '40': 'https://maistyle01.oss-cn-shanghai.aliyuncs.com/demo/video/grey_dress.mp4',
-      // 你可以在这里添加更多的映射
-      // '1': 'https://maistyle01.oss-cn-shanghai.aliyuncs.com/demo/video/another_video.mp4',
-    }
-
-    // 如果有特定映射则使用，否则使用默认URL格式
-    const generatedVideoUrl = videoMapping[outfitIdNumber] ||
-      `https://maistyle01.oss-cn-shanghai.aliyuncs.com/videos/${gender}_outfit${outfitIdNumber}.mp4`
-
-    setVideoUrl(generatedVideoUrl)
+    const videoUrls = getVideoUrls(outfitIdNumber, gender)
+    setCurrentVideoIndex(0)
+    setVideoUrl(videoUrls[0])
     setShowVideoModal(true)
+  }
+
+  // 处理重新生成视频（切换到下一个视频）
+  const handleRegenerateVideo = () => {
+    const outfitIdNumber = recommendation.outfit.name.toLowerCase().replace('outfit ', '')
+    const gender = recommendation.outfit.gender || 'women'
+    const videoUrls = getVideoUrls(outfitIdNumber, gender)
+
+    // 切换到下一个视频，循环播放
+    const nextIndex = (currentVideoIndex + 1) % videoUrls.length
+    setCurrentVideoIndex(nextIndex)
+    setVideoUrl(videoUrls[nextIndex])
   }
 
   // 处理视频上传
@@ -438,6 +460,13 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
             }
           }}
           title={`${recommendation.outfit.name} - ${t('videoPreview', '视频预览')}`}
+          onRegenerate={handleRegenerateVideo}
+          hasMultipleVideos={(() => {
+            const outfitIdNumber = recommendation.outfit.name.toLowerCase().replace('outfit ', '')
+            const gender = recommendation.outfit.gender || 'women'
+            const videoUrls = getVideoUrls(outfitIdNumber, gender)
+            return videoUrls.length > 1
+          })()}
         />
       )}
 

@@ -57,5 +57,6 @@
   "tryOnNotAvailable": "Try-on effect not available",
   "generateVideo": "Generate Video",
   "videoPreview": "Video Preview",
-  "pressEscToClose": "Press ESC or click outside to close"
+  "pressEscToClose": "Press ESC or click outside to close",
+  "regenerateVideo": "Regenerate Video"
 }

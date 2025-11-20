@@ -1,14 +1,16 @@
 import React, { useEffect, useRef } from 'react'
-import { X } from 'lucide-react'
+import { X, RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 interface VideoModalProps {
   videoUrl: string
   onClose: () => void
   title?: string
+  onRegenerate?: () => void
+  hasMultipleVideos?: boolean
 }
 
-const VideoModal: React.FC<VideoModalProps> = ({ videoUrl, onClose, title }) => {
+const VideoModal: React.FC<VideoModalProps> = ({ videoUrl, onClose, title, onRegenerate, hasMultipleVideos = false }) => {
   const { t } = useTranslation()
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -71,6 +73,19 @@ const VideoModal: React.FC<VideoModalProps> = ({ videoUrl, onClose, title }) => 
             Your browser does not support the video tag.
           </video>
         </div>
+
+        {/* 重新生成视频按钮 */}
+        {hasMultipleVideos && onRegenerate && (
+          <div className="text-center mt-4">
+            <button
+              onClick={onRegenerate}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <RefreshCw className="w-5 h-5" />
+              {t('regenerateVideo', '重新生成视频')}
+            </button>
+          </div>
+        )}
 
         {/* 提示文字 */}
         <div className="text-center mt-4 text-white text-sm">
