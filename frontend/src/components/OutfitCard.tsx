@@ -83,13 +83,20 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
 
   // 处理生成视频按钮点击
   const handleGenerateVideo = () => {
-    // 这里可以根据outfit生成对应的视频URL
-    // 示例：使用outfit ID生成视频URL
+    // 提取outfit ID
     const outfitIdNumber = recommendation.outfit.name.toLowerCase().replace('outfit ', '')
     const gender = recommendation.outfit.gender || 'women'
 
-    // 方式1: 使用固定的视频URL (你可以替换成实际的视频链接)
-    const generatedVideoUrl = `https://maistyle01.oss-cn-shanghai.aliyuncs.com/videos/${gender}_outfit${outfitIdNumber}.mp4`
+    // 为特定outfit设置视频URL映射
+    const videoMapping: Record<string, string> = {
+      '40': 'https://maistyle01.oss-cn-shanghai.aliyuncs.com/demo/video/grey_dress.mp4',
+      // 你可以在这里添加更多的映射
+      // '1': 'https://maistyle01.oss-cn-shanghai.aliyuncs.com/demo/video/another_video.mp4',
+    }
+
+    // 如果有特定映射则使用，否则使用默认URL格式
+    const generatedVideoUrl = videoMapping[outfitIdNumber] ||
+      `https://maistyle01.oss-cn-shanghai.aliyuncs.com/videos/${gender}_outfit${outfitIdNumber}.mp4`
 
     setVideoUrl(generatedVideoUrl)
     setShowVideoModal(true)
