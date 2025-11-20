@@ -89,6 +89,7 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
 
     // 为特定outfit设置视频URL映射
     const videoMapping: Record<string, string> = {
+      '8': 'https://maistyle01.oss-cn-shanghai.aliyuncs.com/demo/video/pink_dress_1.mp4',
       '40': 'https://maistyle01.oss-cn-shanghai.aliyuncs.com/demo/video/grey_dress.mp4',
       // 你可以在这里添加更多的映射
       // '1': 'https://maistyle01.oss-cn-shanghai.aliyuncs.com/demo/video/another_video.mp4',
