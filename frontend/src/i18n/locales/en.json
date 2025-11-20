@@ -54,5 +54,8 @@
   "switchTryOn": "Switch Try-On Effect",
   "generatingTryOn": "Generating try-on effect, please wait...",
   "about5Seconds": "About 5 seconds",
-  "tryOnNotAvailable": "Try-on effect not available"
+  "tryOnNotAvailable": "Try-on effect not available",
+  "generateVideo": "Generate Video",
+  "videoPreview": "Video Preview",
+  "pressEscToClose": "Press ESC or click outside to close"
 }

@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
-import { Download, Share2, Star, Sparkles, Eye, RefreshCw } from 'lucide-react'
+import { Download, Share2, Star, Sparkles, Eye, RefreshCw, Video } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { OutfitRecommendation, VirtualTryOnResult } from '@shared/types'
 import ProductImage from './ProductImage'
 import VirtualTryOnImage from './VirtualTryOnImage'
 import Toast from './Toast'
+import VideoModal from './VideoModal'
 import { apiService } from '../services/apiService'
 
 interface OutfitCardProps {
@@ -75,6 +76,35 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
   const [tryOnImageIndex, setTryOnImageIndex] = useState<number>(0)
   const [showTryOnImage, setShowTryOnImage] = useState<boolean>(false)
   const [isLoadingTryOn, setIsLoadingTryOn] = useState<boolean>(false)
+
+  // 视频相关状态
+  const [showVideoModal, setShowVideoModal] = useState<boolean>(false)
+  const [videoUrl, setVideoUrl] = useState<string>('')
+
+  // 处理生成视频按钮点击
+  const handleGenerateVideo = () => {
+    // 这里可以根据outfit生成对应的视频URL
+    // 示例：使用outfit ID生成视频URL
+    const outfitIdNumber = recommendation.outfit.name.toLowerCase().replace('outfit ', '')
+    const gender = recommendation.outfit.gender || 'women'
+
+    // 方式1: 使用固定的视频URL (你可以替换成实际的视频链接)
+    const generatedVideoUrl = `https://maistyle01.oss-cn-shanghai.aliyuncs.com/videos/${gender}_outfit${outfitIdNumber}.mp4`
+
+    setVideoUrl(generatedVideoUrl)
+    setShowVideoModal(true)
+  }
+
+  // 处理视频上传
+  const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      // 创建本地URL用于预览
+      const url = URL.createObjectURL(file)
+      setVideoUrl(url)
+      setShowVideoModal(true)
+    }
+  }
 
   const handleGenerateTryOn = async () => {
     if (isGeneratingTryOn || virtualTryOn) return
@@ -328,14 +358,21 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
           ))}
         </div>
 
-        {/* 生成换装按钮 - 黑色，始终显示 */}
-        <div className="mt-4">
+        {/* 生成换装和生成视频按钮 - 并排显示 */}
+        <div className="mt-4 grid grid-cols-2 gap-3">
           <button
             onClick={handleViewTryOnImage}
             disabled={isLoadingTryOn}
-            className="w-full bg-black hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-black hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {showTryOnImage ? t('switchTryOn') : t('generateTryOn')}
+          </button>
+          <button
+            onClick={handleGenerateVideo}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+          >
+            <Video className="w-5 h-5" />
+            {t('generateVideo', '生成视频')}
           </button>
         </div>
 
@@ -380,6 +417,30 @@ const OutfitCard: React.FC<OutfitCardProps> = ({ recommendation, index }) => {
       </div>
 
       {/* 暂时隐藏虚拟试穿功能 */}
+
+      {/* 视频预览模态框 */}
+      {showVideoModal && videoUrl && (
+        <VideoModal
+          videoUrl={videoUrl}
+          onClose={() => {
+            setShowVideoModal(false)
+            // 如果是本地上传的视频，清理URL
+            if (videoUrl.startsWith('blob:')) {
+              URL.revokeObjectURL(videoUrl)
+            }
+          }}
+          title={`${recommendation.outfit.name} - ${t('videoPreview', '视频预览')}`}
+        />
+      )}
+
+      {/* 隐藏的文件上传输入 */}
+      <input
+        type="file"
+        accept="video/*"
+        onChange={handleVideoUpload}
+        style={{ display: 'none' }}
+        id={`video-upload-${recommendation.outfit.id}`}
+      />
 
       {/* Toast 提示 */}
       {toast && (

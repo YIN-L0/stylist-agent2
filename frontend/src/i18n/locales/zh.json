@@ -54,5 +54,8 @@
   "switchTryOn": "切换换装效果",
   "generatingTryOn": "正在生成换装效果，请稍候...",
   "about5Seconds": "约需5秒",
-  "tryOnNotAvailable": "换装效果暂不可用"
+  "tryOnNotAvailable": "换装效果暂不可用",
+  "generateVideo": "生成视频",
+  "videoPreview": "视频预览",
+  "pressEscToClose": "按 ESC 键或点击外部关闭"
 }
